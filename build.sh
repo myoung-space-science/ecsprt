@@ -23,7 +23,7 @@ cwd=$(pwd)
 srcdir=${cwd}/src
 bindir=${cwd}/bin
 mkdir -p "${bindir}"
-buildlog="build.log"
+buildlog=${cwd}/build.log
 > ${buildlog}
 
 # Set option defaults.
@@ -34,6 +34,9 @@ log_info=1
 log_none=0
 log_enter_exit=0
 from_clean=0
+petsc_dir=
+slepc_dir=
+petsc_arch=
 
 # Define text formatting commands.
 # - textbf: Use bold-face.
@@ -70,14 +73,25 @@ ${textbf}DESCRIPTION${textnm}
                 'none': suppress all custom messages.
                 'enter-exit': print a notification upon entry and exit of labeled functions.
         ${textbf}--from-clean${textnm}
-                Run make clean in the target src directory before building
-                the executable.
+                Run make clean in the target src directory before building the executable.
         ${textbf}--debug${textnm}
                 Compile with debugging flags.
         ${textbf}--optimize${textnm}
                 Compile with optimization flags.
+        ${textbf}--with-petsc-dir DIR${textnm}
+                Use DIR as PETSC_DIR when linking to PETSc.
+        ${textbf}--with-slepc-dir DIR${textnm}
+                Use DIR as SLEPC_DIR when linking to SLEPc.
+        ${textbf}--with-petsc-arch ARCH${textnm}
+                Use ARCH as PETSC_ARCH when linking to PETSc and SLEPc.
         ${textbf}-v${textnm}, ${textbf}--verbose${textnm}
                 Print informative messages during the build process.
+
+${textbf}NOTES${textnm}
+        This script will use values of PETSC_DIR, SLEPC_DIR, and PETSC_ARCH 
+        set by the enviroment in the absence of the corresponding --with* options.
+        If passed, the given value will override the environment value, if any.
+
 "
 }
 
@@ -96,6 +110,7 @@ TEMP=$(getopt \
     -l 'log:' \
     -l 'from-clean' \
     -l 'debug,optimize' \
+    -l 'with-petsc-dir:,with-slepc-dir:,with-petsc-arch:' \
     -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -148,6 +163,21 @@ while [ $# -gt 0 ]; do
         '--optimize')
             optimize=1
             shift
+            continue
+        ;;
+        '--with-petsc-dir')
+            petsc_dir="${2}"
+            shift 2
+            continue
+        ;;
+        '--with-slepc-dir')
+            slepc_dir="${2}"
+            shift 2
+            continue
+        ;;
+        '--with-petsc-arch')
+            petsc_arch="${2}"
+            shift 2
             continue
         ;;
         '-v'|'--verbose')
@@ -221,13 +251,20 @@ mark_stage() {
     fi
 }
 
+print_width() {
+    local c=${1}
+
+    printf "=%.0s" $(seq 1 $COLUMNS)
+    echo 
+}
+
 stage="setup"
 
 # Refuse to run without a target program.
 if [ -z "${prog}" ]; then
     show_help
     echo
-    echo "ERROR: Missing target program." &> ${buildlog}
+    echo "ERROR: Missing target program." &>> ${buildlog}
     exit 1
 fi
 
@@ -235,15 +272,41 @@ if [ ${from_clean} == 1 ]; then
     # Mark this stage.
     mark_stage "clean"
     pushd "${srcdir}" &> /dev/null \
-    && make clean &> ${cwd}/${buildlog} \
+    && make clean &>> ${buildlog} \
     && popd &> /dev/null
 fi
 
 # Mark this stage.
 mark_stage "build"
 
+# Set PETSc and SLEPc paths to user values, if given.
+if [ -n "${petsc_dir}" ]; then
+    export PETSC_DIR=${petsc_dir}
+fi
+if [ -n "${slepc_dir}" ]; then
+    export SLEPC_DIR=${slepc_dir}
+fi
+if [ -n "${petsc_arch}" ]; then
+    export PETSC_ARCH=${petsc_arch}
+fi
+
+# Raise an error for empty PETSc or SLEPc path variables.
+petsc_slepc_vars=(
+    PETSC_DIR
+    SLEPC_DIR
+    PETSC_ARCH
+)
+for var in ${petsc_slepc_vars[@]}; do
+    if [ -v ${var} ]; then
+        echo "Found ${var}=${!var}." &>> ${buildlog}
+    else
+        echo "ERROR: ${var} is undefined." &>> ${buildlog}
+        exit 1
+    fi
+done
+
 # Build the executable in the source directory.
-cd ${srcdir}
+pushd ${srcdir} &> /dev/null
 cppflags=
 cflags=
 progext=
@@ -265,7 +328,12 @@ else
         cppflags="${cppflags} -DLOG_ENTER_EXIT"
     fi
 fi
-make ${prog} CPPFLAGS="${cppflags}" CFLAGS="${cflags}" &> ${cwd}/${buildlog}
+echo &>> ${buildlog}
+print_width "=" &>> ${buildlog}
+echo "    Running make on ECSPERT" &>> ${buildlog}
+print_width "=" &>> ${buildlog}
+make ${prog} CPPFLAGS="${cppflags}" CFLAGS="${cflags}" &>> ${buildlog}
+popd &> /dev/null
 
 if [ -n "${progext}" ]; then
     pushd ${bindir} &> /dev/null \
