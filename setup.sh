@@ -50,6 +50,7 @@ download_petsc=0
 download_slepc=0
 petsc_dir=
 petsc_arch=
+create_dev=1
 
 # This is the CLI's main help text.
 show_help()
@@ -78,6 +79,12 @@ ${textbf}DESCRIPTION${textnm}
                 Use DIR as PETSC_DIR when building SLEPc. Ignored with --download-petsc.
         ${textbf}--with-petsc-arch ARCH${textnm}
                 Use ARCH as PETSC_ARCH when building SLEPc. Ignored with --download-petsc.
+        ${textbf}--no-dev${textnm}
+                Do not create the local dev/ subdirectory.
+                By default, this script will create a directory called ${script_dir}/dev.
+                Git will automatically ignore its contents, making it useful for storing
+                files that are specific to this copy of the repository (e.g., notes or 
+                temporary scripts). This script will not overwrite dev/ if it exists.
 "
 }
 
@@ -94,6 +101,7 @@ TEMP=$(getopt \
     -l 'help,verbose' \
     -l 'download-petsc,download-slepc' \
     -l 'with-petsc-dir:,with-petsc-arch:' \
+    -l 'no-dev' \
     -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -133,6 +141,11 @@ while [ $# -gt 0 ]; do
         '--with-petsc-arch')
             export PETSC_ARCH="${2}"
             shift 2
+            continue
+        ;;
+        '--no-dev')
+            create_dev=0
+            shift 1
             continue
         ;;
         '--')
@@ -227,33 +240,6 @@ trim() {
     printf '%s' "$var"
 }
 
-create_subdir() {
-    local response
-    local answer
-
-    subdir="${1}"
-    if [ -z "${subdir}" ]; then
-        return 0
-    fi
-
-    echo "Create ${subdir} subdirectory?"
-    printf "> "
-    read response
-    echo 
-    answer="$(trim "${response}")"
-    case ${answer} in
-        y|Y|yes|Yes)
-            mkdir -p dev
-        ;;
-        n|N|no|No)
-        ;;
-        *)
-            echo "Please answer \"y/Y/yes/Yes\" or \"n/N/no/No\""
-            create_subdir ${subdir}
-        ;;
-    esac
-}
-
 stage="installation"
 
 build_petsc() {
@@ -334,11 +320,9 @@ if [ -n "${download_slepc}" ]; then
 fi
 
 # Offer to create git-ignored dev directory.
-echo "Do you want to create a dev/ subdirectory? Git will automatically ignore the contents"
-echo "of this subdirectory. It can be useful for storing files that are specific to your"
-echo "copy of this repository (e.g., notes or temporary scripts)."
-create_subdir "dev"
-
+if [ $create_dev == 1 ]; then
+    mkdir -p dev
+fi
 
 stage=$success
 
