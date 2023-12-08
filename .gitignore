@@ -1,6 +1,7 @@
 # Project-specific paths
 dev
 bin
+deps
 build.log
 setup.log
 
