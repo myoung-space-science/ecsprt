@@ -2,6 +2,7 @@
 dev
 bin
 build.log
+setup.log
 
 # Visual Studio Code
 .vscode
