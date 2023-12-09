@@ -96,7 +96,7 @@ report_bad_arg()
 
 # Read command-line arguments.
 TEMP=$(getopt \
-    -n 'build.sh' \
+    -n 'setup.sh' \
     -o 'hv' \
     -l 'help,verbose' \
     -l 'download-petsc,download-slepc' \
