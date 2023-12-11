@@ -311,12 +311,12 @@ install_ext_dep() {
 }
 
 # Download and install PETSc, if requested.
-if [ -n "${download_petsc}" ]; then
+if [ $download_petsc == 1 ]; then
     install_ext_dep "petsc"
 fi
 
 # Download and install SLEPc, if requested.
-if [ -n "${download_slepc}" ]; then
+if [ $download_slepc == 1 ]; then
     install_ext_dep "slepc"
 fi
 
