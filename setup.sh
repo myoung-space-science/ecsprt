@@ -81,7 +81,8 @@ ${textbf}DESCRIPTION${textnm}
                 Use ARCH as PETSC_ARCH when building SLEPc. Ignored with --download-petsc.
         ${textbf}--no-dev${textnm}
                 Do not create the local dev/ subdirectory.
-                By default, this script will create a directory called ${script_dir}/dev.
+                By default, this script will create a directory called 
+                ${script_dir}/dev.
                 Git will automatically ignore its contents, making it useful for storing
                 files that are specific to this copy of the repository (e.g., notes or 
                 temporary scripts). This script will not overwrite dev/ if it exists.
