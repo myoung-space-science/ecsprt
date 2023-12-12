@@ -96,8 +96,6 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
   PRINT_WORLD("   Global # of ions before migration: %d\n", Np0);
 
   // Migrate ions among processes.
-  //
-  // NOTE: We may not want to call this with only one processor.
   PetscCall(DMSwarmMigrate(swarmDM, PETSC_TRUE));
 
   // Echo post-migration sizes.
