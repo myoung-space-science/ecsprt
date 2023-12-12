@@ -205,6 +205,7 @@ int main(int argc, char **args)
 
   /* Output final conditions. */
   PetscCall(OutputFluidHDF5("-final", &ctx));
+  PetscCall(OutputSwarmBinary("-final", &ctx));
 
   /* Free memory. */
   PetscCall(KSPDestroy(&ksp));
