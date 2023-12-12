@@ -32,6 +32,8 @@ debug=0
 rundir='.'
 outdir=
 options=
+optlist=
+reqopts=0
 args=
 
 # Define text formatting commands.
@@ -74,9 +76,16 @@ ${textbf}DESCRIPTION${textnm}
                 Name of the run-specific directory, within ${startul}RUNDIR${endul}, that will
                 contain the output of this run.
                 The default name is generated from the current date and time.
-        ${textbf}--options${textnm} ${startul}OPTIONS${endul}
-                Full name of the file that contains PETSc options.
+        ${textbf}--options${textnm} ${startul}FILE${endul}
+                Full name of the file that contains runtime options.
                 (default: none)
+        ${textbf}--options-list${textnm} ${startul}FILE${endul}
+                Full name of a file that contains names of options files to merge into a 
+                single file of runtime options.
+                (default: none)
+        ${textbf}--require-options${textnm}
+                If true, raise an error if an options file does not exist or is not a regular file.
+                (default: false)
         ${textbf}-v${textnm}, ${textbf}--verbose${textnm}
                 Print informative messages during the execution process.
 "
@@ -99,6 +108,8 @@ TEMP=$(getopt \
     -l 'rundir:' \
     -l 'outdir:' \
     -l 'options:' \
+    -l 'options-list:' \
+    -l 'require-options' \
     -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -141,8 +152,20 @@ while [ $# -gt 0 ]; do
             continue
         ;;
         '--options')
-            options=$(readlink -f "${2}")
+            options=$(realpath -m "${2}")
             shift 2
+            continue
+        ;;
+        '--options-list')
+            filepath=$(realpath -m "${2}")
+            parts=($(cat "${filepath}"))
+            optlist=($(for part in ${parts[@]}; do echo $(realpath -m "${part}"); done))
+            shift 2
+            continue
+        ;;
+        '--require-options')
+            reqopts=1
+            shift
             continue
         ;;
         '-v'|'--verbose')
@@ -207,7 +230,8 @@ fi
 mkdir -p ${dstdir}
 
 # Redefine the run log path.
-runlog=${dstdir}/${logname}
+runlog=$(realpath -m ${dstdir}/${logname})
+> ${runlog}
 
 # Refuse to run without a target program.
 if [ -z "${prog}" ]; then
@@ -230,12 +254,53 @@ popd &> /dev/null
 pushd ${dstdir} &> /dev/null
 
 # Mark this stage.
+mark_stage "options"
+
+# Create the runtime options database.
+tmpopts=.options.txt
+touch "${tmpopts}"
+if [ -n "${optlist}" ]; then
+    for path in ${optlist[@]}; do
+        if [ -f "${path}" ]; then
+            if [ $verbose == 1 ]; then
+                echo "[${cli}] Adding options from ${path}"
+            fi
+            cat "${path}" >> "${tmpopts}"
+            echo >> "${tmpopts}"
+        else
+            if [ $verbose == 1 ]; then
+                echo "[${cli}] Cannot add options from ${path}: not a regular file or file does not exist"
+            fi
+            if [ $reqopts == 1 ]; then
+                exit 1
+            fi
+        fi
+    done
+fi
+if [ -n "${options}" ]; then
+    if [ -f "${options}" ]; then
+        if [ $verbose == 1 ]; then
+            echo "[${cli}] Adding options from ${options}"
+        fi
+        (/bin/cat "${options}" >> "${tmpopts}") &>> run.log
+    else
+        if [ $verbose == 1 ]; then
+            echo "[${cli}] Cannot add options from ${options}: not a regular file or file does not exist"
+        fi
+        if [ $reqopts == 1 ]; then
+            exit 1
+        fi
+    fi
+fi
+if [ -s "${tmpopts}" ]; then
+    /bin/cp "${tmpopts}" petsc.ini &>> ${logname}
+fi
+rm ${tmpopts}
+
+# Mark this stage.
 mark_stage "run"
 
 # Run the program.
-if [ -n "${options}" ]; then
-    /bin/cp "${options}" petsc.ini &> run.log
-fi
 if [ ${debug} == 1 ]; then
     if [ ${np} -gt 1 ]; then
         echo -e "ERROR: Multi-processor debugging is currently disabled." &> ${runlog}
