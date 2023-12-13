@@ -15,13 +15,6 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   // Declare the name of the options log.
   PetscCall(PetscStrcpy(ctx->optionsLog, "options.log"));
 
-  // Set fundamental parameter values.
-  ctx->electrons.q = -Q;
-  ctx->electrons.m = ME;
-
-  // Explicitly set the neutral charge to zero.
-  ctx->neutrals.q = 0.0;
-
   // Set the LHS function based on LHS type.
   switch (cli.lhsType) {
   case LHS_IDENTITY:
@@ -57,6 +50,13 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unknown RHS type: \"%s\"\n", RHSTypes[cli.rhsType]);
   }
+
+  // Set fundamental parameter values.
+  ctx->electrons.q = -Q;
+  ctx->electrons.m = ME;
+
+  // Explicitly set the neutral charge to zero.
+  ctx->neutrals.q = 0.0;
 
   // Copy plasma and species parameter values.
   ctx->plasma.n0 = cli.n0;
