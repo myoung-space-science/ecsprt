@@ -768,6 +768,7 @@ PetscErrorCode UpdatePositions(PetscReal dt, Context *ctx)
     pos[ip*NDIM + 1] = y;
     pos[ip*NDIM + 2] = z;
   }
+
   // Restore the ion-velocities array.
   PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
