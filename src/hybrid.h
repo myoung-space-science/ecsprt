@@ -6,7 +6,7 @@
 #include "lhs.h"
 #include "rhs.h"
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 
 #ifdef LOG_ENTER_EXIT
   #define ECHO_FUNCTION_ENTER {PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n--> Entering %s(...) <--\n\n", __func__));}
