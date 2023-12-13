@@ -85,6 +85,7 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   ctx->electrons.vT = cli.veT;
   ctx->electrons.T = cli.Te;
   ctx->electrons.nu = cli.nue;
+  ctx->neutrals.m = cli.mn;
   ctx->neutrals.v0x = cli.vn0x;
   ctx->neutrals.v0y = cli.vn0y;
   ctx->neutrals.v0z = cli.vn0z;
