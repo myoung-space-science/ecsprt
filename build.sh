@@ -12,7 +12,7 @@ success="@!SUCCESS!@"
 # Define special unicode characters.
 u_warning="\U1F937"
 u_success="\u2728"
-u_error="\U1F62d"
+u_failure="\U1F62d"
 
 # Declare the name of the target program.
 prog=
@@ -223,7 +223,7 @@ cleanup() {
             exitmsg="Unknown error."
         fi
         echo 
-        echo -e ${u_error} $exitmsg
+        echo -e ${u_failure} $exitmsg
         exit 1
     else
         echo 
