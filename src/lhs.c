@@ -117,7 +117,6 @@ PetscErrorCode ComputeFullLHS(KSP ksp, Mat J, Mat A, void *opts)
 {
   Context        *ctx=(Context *)opts;
   DM              fluidDM=ctx->fluidDM;
-  DM              swarmDM=ctx->swarmDM;
   PetscReal       kappa=ctx->electrons.kappa;
   PetscReal       dx=ctx->grid.dx;
   PetscReal       dy=ctx->grid.dy;

@@ -685,7 +685,6 @@ PetscErrorCode ComputeGradient(Vec F, Vec f[NDIM], Context *ctx)
   PetscReal    dy=ctx->grid.dy;
   PetscReal    dz=ctx->grid.dz;
   DM           fluidDM=ctx->fluidDM;
-  DM           swarmDM=ctx->swarmDM;
   PetscInt     i0, j0, k0;
   PetscInt     ni, nj, nk;
   PetscInt     i, j, k;
@@ -773,7 +772,6 @@ PetscErrorCode ComputeLaplacian(Vec F, Vec *f, Context *ctx)
   PetscReal    dy=ctx->grid.dy;
   PetscReal    dz=ctx->grid.dz;
   DM           fluidDM=ctx->fluidDM;
-  DM           swarmDM=ctx->swarmDM;
   PetscInt     i0, j0, k0;
   PetscInt     ni, nj, nk;
   PetscInt     i, j, k;

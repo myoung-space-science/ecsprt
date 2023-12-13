@@ -23,7 +23,6 @@ const char *BoundaryTypes[] = {
 /* Read runtime arguments from the command line or a file. */
 PetscErrorCode ProcessOptions(CLI *cli)
 {
-  char      path[PETSC_MAX_PATH_LEN]="";
   PetscInt  intArg;
   PetscReal realArg;
   PetscEnum enumArg;

@@ -98,7 +98,6 @@ PetscErrorCode ComputeFullRHS(KSP ksp, Vec b, void *user)
   PetscReal         scale=ctx->potential.scale;
   PetscReal         kappa=ctx->electrons.kappa;
   DM                fluidDM=ctx->fluidDM;
-  DM                swarmDM=ctx->swarmDM;
   Vec               moments;
   FluidNode      ***fluid;
   DM                dm;

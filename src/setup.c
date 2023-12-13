@@ -7,7 +7,6 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
 {
 
   PetscReal tmp;
-  PetscInt  ib;
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;

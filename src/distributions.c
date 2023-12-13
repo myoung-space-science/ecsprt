@@ -44,9 +44,6 @@ PetscErrorCode UniformDistributionCellCentered(Context *ctx)
   PetscInt     ni, nj, nk;
   PetscInt     i, j, k;
   PetscInt     ip;
-  PetscReal    dx=ctx->grid.dx;
-  PetscReal    dy=ctx->grid.dy;
-  PetscReal    dz=ctx->grid.dz;
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;
@@ -153,13 +150,11 @@ PetscErrorCode SobolDistribution(Context *ctx)
 {
   DM          swarmDM=ctx->swarmDM;
   PetscInt    seed=-1, ndim=NDIM;
-  PetscReal   *coords, v;
+  PetscReal   *coords;
   PetscInt    np, ip;
   PetscReal   r[NDIM];
   PetscReal   L[NDIM]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
   PetscReal   d[NDIM]={ctx->grid.dx, ctx->grid.dy, ctx->grid.dz};
-  PetscReal   p0[NDIM]={ctx->grid.x0, ctx->grid.y0, ctx->grid.z0};
-  PetscReal   p1[NDIM]={ctx->grid.x1, ctx->grid.y1, ctx->grid.z1};
   PetscInt    dim;
 
   PetscFunctionBeginUser;

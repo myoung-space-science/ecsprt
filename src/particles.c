@@ -29,9 +29,6 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
   PetscReal  Lx=ctx->grid.Lx;
   PetscReal  Ly=ctx->grid.Ly;
   PetscReal  Lz=ctx->grid.Lz;
-  PetscReal  dx=ctx->grid.dx;
-  PetscReal  dy=ctx->grid.dy;
-  PetscReal  dz=ctx->grid.dz;
   PetscReal  x0=ctx->grid.x0;
   PetscReal  y0=ctx->grid.y0;
   PetscReal  z0=ctx->grid.z0;
@@ -121,10 +118,7 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
 PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
 {
   DM         swarmDM=ctx->swarmDM;
-  PetscInt   np, Np, ip;
-  PetscInt   dim;
-  PetscReal *coords;
-  PetscReal *pos;
+  PetscInt   np, Np;
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;
@@ -469,9 +463,7 @@ PetscErrorCode BorisMoverBz(PetscReal dt, Context *ctx)
   PetscReal   *pos, *vel;
   PetscReal    x, y, z;
   PetscReal    E[NDIM]={0.0, 0.0, 0.0};
-  PetscReal    vminus[NDIM], vprime[NDIM], vplus[NDIM];
   PetscReal    vxm, vym, vz, vxt, vxp, vyp;
-  PetscReal    vminus_cross_t[NDIM], vprime_cross_s[NDIM];
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;
@@ -730,18 +722,6 @@ PetscErrorCode UpdatePositions(PetscReal dt, Context *ctx)
   PetscReal  *pos, *vel;
   PetscInt    ip, np;
   PetscReal   x, y, z;
-  PetscReal   Lx=ctx->grid.Lx;
-  PetscReal   Ly=ctx->grid.Ly;
-  PetscReal   Lz=ctx->grid.Lz;
-  PetscReal   dx=ctx->grid.dx;
-  PetscReal   dy=ctx->grid.dy;
-  PetscReal   dz=ctx->grid.dz;
-  PetscReal   x0=ctx->grid.x0;
-  PetscReal   y0=ctx->grid.y0;
-  PetscReal   z0=ctx->grid.z0;
-  PetscReal   x1=ctx->grid.x1;
-  PetscReal   y1=ctx->grid.y1;
-  PetscReal   z1=ctx->grid.z1;
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;

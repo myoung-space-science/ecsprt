@@ -2,7 +2,7 @@
 #include <petsc.h>
 #include "hybrid.h"
 
-void initialize(int argc, char **args, const char *help, Context *ctx)
+PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
 {
 
   /* Initialize PETSc and MPI. */
@@ -14,5 +14,6 @@ void initialize(int argc, char **args, const char *help, Context *ctx)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &ctx->mpi.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx->mpi.size));
 
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
