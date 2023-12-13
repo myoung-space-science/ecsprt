@@ -298,7 +298,7 @@ petsc_slepc_vars=(
 )
 for var in ${petsc_slepc_vars[@]}; do
     if [ -v ${var} ]; then
-        echo "Found ${var}=${!var}." &>> ${buildlog}
+        echo "Using ${var}=${!var}" &>> ${buildlog}
     else
         echo "ERROR: ${var} is undefined." &>> ${buildlog}
         exit 1
