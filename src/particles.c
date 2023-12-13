@@ -545,7 +545,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
   PetscInt   Nc;                                      // the number of collisions to attempt
   PetscInt   Ns=0;                                    // the number of successful collision attempts
   PetscInt   Nf=0;                                    // the number of failed collision attempts
-  PetscInt   Np=ctx->plasma.Np;                       // the total number of ions
+  PetscInt   np;                                      // the number of ions on this rank
   PetscInt   ip;                                      // the current ion
   PetscReal  fc=ctx->ions.nu * dt;                    // the product of the collision rate and the time step
   PetscReal  viT=ctx->ions.vT;                        // the ion-species thermal speed
@@ -582,24 +582,26 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
   // Compute the maximum relative velocity.
   vrm = 4.0*viT + PetscSqrtReal(PetscSqr(vi0x-vn0x) + PetscSqr(vi0y-vn0y) + PetscSqr(vi0z-vn0z));
 
+  // Get the number of ions on this rank.
+  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+
   // Compute the number of collisions to attempt.
-  Nc = (PetscInt)(((PetscReal)Np * fc * vrm) / ((vnT + vn0) * PetscSqrtReal(mn / mi)));
-  if (Nc > Np) {
-    Nc = Np;
+  Nc = (PetscInt)(((PetscReal)np * fc * vrm) / ((vnT + vn0) * PetscSqrtReal(mn / mi)));
+  if (Nc > np) {
+    Nc = np;
   } else if (Nc < 0) {
     Nc = 0;
   }
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] Colliding %d particles out of %d ...\n", ctx->mpi.rank, Nc, np));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   // Get an array representation of the ion velocities.
   PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
-  // Report number of collisions.
-  PRINT_WORLD("Colliding %d particles out of %d ...\n", Nc, Np);
-
   // Attempt collisions until we reach the required number.
   while (Ns < Nc) {
     // Choose a random ion from the full distribution.
-    ip = (PetscInt)(Np*ran3(&seed));
+    ip = (PetscInt)(np*ran3(&seed));
 
     // Store the ion velocity components.
     vix = vel[ip*NDIM + 0];
@@ -669,11 +671,12 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
       vfr = PetscSqrtReal(PetscSqr(vfx) + PetscSqr(vfy) + PetscSqr(vfz));
       ratio = vfr / viT;
       if (ratio > 10) {
-        PRINT_WORLD("Warning: Refusing to accept collision that results in final speed = %4.1f times thermal speed\n", ratio);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Warning: Refusing to accept collision that results in final speed = %4.1f times thermal speed\n", ctx->mpi.rank, ratio));
         Nf++;
         // Terminate the simulation if at least 10 collisions have failed.
         if (Nf >= 10) {
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SIG, "Failed to collide %d ion-neutral pairs. Aborting.", Nf);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Failed to collide %d ion-neutral pairs. Aborting.\n\n", ctx->mpi.rank, Nf));
+          MPI_Abort(PETSC_COMM_WORLD, 1);
         }
       } else {
         vel[ip*NDIM + 0] = vfx;
