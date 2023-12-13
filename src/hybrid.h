@@ -6,6 +6,13 @@
 #include "lhs.h"
 #include "rhs.h"
 
+/* Version number
+
+This will appear when a user passes the --version flag.
+
+Developer Note: When you increment the version number to X.Y.Z, please create a
+git tag called vX.Y.Z with the message "version X.Y.Z".
+*/
 #define VERSION "0.1.1"
 
 #ifdef LOG_ENTER_EXIT
