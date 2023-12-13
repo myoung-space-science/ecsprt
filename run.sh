@@ -262,38 +262,34 @@ touch "${tmpopts}"
 if [ -n "${optlist}" ]; then
     for path in ${optlist[@]}; do
         if [ -f "${path}" ]; then
-            if [ $verbose == 1 ]; then
-                echo "[${cli}] Adding options from ${path}"
-            fi
+            echo "Adding options from ${path}" &>> ${runlog}
             cat "${path}" >> "${tmpopts}"
             echo >> "${tmpopts}"
         else
-            if [ $verbose == 1 ]; then
-                echo "[${cli}] Cannot add options from ${path}: not a regular file or file does not exist"
-            fi
+            message="Cannot add options from ${path}: file does not exist or is not a regular file"
             if [ $reqopts == 1 ]; then
+                echo "ERROR: ${message}" &>> ${runlog}
                 exit 1
             fi
+            echo "WARNING: ${message}" &>> ${runlog}
         fi
     done
 fi
 if [ -n "${options}" ]; then
     if [ -f "${options}" ]; then
-        if [ $verbose == 1 ]; then
-            echo "[${cli}] Adding options from ${options}"
-        fi
-        (/bin/cat "${options}" >> "${tmpopts}") &>> run.log
+        echo "Adding options from ${options}" &>> ${runlog}
+        (/bin/cat "${options}" >> "${tmpopts}") &>> ${runlog}
     else
-        if [ $verbose == 1 ]; then
-            echo "[${cli}] Cannot add options from ${options}: not a regular file or file does not exist"
-        fi
+        message="Cannot add options from ${options}: file does not exist or is not a regular file"
         if [ $reqopts == 1 ]; then
+            echo "ERROR: ${message}" &>> ${runlog}
             exit 1
         fi
+        echo "WARNING: ${message}" &>> ${runlog}
     fi
 fi
 if [ -s "${tmpopts}" ]; then
-    /bin/cp "${tmpopts}" petsc.ini &>> ${logname}
+    /bin/cp "${tmpopts}" petsc.ini &>> ${runlog}
 fi
 rm ${tmpopts}
 
@@ -303,13 +299,13 @@ mark_stage "run"
 # Run the program.
 if [ ${debug} == 1 ]; then
     if [ ${np} -gt 1 ]; then
-        echo -e "ERROR: Multi-processor debugging is currently disabled." &> ${runlog}
+        echo -e "ERROR: Multi-processor debugging is currently disabled." &>> ${runlog}
         exit 1
     else
         gdb --args ${bindir}/${prog} $extra
     fi
 else
-    mpiexec -n ${np} ${bindir}/${prog} $extra &> ${runlog}
+    mpiexec -n ${np} ${bindir}/${prog} $extra &>> ${runlog}
 fi
 
 # Signal success to the clean-up function.
