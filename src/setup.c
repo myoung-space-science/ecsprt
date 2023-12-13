@@ -12,9 +12,8 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;
 
-  // Declare the name of the output options file(s).
-  PetscCall(PetscStrcpy(ctx->optionsTxt, "options.txt"));
-  PetscCall(PetscStrcpy(ctx->optionsMd, "options.md"));
+  // Declare the name of the options log.
+  PetscCall(PetscStrcpy(ctx->optionsLog, "options.log"));
 
   // Set fundamental parameter values.
   ctx->electrons.q = -Q;

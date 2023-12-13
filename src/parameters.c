@@ -383,7 +383,11 @@ PetscErrorCode ProcessOptions(CLI *cli)
 }
 
 
-/* Print the value of each runtime parameter to a text file. */
+/* Print the value of each runtime parameter to a text file.
+
+The format of output headers and footers is meant to mimic those of the PETSc
+options output, in order to simplify parsing by analysis routines.
+*/
 PetscErrorCode EchoOptions(Context ctx)
 {
   PetscViewer viewer;
@@ -392,14 +396,13 @@ PetscErrorCode EchoOptions(Context ctx)
   ECHO_FUNCTION_ENTER;
 
   // Open the viewer in "write" mode. This will clobber existing contents.
-  PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, ctx.optionsTxt, &viewer));
+  PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, ctx.optionsLog, &viewer));
 
   // View the PETSc options database.
   PetscCall(PetscOptionsView(NULL, viewer));
 
   // View common parameter values.
-  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\nCommon Parameter Values\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,     "-----------------------\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Common Parameter Values\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Nx = %d\n", ctx.grid.Nx));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Ny = %d\n", ctx.grid.Ny));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Nz = %d\n", ctx.grid.Nz));
@@ -458,6 +461,7 @@ PetscErrorCode EchoOptions(Context ctx)
   PetscCall(PetscViewerASCIIPrintf(viewer,     "vn0x = %f\n", ctx.neutrals.v0x));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "vn0y = %f\n", ctx.neutrals.v0y));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "vn0z = %f\n", ctx.neutrals.v0z));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "#End of Common Parameter Values\n"));
 
   // Free memory.
   PetscCall(PetscViewerDestroy(&viewer));

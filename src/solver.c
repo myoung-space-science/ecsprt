@@ -83,15 +83,16 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscCall(EchoOptions(ctx));
 
   // Open the viewer in "append" mode.
-  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsTxt, &viewer));
+  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsLog, &viewer));
 
   // View simulation-specific parameter values.
-  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\nApplication-Specific Parameter Values\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Application-Specific Parameter Values\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "-------------------------------------\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "x flux scale = %f\n", app.fluxScale[0]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "y flux scale = %f\n", app.fluxScale[1]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "z flux scale = %f\n", app.fluxScale[2]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "density input = %s\n", app.inpath));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "#End of Application-Specific Parameter Values\n"));
 
   // Free memory.
   PetscCall(PetscViewerDestroy(&viewer));

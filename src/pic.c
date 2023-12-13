@@ -77,14 +77,14 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscCall(EchoOptions(ctx));
 
   // Open the viewer in "append" mode.
-  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsTxt, &viewer));
+  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsLog, &viewer));
 
   // View simulation-specific parameter values.
-  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\nApplication-Specific Parameter Values\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,     "-------------------------------------\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Application-Specific Parameter Values\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Nt = %d\n", app.Nt));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "dt = %f [s]\n", app.dt));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "density type = %s\n", DensityTypes[app.densityType]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "#End of Application-Specific Parameter Values\n"));
 
   // Free memory.
   PetscCall(PetscViewerDestroy(&viewer));

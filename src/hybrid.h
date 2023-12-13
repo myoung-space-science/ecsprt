@@ -137,8 +137,7 @@ typedef struct {
   PetscReal gammaT;                         // electron thermal coefficient
   Plasma    plasma;                         // bulk plasma properties
   Linear    potential;                      // the electrostatic potential
-  char      optionsTxt[PETSC_MAX_PATH_LEN]; // ASCII output file
-  char      optionsMd[PETSC_MAX_PATH_LEN];  // Markdown output file
+  char      optionsLog[PETSC_MAX_PATH_LEN]; // path to output log
 } Context;
 
 /* Command-line options for all applications. */
