@@ -386,9 +386,13 @@ PetscErrorCode CreatePotentialDM(Context *ctx)
 
 /* Create the data manager for ion distributions.
 
-The logical grid for ion distributions unconditionally uses ghosted boundaries
-(i.e., regardless of the user-requested boundary types). Downstream functions
-are responsible for applying the appropriate boundary conditions.
+The logical grid for the ion distributions will have the same shape, stencil
+width, degrees of freedom, and boundary conditions as the logical grid for fluid
+quantities. Unlike the latter, it will unconditionally use a box stencil type in
+order to accommodate nearest-neighbor moment collection.
+
+This function should follow `CreateGridDM`, which performs various set-up and
+sychronization tasks on grid parameters.
 */
 PetscErrorCode CreateIonsDM(Context *ctx)
 {
@@ -399,8 +403,8 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   DMBoundaryType  yBC=ctx->grid.yBC;
   DMBoundaryType  zBC=ctx->grid.zBC;
   DMDAStencilType stencilType=DMDA_STENCIL_BOX;
-  PetscInt        dof=4;
-  PetscInt        width=1;
+  PetscInt        dof=4; // TODO: Formally tie this to the fluid grid DM.
+  PetscInt        width=1; // TODO: Formally tie this to the fluid grid DM.
   PetscInt        dim;
   DM              ionsDM, cellDM;
   PetscInt        bufsize=0;
