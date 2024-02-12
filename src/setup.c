@@ -411,9 +411,9 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   PetscReal       x0=ctx->grid.x0;
   PetscReal       y0=ctx->grid.y0;
   PetscReal       z0=ctx->grid.z0;
-  PetscReal       x1=ctx->grid.x1+(2*ctx->grid.dx);
-  PetscReal       y1=ctx->grid.y1+(2*ctx->grid.dy);
-  PetscReal       z1=ctx->grid.z1+(2*ctx->grid.dz);
+  PetscReal       x1=ctx->grid.x1;
+  PetscReal       y1=ctx->grid.y1;
+  PetscReal       z1=ctx->grid.z1;
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;
