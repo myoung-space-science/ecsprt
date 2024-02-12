@@ -49,6 +49,7 @@ verbose=0
 download_petsc=0
 download_slepc=0
 petsc_dir=
+slepc_dir=
 petsc_arch=
 create_dev=1
 
@@ -76,9 +77,14 @@ ${textbf}DESCRIPTION${textnm}
                 Download and configure SLEPc.
                 This will install SLEPc in ${ecspert_deps}, under arch-ecspert.
         ${textbf}--with-petsc-dir DIR${textnm}
-                Use DIR as PETSC_DIR when building SLEPc. Ignored with --download-petsc.
+                Use DIR as PETSC_DIR when building PETSc and SLEPc.
+                Ignored with --download-petsc.
+        ${textbf}--with-slepc-dir DIR${textnm}
+                Use DIR as SLEPC_DIR when building SLEPc.
+                Ignored with --download-petsc.
         ${textbf}--with-petsc-arch ARCH${textnm}
-                Use ARCH as PETSC_ARCH when building SLEPc. Ignored with --download-petsc.
+                Use ARCH as PETSC_ARCH when building PETSc and SLEPc.
+                Ignored with --download-petsc.
         ${textbf}--no-dev${textnm}
                 Do not create the local dev/ subdirectory.
                 By default, this script will create a directory called 
@@ -101,7 +107,7 @@ TEMP=$(getopt \
     -o 'hv' \
     -l 'help,verbose' \
     -l 'download-petsc,download-slepc' \
-    -l 'with-petsc-dir:,with-petsc-arch:' \
+    -l 'with-petsc-dir:,with-slepc-dir:,with-petsc-arch:' \
     -l 'no-dev' \
     -- "$@")
 
@@ -136,6 +142,11 @@ while [ $# -gt 0 ]; do
         ;;
         '--with-petsc-dir')
             export PETSC_DIR="${2}"
+            shift 2
+            continue
+        ;;
+        '--with-slepc-dir')
+            export SLEPC_DIR="${2}"
             shift 2
             continue
         ;;
