@@ -258,11 +258,22 @@ print_width() {
     echo 
 }
 
+# Set PETSc and SLEPc paths to user values, if given.
+if [ -n "${petsc_dir}" ]; then
+    export PETSC_DIR=${petsc_dir}
+fi
+if [ -n "${slepc_dir}" ]; then
+    export SLEPC_DIR=${slepc_dir}
+fi
+if [ -n "${petsc_arch}" ]; then
+    export PETSC_ARCH=${petsc_arch}
+fi
+
 stage="setup"
 
 # Refuse to run without a target program.
 if [ -z "${prog}" ]; then
-    show_help
+    show_help &>> ${buildlog}
     echo
     echo "ERROR: Missing target program." &>> ${buildlog}
     exit 1
@@ -278,17 +289,6 @@ fi
 
 # Mark this stage.
 mark_stage "build"
-
-# Set PETSc and SLEPc paths to user values, if given.
-if [ -n "${petsc_dir}" ]; then
-    export PETSC_DIR=${petsc_dir}
-fi
-if [ -n "${slepc_dir}" ]; then
-    export SLEPC_DIR=${slepc_dir}
-fi
-if [ -n "${petsc_arch}" ]; then
-    export PETSC_ARCH=${petsc_arch}
-fi
 
 # Raise an error for empty PETSc or SLEPc path variables.
 petsc_slepc_vars=(
