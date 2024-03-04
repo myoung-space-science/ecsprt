@@ -149,11 +149,12 @@ PetscErrorCode UniformDistribution(Context *ctx)
 PetscErrorCode SobolDistribution(Context *ctx)
 {
   DM          swarmDM=ctx->swarmDM;
+  DM          cellDM;
   PetscInt    seed=-1, ndim=NDIM;
   PetscReal   *coords;
   PetscInt    np, ip;
   PetscReal   r[NDIM];
-  PetscReal   L[NDIM]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
+  PetscReal   lmin[NDIM], lmax[NDIM];
   PetscInt    dim;
 
   PetscFunctionBeginUser;
@@ -168,10 +169,16 @@ PetscErrorCode SobolDistribution(Context *ctx)
   // Get the local number of particles.
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
 
+  // Get the ion-swarm cell DM.
+  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
+
+  // Get the coordinate bounds of this processor.
+  PetscCall(DMGetLocalBoundingBox(cellDM, lmin, lmax));
+
   for (ip=0; ip<np; ip++) {
     PetscCall(Sobseq(&ndim, r-1));
     for (dim=0; dim<NDIM; dim++) {
-      coords[ip*NDIM + dim] = r[dim]*L[dim];
+      coords[ip*NDIM + dim] = lmin[dim] + r[dim]*(lmax[dim] - lmin[dim]);
     }
   }
 
