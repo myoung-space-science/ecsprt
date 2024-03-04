@@ -104,7 +104,10 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
 
   if ((ctx->ions.xBC == BC_PERIODIC) && (ctx->ions.yBC == BC_PERIODIC) && (ctx->ions.zBC == BC_PERIODIC)) {
     if (Np1 != Np0) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Total number of ions has changed. This should not happen with fully periodic boundary conditions.\n\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ERROR: Total number of ions has changed (%+d).\n", Np1-Np0));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "       This should not happen with fully periodic boundary conditions.\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
       MPI_Abort(PETSC_COMM_WORLD, 1);
     }
   }
