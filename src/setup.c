@@ -448,7 +448,8 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   // View information about the ions DM.
   {
     /* NOTE: This is work-around for the fact that there appears to be no way to
-    request -*_dm_view for DMSwarm objects from the command line. */
+    request -*_dm_view for DMSwarm objects from the command line. See
+    ${PETSC_DIR}/src/dm/impls/swarm/swarm.c::DMInitialize_Swarm */
     PetscBool requested, found;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-ions_dm_view", &requested, &found));
     if (found && requested) {
