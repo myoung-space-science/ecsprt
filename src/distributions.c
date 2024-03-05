@@ -148,14 +148,16 @@ PetscErrorCode UniformDistribution(Context *ctx)
 
 PetscErrorCode SobolDistribution(Context *ctx)
 {
-  DM          swarmDM=ctx->swarmDM;
-  DM          cellDM;
-  PetscInt    seed=-1, ndim=NDIM;
-  PetscReal   *coords;
-  PetscInt    np, ip;
-  PetscReal   r[NDIM];
-  PetscReal   lmin[NDIM], lmax[NDIM];
-  PetscInt    dim;
+  DM            swarmDM=ctx->swarmDM;
+  DM            cellDM;
+  PetscInt      seed=-1, ndim=NDIM;
+  PetscReal     *coords;
+  PetscInt      np, ip;
+  PetscReal     r[NDIM];
+  PetscReal     lmin[NDIM], lmax[NDIM];
+  PetscReal     d[NDIM]={ctx->grid.dx, ctx->grid.dy, ctx->grid.dz};
+  PetscInt      dim;
+  DMDALocalInfo local;
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;
@@ -172,8 +174,14 @@ PetscErrorCode SobolDistribution(Context *ctx)
   // Get the ion-swarm cell DM.
   PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
 
-  // Get the coordinate bounds of this processor.
-  PetscCall(DMGetLocalBoundingBox(cellDM, lmin, lmax));
+  // Get the index information for this processor.
+  PetscCall(DMDAGetLocalInfo(cellDM, &local));
+  lmin[0] = d[0]*local.xs;
+  lmin[1] = d[1]*local.ys;
+  lmin[2] = d[2]*local.zs;
+  lmax[0] = d[0]*(local.xs + local.xm);
+  lmax[1] = d[1]*(local.ys + local.ym);
+  lmax[2] = d[2]*(local.zs + local.zm);
 
   for (ip=0; ip<np; ip++) {
     PetscCall(Sobseq(&ndim, r-1));
