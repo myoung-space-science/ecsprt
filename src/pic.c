@@ -174,13 +174,13 @@ int main(int argc, char **args)
   PetscCall(PetscStrcat(stepfmt, itfmt));
   PetscCall(PetscStrcat(stepfmt, "\n"));
 
-  PRINT_WORLD("\n*** Main time-step loop ***\n\n");
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n*** Main time-step loop ***\n\n"));
   /* Begin main time-step loop. */
   for (it=0; it<app.Nt; it++) {
 
     /* Create a string to display time step with the appropriate width. */
     sprintf(stepstr, stepfmt, it);
-    PRINT_WORLD("%s", stepstr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s", stepstr));
 
     /* Update velocities */
     PetscCall(UpdateVelocities(app.dt, &ctx));
