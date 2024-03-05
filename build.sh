@@ -143,6 +143,7 @@ while [ $# -gt 0 ]; do
                     log_none=0
                 ;;
                 'none')
+                    log_none=1
                     log_info=0
                     log_enter_exit=0
                 ;;
