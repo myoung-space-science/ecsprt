@@ -591,8 +591,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
   } else if (Nc < 0) {
     Nc = 0;
   }
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] Colliding %d particles out of %d ...\n", ctx->mpi.rank, Nc, np));
-  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
+  PRINT_RANKS("[%d] Colliding %d particles out of %d ...\n", ctx->mpi.rank, Nc, np);
 
   // Get an array representation of the ion velocities.
   PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
@@ -670,11 +669,11 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
       vfr = PetscSqrtReal(PetscSqr(vfx) + PetscSqr(vfy) + PetscSqr(vfz));
       ratio = vfr / viT;
       if (ratio > 10) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Warning: Refusing to accept collision that results in final speed = %4.1f times thermal speed\n", ctx->mpi.rank, ratio));
+        PRINT_SELF("[%d] Warning: Refusing to accept collision that results in final speed = %4.1f times thermal speed\n", ctx->mpi.rank, ratio);
         Nf++;
         // Terminate the simulation if at least 10 collisions have failed.
         if (Nf >= 10) {
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Failed to collide %d ion-neutral pairs. Aborting.\n\n", ctx->mpi.rank, Nf));
+          PRINT_SELF("[%d] Failed to collide %d ion-neutral pairs. Aborting.\n\n", ctx->mpi.rank, Nf);
           MPI_Abort(PETSC_COMM_WORLD, 1);
         }
       } else {
