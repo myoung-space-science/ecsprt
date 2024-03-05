@@ -323,8 +323,6 @@ PetscErrorCode CreateGridDM(Context *ctx)
   PetscCall(DMDASetFieldName(dm, 1, "x flux"));
   PetscCall(DMDASetFieldName(dm, 2, "y flux"));
   PetscCall(DMDASetFieldName(dm, 3, "z flux"));
-  // View information about the DM.
-  PetscCall(DMView(dm, PETSC_VIEWER_STDOUT_WORLD));
   // Create a persistent vector for outputing fluid quantities.
   PetscCall(DMCreateGlobalVector(dm, &ctx->moments));
   PetscCall(VecZeroEntries(ctx->moments));
@@ -375,8 +373,6 @@ PetscErrorCode CreatePotentialDM(Context *ctx)
   PetscCall(DMDASetFieldName(ctx->potential.dm, 0, "potential"));
   // Associate the user context with this DM.
   PetscCall(DMSetApplicationContext(ctx->potential.dm, &ctx));
-  // Echo information about the DM.
-  PetscCall(DMView(ctx->potential.dm, PETSC_VIEWER_STDOUT_WORLD));
 
   ECHO_FUNCTION_EXIT;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -431,6 +427,7 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   PetscCall(DMCreate(PETSC_COMM_WORLD, &ionsDM));
   // Perform basic setup.
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ionsDM, "ions_"));
+  PetscCall(DMSetFromOptions(ionsDM));
   PetscCall(DMSetType(ionsDM, DMSWARM));
   PetscCall(PetscObjectSetName((PetscObject)ionsDM, "Ions"));
   // Synchronize the ions DM with the vlasov DM.
@@ -448,10 +445,16 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   np = (PetscInt)(ctx->plasma.Np / ctx->mpi.size);
   bufsize = (PetscInt)(0.25 * np);
   PetscCall(DMSwarmSetLocalSizes(ionsDM, np, bufsize));
-  // View information about the cell DM.
-  PetscCall(DMView(cellDM, PETSC_VIEWER_STDOUT_WORLD));
   // View information about the ions DM.
-  PetscCall(DMView(ionsDM, PETSC_VIEWER_STDOUT_WORLD));
+  {
+    /* NOTE: This is work-around for the fact that there appears to be no way to
+    request -*_dm_view for DMSwarm objects from the command line. */
+    PetscBool requested, found;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-ions_dm_view", &requested, &found));
+    if (found && requested) {
+      PetscCall(DMView(ionsDM, PETSC_VIEWER_STDOUT_WORLD));
+    }
+  }
   // Assign the ions DM to the application context.
   ctx->swarmDM = ionsDM;
 

@@ -164,10 +164,6 @@ PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
   // Apply BC and migrate particles.
   PetscCall(ApplyBCAndMigrate(ctx));
 
-  // Display information about the ions DM.
-  NEWLINE;
-  PetscCall(DMView(swarmDM, PETSC_VIEWER_STDOUT_WORLD));
-
   // Update the parameter context.
   PetscCall(DMSwarmGetSize(swarmDM, &ctx->plasma.Np));
 
