@@ -148,25 +148,49 @@ PetscErrorCode UniformDistribution(Context *ctx)
 
 PetscErrorCode SobolDistribution(Context *ctx)
 {
-  DM            swarmDM=ctx->swarmDM;
-  DM            cellDM;
-  PetscInt      seed=-1, ndim=NDIM;
+  DM             swarmDM=ctx->swarmDM;
+  DM             cellDM;
+  PetscInt       seed=-1, ndim=NDIM;
   PetscReal     *coords;
-  PetscInt      np, ip;
-  PetscReal     r[NDIM];
-  PetscReal     lmin[NDIM], lmax[NDIM];
-  PetscReal     d[NDIM]={ctx->grid.dx, ctx->grid.dy, ctx->grid.dz};
-  PetscInt      dim;
-  DMDALocalInfo local;
+  PetscInt       Np, np, ip, ic;
+  PetscReal      r[NDIM];
+  PetscReal      lmin[NDIM], lmax[NDIM];
+  PetscReal      d[NDIM]={ctx->grid.dx, ctx->grid.dy, ctx->grid.dz};
+  PetscReal      L[NDIM]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
+  PetscInt       dim;
+  DMDALocalInfo  local;
+  PetscReal     *pos, x, y, z;
+  PetscReal      xmin, xmax, ymin, ymax, zmin, zmax;
 
   PetscFunctionBeginUser;
   ECHO_FUNCTION_ENTER;
 
+  // Get the total number of particles in the swarm.
+  PetscCall(DMSwarmGetSize(swarmDM, &Np));
+
+  // Allocate a 1-D array for the global positions.
+  PetscCall(PetscMalloc1(NDIM*Np, &pos));
+
+  if (ctx->mpi.rank == 0) {
+
+    // Initialize the psuedo-random number generator.
+    PetscCall(Sobseq(&seed, r-1));
+
+    // Generate a Sobol' sequence of global positions on rank 0.
+    for (ip=0; ip<Np; ip++) {
+      PetscCall(Sobseq(&ndim, r-1));
+      for (dim=0; dim<NDIM; dim++) {
+        pos[ip*NDIM + dim] = r[dim]*L[dim];
+      }
+    }
+
+  }
+
+  // Broadcast the global positions array.
+  PetscCallMPI(MPI_Bcast(pos, NDIM*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
+
   // Get a representation of the particle coordinates.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-
-  // Initialize the psuedo-random number generator.
-  PetscCall(Sobseq(&seed, r-1));
 
   // Get the local number of particles.
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
@@ -183,15 +207,37 @@ PetscErrorCode SobolDistribution(Context *ctx)
   lmax[1] = d[1]*(local.ys + local.ym);
   lmax[2] = d[2]*(local.zs + local.zm);
 
-  for (ip=0; ip<np; ip++) {
-    PetscCall(Sobseq(&ndim, r-1));
-    for (dim=0; dim<NDIM; dim++) {
-      coords[ip*NDIM + dim] = lmin[dim] + r[dim]*(lmax[dim] - lmin[dim]);
+  // Loop over global positions and assign local positions for this rank.
+  /*
+    NOTE: I think we can get away with a single loop here (as opposed to one
+    loop to count the number of local particles, followed by allocating the
+    local array, then a second loop to assign local positions) because DMSwarm
+    has already allocated space for the estimated number of local particles.
+  */
+  xmin = lmin[0];
+  xmax = lmax[0];
+  ymin = lmin[1];
+  ymax = lmax[1];
+  zmin = lmin[2];
+  zmax = lmax[2];
+  ic = 0;
+  for (ip=0; ip<Np; ip++) {
+    x = pos[ip*NDIM + 0];
+    y = pos[ip*NDIM + 1];
+    z = pos[ip*NDIM + 2];
+    if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax) && (zmin <= z) && (z < zmax)) {
+      coords[ic*NDIM + 0] = x;
+      coords[ic*NDIM + 1] = y;
+      coords[ic*NDIM + 2] = z;
+      ic++;
     }
   }
 
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+
+  // Free the positions-array memory.
+  PetscCall(PetscFree(pos));
 
   ECHO_FUNCTION_EXIT;
   PetscFunctionReturn(PETSC_SUCCESS);
