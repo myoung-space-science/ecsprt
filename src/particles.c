@@ -673,7 +673,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
         Nf++;
         // Terminate the simulation if at least 10 collisions have failed.
         if (Nf >= 10) {
-          PRINT_SELF("[%d] Failed to collide %d ion-neutral pairs. Aborting.\n\n", ctx->mpi.rank, Nf);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Failed to collide %d ion-neutral pairs. Aborting.\n\n", ctx->mpi.rank, Nf));
           MPI_Abort(PETSC_COMM_WORLD, 1);
         }
       } else {
