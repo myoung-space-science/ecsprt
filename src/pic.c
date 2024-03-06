@@ -197,7 +197,9 @@ int main(int argc, char **args)
     /* Output current time step. */
     if ((app.Dt > 0) && (it % app.Dt == 0)) {
       sprintf(pathstr, pathfmt, it);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing fluid quantities to HDF5\n"));
       PetscCall(OutputFluidHDF5(pathstr, &ctx));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing particle quantities to binary\n"));
       PetscCall(OutputSwarmBinary(pathstr, &ctx));
     }
 
