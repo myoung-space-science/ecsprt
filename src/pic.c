@@ -242,17 +242,8 @@ int main(int argc, char **args)
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DestroyContext(&ctx));
 
-  /* Log end time. */
   time(&endTime);
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n----------------------------------------\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Start time: %s", asctime(localtime(&startTime))));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "End time:   %s", asctime(localtime(&endTime))));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Elapsed time: %f s\n", (float)(endTime-startTime)));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "----------------------------------------\n"));
-
-  /* Finalize PETSc and MPI. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n***************** END ******************\n"));
-  PetscCall(PetscFinalize());
+  finalize(startTime, endTime);
 
   return 0;
 }
