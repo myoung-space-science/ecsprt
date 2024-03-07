@@ -10,6 +10,7 @@ When incrementing the version number to X.Y.Z, please do the following
 ## NEXT
 
 - Fix `--version` output bug
+- Add text to `--version` output
 
 ## v0.3.0
 
