@@ -78,6 +78,7 @@ ${textbf}DESCRIPTION${textnm}
                 The default name is generated from the current date and time.
         ${textbf}--options${textnm} ${startul}FILE${endul}
                 Full name of the file that contains runtime options.
+                You may pass this argument more than once to chain options files.
                 (default: none)
         ${textbf}--options-list${textnm} ${startul}FILE${endul}
                 Full name of a file that contains names of options files to merge into a 
@@ -152,7 +153,12 @@ while [ $# -gt 0 ]; do
             continue
         ;;
         '--options')
-            options=$(realpath -m "${2}")
+            current=$(realpath -m "${2}")
+            if [ -z "${options}" ]; then
+                options="${current}"
+            else
+                options="${options} ${current}"
+            fi
             shift 2
             continue
         ;;
@@ -288,23 +294,25 @@ if [ -n "${optlist}" ]; then
     done
 fi
 if [ -n "${options}" ]; then
-    if [ -f "${options}" ]; then
-        if [ $verbose == 1 ]; then
-            echo "Adding options from ${options}" &>> ${runlog}
-        fi
-        (/bin/cat "${options}" >> "${tmpopts}") &>> ${runlog}
-    else
-        message="Cannot add options from ${options}: file does not exist or is not a regular file"
-        if [ $reqopts == 1 ]; then
+    for current in ${options[@]}; do
+        if [ -f "${current}" ]; then
             if [ $verbose == 1 ]; then
-                echo "ERROR: ${message}" &>> ${runlog}
+                echo "Adding options from ${current}" &>> ${runlog}
             fi
-            exit 1
+            (/bin/cat "${current}" >> "${tmpopts}") &>> ${runlog}
+        else
+            message="Cannot add options from ${current}: file does not exist or is not a regular file"
+            if [ $reqopts == 1 ]; then
+                if [ $verbose == 1 ]; then
+                    echo "ERROR: ${message}" &>> ${runlog}
+                fi
+                exit 1
+            fi
+            if [ $verbose == 1 ]; then
+                echo "WARNING: ${message}" &>> ${runlog}
+            fi
         fi
-        if [ $verbose == 1 ]; then
-            echo "WARNING: ${message}" &>> ${runlog}
-        fi
-    fi
+    done
 fi
 if [ -s "${tmpopts}" ]; then
     /bin/cp "${tmpopts}" petsc.ini &>> ${runlog}
