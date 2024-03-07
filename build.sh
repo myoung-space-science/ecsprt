@@ -30,9 +30,6 @@ buildlog=${cwd}/build.log
 verbose=0
 debug=0
 optimize=0
-log_info=1
-log_none=0
-log_enter_exit=0
 from_clean=0
 petsc_dir=
 slepc_dir=
@@ -65,13 +62,6 @@ ${textbf}DESCRIPTION${textnm}
                 Display help and exit.
         ${textbf}-p${textnm}, ${textbf}--program${textnm}=${startul}PROG${endul}
                 The target program (required).
-        ${textbf}--log${textnm}=${startul}LEVEL${endul}
-                Print informational messages from one of the following categories. May be
-                specified multiple times, with precedence from last to first. The default
-                behavior is equivalent to --log 'info'.
-                'info': print general runtime information.
-                'none': suppress all custom messages.
-                'enter-exit': print a notification upon entry and exit of labeled functions.
         ${textbf}--from-clean${textnm}
                 Run make clean in the target src directory before building the executable.
         ${textbf}--debug${textnm}
@@ -107,7 +97,6 @@ TEMP=$(getopt \
     -o 'hvp:' \
     -l 'help,verbose' \
     -l 'program:' \
-    -l 'log:' \
     -l 'from-clean' \
     -l 'debug,optimize' \
     -l 'with-petsc-dir:,with-slepc-dir:,with-petsc-arch:' \
@@ -129,25 +118,6 @@ while [ $# -gt 0 ]; do
         ;;
         '-p'|'--program')
             prog="${2}"
-            shift 2
-            continue
-        ;;
-        '--log')
-            case "$2" in
-                'info')
-                    log_info=1
-                    log_none=0
-                ;;
-                'enter-exit')
-                    log_enter_exit=1
-                    log_none=0
-                ;;
-                'none')
-                    log_none=1
-                    log_info=0
-                    log_enter_exit=0
-                ;;
-            esac
             shift 2
             continue
         ;;
@@ -314,20 +284,12 @@ progext=
 if [ ${debug} == 1 ]; then
     cppflags="${cppflags} -DDEBUG"
     cflags="${cflags} -g -O0"
-    log_enter_exit=1
     progext="-dbg"
 fi
 if [ ${optimize} == 1 ]; then
     cppflags="${cppflags} -DNDEBUG"
     cflags="${cflags} -O3"
     progext="-opt"
-fi
-if [ ${log_none} == 1 ]; then
-    cppflags="${cppflags} -DSILENT"
-else
-    if [ ${log_enter_exit} == 1 ]; then
-        cppflags="${cppflags} -DLOG_ENTER_EXIT"
-    fi
 fi
 echo &>> ${buildlog}
 print_width "=" &>> ${buildlog}
