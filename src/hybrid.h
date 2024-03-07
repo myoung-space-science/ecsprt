@@ -13,7 +13,7 @@ This will appear when a user passes the --version flag.
 
 See CHANGELOG.md for instructions on incrementing the version number.
 */
-#define VERSION "0.3.0"
+#define VERSION "0.3.1"
 #define PROJECT "Electrostatic Collisional Simulation of Plasma Evolution, Redistribution, and Transport"
 #define ACRONYM "ECSPERT"
 
