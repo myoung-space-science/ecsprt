@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "lhs.h"
 #include "rhs.h"
+#include "logging.h"
 
 /* Version number
 
@@ -133,8 +134,16 @@ typedef struct {
   DMDAStencilType stencilType;  // type of LHS-matrix stencil
 } Linear;
 
+/* Logging functions. */
+typedef struct {
+  LogFunction world;
+  LogFunction self;
+  LogFunction ranks;
+} Loggers;
+
 /* Parameters common to all applications. */
 typedef struct {
+  Loggers   log;                            // Logging functions
   MPI       mpi;                            // MPI parameters
   Grid      grid;                           // the spatial grid
   Species   electrons;                      // parameters of the electron fluid
@@ -151,6 +160,7 @@ typedef struct {
 
 /* Command-line options for all applications. */
 typedef struct {
+  PetscInt     logLevel;
   RHSType      rhsType; // type of RHS vector to use
   LHSType      lhsType; // type of LHS operator to use
   PetscInt     Nx;      // number of cells in x dimension
