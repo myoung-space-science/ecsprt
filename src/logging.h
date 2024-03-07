@@ -3,11 +3,11 @@
 
 #include <petsc.h>
 
-extern PetscErrorCode printNone(const char *message);
-extern PetscErrorCode printWorld(const char *message);
-extern PetscErrorCode printSelf(const char *message);
-extern PetscErrorCode printRanks(const char *message);
+extern PetscErrorCode printNone(const char *format, ...);
+extern PetscErrorCode printWorld(const char *format, ...);
+extern PetscErrorCode printSelf(const char *format, ...);
+extern PetscErrorCode printRanks(const char *format, ...);
 
-typedef PetscErrorCode (*LogFunction)(const char *message);
+typedef PetscErrorCode (*LogFunction)(const char *format, ...);
 
 #endif // LOGGING_H
