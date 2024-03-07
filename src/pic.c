@@ -109,18 +109,17 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
 
+  /* Log start time. */
+  time(&startTime);
+
   /* Initialize PETSc and MPI. */
   initialize(argc, args, help, &ctx);
 
   /* Assign parameter values from user arguments or defaults. */
   PetscCall(ProcessOptions(&cli));
 
-  /* Log start time. */
-  time(&startTime);
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n**************** START *****************\n\n"));
-
   /* Echo this stage. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n*** Initialization stage ***\n\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n=== Initial stage ===\n\n"));
 
   /* Set up the common application context. */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Processing common options\n"));
@@ -191,7 +190,7 @@ int main(int argc, char **args)
   PetscCall(PetscStrcat(stepfmt, " >\n"));
 
   /* Echo this stage. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n*** Main time-step loop ***\n\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n=== Main time-step loop ===\n\n"));
   /* Begin main time-step loop. */
   for (it=0; it<app.Nt; it++) {
 
@@ -229,7 +228,7 @@ int main(int argc, char **args)
   }
 
   /* Echo this stage. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n*** Finalization stage ***\n\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n=== Final stage ===\n\n"));
 
   /* Output final conditions. */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing final fluid quantities to HDF5\n"));
@@ -242,7 +241,10 @@ int main(int argc, char **args)
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DestroyContext(&ctx));
 
+  /* Log end time. */
   time(&endTime);
+
+  /* Complete final tasks. */
   finalize(startTime, endTime);
 
   return 0;

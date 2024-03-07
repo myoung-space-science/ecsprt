@@ -15,6 +15,8 @@ PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &ctx->mpi.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx->mpi.size));
 
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n**************** START *****************\n\n"));
+
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
