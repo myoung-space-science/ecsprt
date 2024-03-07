@@ -11,6 +11,7 @@ When incrementing the version number to X.Y.Z, please do the following
 
 - Move DM viewing options to CLI only
 - Fix bug in `build.sh` when user passes `--log none`
+- Update runtime diagnostic messages
 
 ## v0.2.0
 
