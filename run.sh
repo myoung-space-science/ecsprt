@@ -188,19 +188,23 @@ stage=
 
 cleanup() {
     if [ "${stage}" != "${success}" ]; then
-        if [ -n "${stage}" ]; then
-            exitmsg="${stage} stage failed. See ${runlog} for details."
-        else
-            exitmsg="Unknown error."
+        if [ $verbose == 1 ]; then
+            if [ -n "${stage}" ]; then
+                exitmsg="${stage} stage failed. See ${runlog} for details."
+            else
+                exitmsg="Unknown error."
+            fi
+            echo 
+            echo -e ${u_failure} $exitmsg
         fi
-        echo 
-        echo -e ${u_failure} $exitmsg
         exit 1
     else
-        echo 
-        echo -e "${u_success} Success! ${u_success}"
-        echo 
-        echo "Output is in ${dstdir}"
+        if [ $verbose == 1 ]; then
+            echo 
+            echo -e "${u_success} Success! ${u_success}"
+            echo 
+            echo "Output is in ${dstdir}"
+        fi
     fi
 }
 
@@ -235,9 +239,11 @@ runlog=$(realpath -m ${dstdir}/${logname})
 
 # Refuse to run without a target program.
 if [ -z "${prog}" ]; then
-    show_help
-    echo
-    echo "ERROR: Missing target program." &> ${runlog}
+    if [ $verbose == 1 ]; then
+        show_help
+        echo
+        echo "ERROR: Missing target program." &> ${runlog}
+    fi
     exit 1
 fi
 
@@ -262,30 +268,42 @@ touch "${tmpopts}"
 if [ -n "${optlist}" ]; then
     for path in ${optlist[@]}; do
         if [ -f "${path}" ]; then
-            echo "Adding options from ${path}" &>> ${runlog}
+            if [ $verbose == 1 ]; then
+                echo "Adding options from ${path}" &>> ${runlog}
+            fi
             cat "${path}" >> "${tmpopts}"
             echo >> "${tmpopts}"
         else
             message="Cannot add options from ${path}: file does not exist or is not a regular file"
             if [ $reqopts == 1 ]; then
-                echo "ERROR: ${message}" &>> ${runlog}
+                if [ $verbose == 1 ]; then
+                    echo "ERROR: ${message}" &>> ${runlog}
+                fi
                 exit 1
             fi
-            echo "WARNING: ${message}" &>> ${runlog}
+            if [ $verbose == 1 ]; then
+                echo "WARNING: ${message}" &>> ${runlog}
+            fi
         fi
     done
 fi
 if [ -n "${options}" ]; then
     if [ -f "${options}" ]; then
-        echo "Adding options from ${options}" &>> ${runlog}
+        if [ $verbose == 1 ]; then
+            echo "Adding options from ${options}" &>> ${runlog}
+        fi
         (/bin/cat "${options}" >> "${tmpopts}") &>> ${runlog}
     else
         message="Cannot add options from ${options}: file does not exist or is not a regular file"
         if [ $reqopts == 1 ]; then
-            echo "ERROR: ${message}" &>> ${runlog}
+            if [ $verbose == 1 ]; then
+                echo "ERROR: ${message}" &>> ${runlog}
+            fi
             exit 1
         fi
-        echo "WARNING: ${message}" &>> ${runlog}
+        if [ $verbose == 1 ]; then
+            echo "WARNING: ${message}" &>> ${runlog}
+        fi
     fi
 fi
 if [ -s "${tmpopts}" ]; then
@@ -299,7 +317,9 @@ mark_stage "run"
 # Run the program.
 if [ ${debug} == 1 ]; then
     if [ ${np} -gt 1 ]; then
-        echo -e "ERROR: Multi-processor debugging is currently disabled." &>> ${runlog}
+        if [ $verbose == 1 ]; then
+            echo -e "ERROR: Multi-processor debugging is currently disabled." &>> ${runlog}
+        fi
         exit 1
     else
         gdb --args ${bindir}/${prog} $extra
