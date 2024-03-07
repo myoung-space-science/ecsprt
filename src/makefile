@@ -8,6 +8,7 @@ pic: pic.o \
 		distributions.o \
 		file-io.o \
 		lhs.o \
+		logging.o \
 		parameters.o \
 		particles.o \
 		potential.o \
@@ -22,6 +23,7 @@ solver: solver.o \
 		distributions.o \
 		file-io.o \
 		lhs.o \
+		logging.o \
 		parameters.o \
 		particles.o \
 		potential.o \
