@@ -5,6 +5,8 @@
 
 PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
 {
+  PetscInt  logLevel=1;
+  PetscBool found;
 
   /* Initialize PETSc and MPI. */
   if (access("petsc.ini", F_OK) != -1) {
@@ -15,13 +17,32 @@ PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &ctx->mpi.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx->mpi.size));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n**************** START *****************\n\n"));
+  /* Assign the logging functions. */
+  ctx->log.world        = printNone;
+  ctx->log.self         = printNone;
+  ctx->log.ranks        = printNone;
+  ctx->log.checkpoint   = printNone;
+  ctx->log.status       = printNone;
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "--log-level", &logLevel, &found));
+  if (logLevel > 0) {
+    ctx->log.status     = printWorld;
+  }
+  if (logLevel > 1) {
+    ctx->log.world      = printWorld;
+    ctx->log.self       = printSelf;
+    ctx->log.ranks      = printRanks;
+  }
+  if (logLevel > 2) {
+    ctx->log.checkpoint = printWorld;
+  }
+
+  ctx->log.status("\n**************** START *****************\n\n");
 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 
-PetscErrorCode finalize(time_t startTime, time_t endTime)
+PetscErrorCode finalize(time_t startTime, time_t endTime, Context *ctx)
 {
   float       elapsedTime;
   char        timeUnit[16]="";
@@ -40,14 +61,14 @@ PetscErrorCode finalize(time_t startTime, time_t endTime)
   } else {
     PetscCall(PetscStrcat(timeUnit, "second(s)"));
   }
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n----------------------------------------\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Start time: %s", asctime(localtime(&startTime))));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "End time:   %s", asctime(localtime(&endTime))));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Elapsed time: %4.1f %s\n", elapsedTime, timeUnit));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "----------------------------------------\n"));
+  ctx->log.status("\n----------------------------------------\n");
+  ctx->log.status("Start time: %s", asctime(localtime(&startTime)));
+  ctx->log.status("End time:   %s", asctime(localtime(&endTime)));
+  ctx->log.status("Elapsed time: %4.1f %s\n", elapsedTime, timeUnit);
+  ctx->log.status("----------------------------------------\n");
 
   /* Finalize PETSc and MPI. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n***************** END ******************\n"));
+  ctx->log.status("\n***************** END ******************\n");
   PetscCall(PetscFinalize());
 
   PetscFunctionReturn(PETSC_SUCCESS);

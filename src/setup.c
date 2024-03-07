@@ -14,20 +14,6 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   // Declare the name of the options log.
   PetscCall(PetscStrcpy(ctx->optionsLog, "options.log"));
 
-  // Copy the logging functions.
-  ctx->log.world        = printNone;
-  ctx->log.self         = printNone;
-  ctx->log.ranks        = printNone;
-  ctx->log.checkpoint   = printNone;
-  if (cli.logLevel >= 1) {
-    ctx->log.world      = printWorld;
-    ctx->log.self       = printSelf;
-    ctx->log.ranks      = printRanks;
-  }
-  if (cli.logLevel >= 2) {
-    ctx->log.checkpoint = printWorld;
-  }
-
   // Set the LHS function based on LHS type.
   switch (cli.lhsType) {
   case LHS_IDENTITY:

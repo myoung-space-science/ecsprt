@@ -118,6 +118,7 @@ typedef struct {
   LogFunction self;
   LogFunction ranks;
   LogFunction checkpoint;
+  LogFunction status;
 } Loggers;
 
 /* Parameters common to all applications. */
@@ -139,7 +140,6 @@ typedef struct {
 
 /* Command-line options for all applications. */
 typedef struct {
-  PetscInt     logLevel;
   RHSType      rhsType; // type of RHS vector to use
   LHSType      lhsType; // type of LHS operator to use
   PetscInt     Nx;      // number of cells in x dimension

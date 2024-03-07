@@ -104,10 +104,10 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
 
   if ((ctx->ions.xBC == BC_PERIODIC) && (ctx->ions.yBC == BC_PERIODIC) && (ctx->ions.zBC == BC_PERIODIC)) {
     if (Np1 != Np0) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ERROR: Total number of ions has changed (%+d).\n", Np1-Np0));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "       This should not happen with fully periodic boundary conditions.\n"));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+      ctx->log.status("\n");
+      ctx->log.status("ERROR: Total number of ions has changed (%+d).\n", Np1-Np0);
+      ctx->log.status("       This should not happen with fully periodic boundary conditions.\n");
+      ctx->log.status("\n");
       MPI_Abort(PETSC_COMM_WORLD, 1);
     }
   }
@@ -673,7 +673,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
         Nf++;
         // Terminate the simulation if at least 10 collisions have failed.
         if (Nf >= 10) {
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Failed to collide %d ion-neutral pairs. Aborting.\n\n", ctx->mpi.rank, Nf));
+          ctx->log.status("Failed to collide %d ion-neutral pairs. Aborting.\n\n", Nf);
           MPI_Abort(PETSC_COMM_WORLD, 1);
         }
       } else {

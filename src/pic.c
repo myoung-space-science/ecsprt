@@ -115,49 +115,50 @@ int main(int argc, char **args)
   initialize(argc, args, help, &ctx);
 
   /* Assign parameter values from user arguments or defaults. */
+  ctx.log.status("Processing common options\n");
   PetscCall(ProcessOptions(&cli));
 
-  /* Echo this stage. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n=== Initial stage ===\n\n"));
-
   /* Set up the common application context. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Processing common options\n"));
+  ctx.log.status("Setting up common parameters\n");
   PetscCall(SetUpContext(cli, &ctx));
 
   /* Process application-specific options. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Processing application-specific options\n"));
+  ctx.log.status("Processing application-specific options\n");
   PetscCall(ProcessPICOptions(ctx, &app));
 
+  /* Echo this stage. */
+  ctx.log.status("\n=== Initial stage ===\n\n");
+
   /* Set up the fluid grid. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Creating the fluid-grid DM\n"));
+  ctx.log.status("Creating the fluid-grid DM\n");
   PetscCall(CreateGridDM(&ctx));
 
   /* Set up the ion swarm. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Creating the particle-swarm DM\n"));
+  ctx.log.status("Creating the particle-swarm DM\n");
   PetscCall(CreateIonsDM(&ctx));
 
   /* Set initial particle positions. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initializing positions\n"));
+  ctx.log.status("Initializing positions\n");
   PetscCall(InitializePositions(app.densityType, &ctx));
 
   /* Set initial particle velocities. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initializing velocities\n"));
+  ctx.log.status("Initializing velocities\n");
   PetscCall(InitializeVelocities(&ctx));
 
   /* Echo the initial state. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Echoing parameter values to %s\n", ctx.optionsLog));
+  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
   PetscCall(EchoSetup(ctx, app));
 
   /* Compute initial density and flux.*/
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Collecting initial moments\n"));
+  ctx.log.status("Collecting initial moments\n");
   PetscCall(CollectFluidMoments(&ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Creating the electrostatic-potential DM\n"));
+  ctx.log.status("Creating the electrostatic-potential DM\n");
   PetscCall(CreatePotentialDM(&ctx));
 
   /* Set up the Krylov-solver context for the electrostatic potential. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Setting up the potential solver\n"));
+  ctx.log.status("Setting up the potential solver\n");
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetDM(ksp, ctx.potential.dm));
   PetscCall(KSPSetFromOptions(ksp));
@@ -166,7 +167,7 @@ int main(int argc, char **args)
   PetscCall(KSPSetComputeOperators(ksp, ComputeLHS, &ctx));
 
   /* Compute initial electrostatic potential. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Computing initial potential\n"));
+  ctx.log.status("Computing initial potential\n");
   PetscCall(ComputePotential(ksp, &ctx));
 
   /* Create a format string for the time step. */
@@ -178,9 +179,9 @@ int main(int argc, char **args)
   PetscCall(PetscStrcat(pathfmt, itfmt));
 
   /* Output initial conditions. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing initial fluid quantities to HDF5\n"));
+  ctx.log.status("Writing initial fluid quantities to HDF5\n");
   PetscCall(OutputFluidHDF5("-initial", &ctx));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing initial particle quantities to binary\n"));
+  ctx.log.status("Writing initial particle quantities to binary\n");
   PetscCall(OutputSwarmBinary("-initial", &ctx));
 
   /* Create a template for the time-step string. */
@@ -189,54 +190,54 @@ int main(int argc, char **args)
   PetscCall(PetscStrcat(stepfmt, " >\n"));
 
   /* Echo this stage. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n=== Main time-step loop ===\n\n"));
+  ctx.log.status("\n\n=== Main time-step loop ===\n\n");
   /* Begin main time-step loop. */
   for (it=0; it<app.Nt; it++) {
 
     /* Create a string to display time step with the appropriate width. */
     sprintf(stepstr, stepfmt, it);
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s", stepstr));
+    ctx.log.status("%s", stepstr);
 
     /* Update velocities. */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Updating velocities\n"));
+    ctx.log.status("Updating velocities\n");
     PetscCall(UpdateVelocities(app.dt, &ctx));
 
     /* Update positions. */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Updating positions\n"));
+    ctx.log.status("Updating positions\n");
     PetscCall(UpdatePositions(app.dt, &ctx));
 
     /* Compute density and flux from ion positions. */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Collecting moments\n"));
+    ctx.log.status("Collecting moments\n");
     PetscCall(CollectFluidMoments(&ctx));
 
     /* Compute potential from density. */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Computing potential\n"));
+    ctx.log.status("Computing potential\n");
     PetscCall(ComputePotential(ksp, &ctx));
 
     /* Output current time step. */
     if ((app.Dt > 0) && (it % app.Dt == 0)) {
       sprintf(pathstr, pathfmt, it);
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing fluid quantities to HDF5\n"));
+      ctx.log.status("Writing fluid quantities to HDF5\n");
       PetscCall(OutputFluidHDF5(pathstr, &ctx));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing particle quantities to binary\n"));
+      ctx.log.status("Writing particle quantities to binary\n");
       PetscCall(OutputSwarmBinary(pathstr, &ctx));
     }
 
     /* Print a newline to separate this time step from the next. */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+    ctx.log.status("\n");
   }
 
   /* Echo this stage. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n=== Final stage ===\n\n"));
+  ctx.log.status("\n=== Final stage ===\n\n");
 
   /* Output final conditions. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing final fluid quantities to HDF5\n"));
+  ctx.log.status("Writing final fluid quantities to HDF5\n");
   PetscCall(OutputFluidHDF5("-final", &ctx));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing final particle quantities to binary\n"));
+  ctx.log.status("Writing final particle quantities to binary\n");
   PetscCall(OutputSwarmBinary("-final", &ctx));
 
   /* Free memory. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Freeing objects\n"));
+  ctx.log.status("Freeing objects\n");
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DestroyContext(&ctx));
 
@@ -244,7 +245,7 @@ int main(int argc, char **args)
   time(&endTime);
 
   /* Complete final tasks. */
-  finalize(startTime, endTime);
+  finalize(startTime, endTime, &ctx);
 
   return 0;
 }

@@ -38,12 +38,6 @@ PetscErrorCode ProcessOptions(CLI *cli)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s\n", VERSION));
     PetscCall(PetscEnd());
   }
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "--log-level", &intArg, &found));
-  if (found && (intArg > 0)) {
-    cli->logLevel = intArg;
-  } else {
-    cli->logLevel = 0;
-  }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--rhs-type", RHSTypes, &enumArg, &found));
   if (found) {
     cli->rhsType = enumArg;

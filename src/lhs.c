@@ -326,20 +326,19 @@ PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts)
 
   /* Print results. */
   PetscCall(EPSGetIterationNumber(eps, &its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Number of iterations of the method: %d\n", its));
+  ctx->log.status(" Number of iterations of the method: %d\n", its);
   PetscCall(EPSGetType(eps, &type));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Solution method: %s\n\n", type));
+  ctx->log.status(" Solution method: %s\n\n", type);
   PetscCall(EPSGetDimensions(eps, &nev, NULL, NULL));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Number of requested eigenvalues: %d\n", nev));
+  ctx->log.status(" Number of requested eigenvalues: %d\n", nev);
   PetscCall(EPSGetTolerances(eps, &tol, &maxit));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Stopping condition: tol=%.4g, maxit=%d\n", (double)tol, maxit));
+  ctx->log.status(" Stopping condition: tol=%.4g, maxit=%d\n", (double)tol, maxit);
   PetscCall(EPSGetConverged(eps, &nconv));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " Number of converged eigenpairs: %d\n\n", nconv));
+  ctx->log.status(" Number of converged eigenpairs: %d\n\n", nconv);
   if (nconv > 0) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+    ctx->log.status(
          "           k          ||Ax-kx||/||kx||\n"
-         "   ----------------- ------------------\n"));
-
+         "   ----------------- ------------------\n");
     for (i=0; i<nconv; i++) {
       PetscCall(EPSGetEigenpair(eps, i, &kr, &ki, xr, xi));
       PetscCall(EPSComputeError(eps, i, EPS_ERROR_RELATIVE, &error));
@@ -350,10 +349,10 @@ PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts)
       re = kr;
       im = ki;
 #endif
-      if (im!=0.0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %9f%+9fi %12g\n", (double)re, (double)im, (double)error));
-      else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %12f       %12g\n", (double)re, (double)error));
+      if (im!=0.0) ctx->log.status(" %9f%+9fi %12g\n", (double)re, (double)im, (double)error);
+      else ctx->log.status("   %12f       %12g\n", (double)re, (double)error);
     }
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+    ctx->log.status("\n");
   }
 
   /* Free memory. */
