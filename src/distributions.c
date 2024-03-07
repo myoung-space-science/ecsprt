@@ -13,7 +13,7 @@ PetscErrorCode UniformDistributionFromCoordinates(Context *ctx)
   DM        swarmDM=ctx->swarmDM;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   min[0] = ctx->grid.x0 + 0.0*ctx->grid.dx;
   min[1] = ctx->grid.y0 + 0.0*ctx->grid.dy;
@@ -46,7 +46,7 @@ PetscErrorCode UniformDistributionCellCentered(Context *ctx)
   PetscInt     ip;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get information about the discrete grid.
   PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
@@ -98,7 +98,7 @@ PetscErrorCode UniformDistribution(Context *ctx)
   PetscReal    d[NDIM]={ctx->grid.dx, ctx->grid.dy, ctx->grid.dz};
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get information about the discrete grid.
   PetscCall(DMDAGetCorners(fluidDM, &i0, &j0, &k0, &ni, &nj, &nk));
@@ -163,7 +163,7 @@ PetscErrorCode SobolDistribution(Context *ctx)
   PetscReal      xmin, xmax, ymin, ymax, zmin, zmax;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get the total number of particles in the swarm.
   PetscCall(DMSwarmGetSize(swarmDM, &Np));
@@ -276,7 +276,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   PetscInt     it=0;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get a representation of the ion coordinates.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));

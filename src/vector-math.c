@@ -696,7 +696,7 @@ PetscErrorCode ComputeGradient(Vec F, Vec f[NDIM], Context *ctx)
   MatStencil   cols[stencilSize];
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Compute differential scale factors.
   hx = 1.0 / (2.0*dx);
@@ -785,7 +785,7 @@ PetscErrorCode ComputeLaplacian(Vec F, Vec *f, Context *ctx)
   MatStencil   cols[stencilSize];
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Compute differential scale factors.
   hxx =  1.0 / (dx*dx);

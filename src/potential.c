@@ -6,7 +6,7 @@
 PetscErrorCode ComputePotential(KSP ksp, Context *ctx)
 {
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(KSPSolve(ksp, NULL, NULL));
   PetscCall(KSPGetSolution(ksp, &ctx->potential.solution));

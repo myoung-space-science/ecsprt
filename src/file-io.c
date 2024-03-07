@@ -16,7 +16,7 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_
   Vec           density, tmpflux, moments=ctx->moments;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Check for user-provided density file.
   PetscCall(PetscStrcmp(inpath, "", &nullPath));
@@ -86,7 +86,7 @@ PetscErrorCode OpenASCIIAppend(MPI_Comm comm, const char filename[], PetscViewer
 {
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(PetscViewerCreate(comm, viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERASCII));
@@ -107,7 +107,7 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   Vec           target;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Do we need to call
   // https://petsc.org/release/manualpages/Viewer/PetscViewerBinarySetUseMPIIO/
@@ -170,7 +170,7 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
   Vec           moments=ctx->moments, rhs=ctx->potential.forcing, phi=ctx->potential.solution;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Build the full file name.
   PetscCall(PetscStrcat(name, insert));
@@ -222,7 +222,7 @@ PetscErrorCode ViewLHS(KSP ksp, Context *ctx)
   PetscViewer viewer;
   Mat A, P;
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(KSPGetOperators(ksp, &A, &P));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "lhs.dat", FILE_MODE_WRITE, &viewer));

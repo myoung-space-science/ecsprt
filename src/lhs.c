@@ -9,7 +9,7 @@ PetscErrorCode ComputeIdentityLHS(KSP ksp, Mat J, Mat A, void *opts)
   Context      *ctx=(Context *)opts;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(MatZeroEntries(A));
   PetscCall(MatShift(A, 1.0));
@@ -39,7 +39,7 @@ PetscErrorCode ComputeLaplacianLHS(KSP ksp, Mat J, Mat A, void *opts)
   MatNullSpace nullspace;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Assign the star-stencil coefficients.
   vpjk =  1.0 / (dx*dx);
@@ -141,7 +141,7 @@ PetscErrorCode ComputeFullLHS(KSP ksp, Mat J, Mat A, void *opts)
   MatNullSpace    nullspace;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Compute geometric scale factors for stencil values.
   hxx = 1.0 / (2.0 * dx*dx);
@@ -302,7 +302,7 @@ PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts)
   Vec          xr, xi;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   /* Set up eigenvalue solver. */
   PetscCall(EPSCreate(PETSC_COMM_WORLD, &eps));

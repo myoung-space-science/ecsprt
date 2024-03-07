@@ -370,7 +370,7 @@ PetscErrorCode EchoOptions(Context ctx)
   PetscViewer viewer;
 
   PetscFunctionBeginUser;
-  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Open the viewer in "write" mode. This will clobber existing contents.
   PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, ctx.optionsLog, &viewer));

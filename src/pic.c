@@ -33,7 +33,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   PetscBool found;
 
   PetscFunctionBeginUser;
-  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--density-type", DensityTypes, &enumArg, &found));
   if (found) {
@@ -70,7 +70,7 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscViewer viewer;
 
   PetscFunctionBeginUser;
-  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Echo common parameter values.
   PetscCall(EchoOptions(ctx));

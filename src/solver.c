@@ -32,7 +32,7 @@ PetscErrorCode ProcessSolverOptions(Context ctx, Application *app)
   PetscBool found;
 
   PetscFunctionBeginUser;
-  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "--input", strArg, sizeof(strArg), &found));
   if (found) {
@@ -77,7 +77,7 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscViewer viewer;
 
   PetscFunctionBeginUser;
-  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Echo common parameter values.
   PetscCall(EchoOptions(ctx));

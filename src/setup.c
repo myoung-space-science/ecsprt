@@ -230,7 +230,7 @@ PetscErrorCode DestroyContext(Context *ctx)
 {
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(VecDestroy(&ctx->moments));
   PetscCall(DMDestroy(&ctx->swarmDM));
@@ -263,7 +263,7 @@ PetscErrorCode CreateGridDM(Context *ctx)
   DM              dm;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Create the DM.
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &dm));
@@ -364,7 +364,7 @@ PetscErrorCode CreatePotentialDM(Context *ctx)
   PetscInt        width=2;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Create the DM object.
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &ctx->potential.dm));
@@ -419,7 +419,7 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   PetscReal       z1=ctx->grid.z1;
 
   PetscFunctionBeginUser;
-  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Create the cell DM.
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &cellDM));
