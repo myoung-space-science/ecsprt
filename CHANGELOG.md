@@ -9,6 +9,8 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+## v0.3.0
+
 - Implement `--log-level` option for simulations
 - Refactor runtime messages for simulations
 - Make `-v/--verbose` more consistent in `run.sh`

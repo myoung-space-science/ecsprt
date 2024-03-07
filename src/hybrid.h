@@ -14,7 +14,7 @@ This will appear when a user passes the --version flag.
 Developer Note: When you increment the version number to X.Y.Z, please create a
 git tag called vX.Y.Z with the message "version X.Y.Z".
 */
-#define VERSION "0.2.1"
+#define VERSION "0.3.0"
 
 typedef enum {
   FORWARD,
