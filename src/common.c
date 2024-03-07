@@ -6,6 +6,7 @@
 PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
 {
   PetscInt  logLevel=1;
+  PetscBool requested;
   PetscBool found;
 
   /* Initialize PETSc and MPI. */
@@ -16,6 +17,13 @@ PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
   }
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &ctx->mpi.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx->mpi.size));
+
+  /* Echo version number and exit, if requested. */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "--version", &requested, &found));
+  if (found) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s\n", VERSION));
+    PetscCall(PetscEnd());
+  }
 
   /* Assign the logging functions. */
   ctx->log.world        = printNone;

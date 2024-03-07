@@ -27,17 +27,11 @@ PetscErrorCode ProcessOptions(CLI *cli)
   PetscInt  intArg;
   PetscReal realArg;
   PetscEnum enumArg;
-  PetscBool boolArg;
   PetscBool found;
 
   PetscFunctionBeginUser;
 
   // Read optional parameter values from user input.
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "--version", &boolArg, &found));
-  if (found) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s\n", VERSION));
-    PetscCall(PetscEnd());
-  }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--rhs-type", RHSTypes, &enumArg, &found));
   if (found) {
     cli->rhsType = enumArg;
