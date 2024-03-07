@@ -21,7 +21,8 @@ PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
   /* Echo version number and exit, if requested. */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "--version", &requested, &found));
   if (found) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s\n", VERSION));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s: %s\n", ACRONYM, PROJECT));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Version %s]\n\n", VERSION));
     PetscCall(PetscEnd());
   }
 

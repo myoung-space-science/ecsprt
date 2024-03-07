@@ -11,10 +11,11 @@
 
 This will appear when a user passes the --version flag.
 
-Developer Note: When you increment the version number to X.Y.Z, please create a
-git tag called vX.Y.Z with the message "version X.Y.Z".
+See CHANGELOG.md for instructions on incrementing the version number.
 */
 #define VERSION "0.3.0"
+#define PROJECT "Electrostatic Collisional Simulation of Plasma Evolution, Redistribution, and Transport"
+#define ACRONYM "ECSPERT"
 
 typedef enum {
   FORWARD,
