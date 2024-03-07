@@ -9,6 +9,8 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+- Fix `--version` output bug
+
 ## v0.3.0
 
 - Implement `--log-level` option for simulations
