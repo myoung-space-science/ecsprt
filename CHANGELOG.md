@@ -9,6 +9,10 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+- Implement `--log-level` option for simulations
+- Refactor runtime messages for simulations
+- Make `-v/--verbose` more consistent in `run.sh`
+
 ## v0.2.1
 
 - Move DM viewing options to CLI only
