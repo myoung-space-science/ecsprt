@@ -9,6 +9,8 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+- Allow multiple `--options` arguments to `run.sh`
+
 ## v0.3.1
 
 - Fix `--version` output bug
