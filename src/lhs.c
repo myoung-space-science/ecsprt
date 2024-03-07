@@ -6,13 +6,15 @@
 
 PetscErrorCode ComputeIdentityLHS(KSP ksp, Mat J, Mat A, void *opts)
 {
+  Context      *ctx=(Context *)opts;
+
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   PetscCall(MatZeroEntries(A));
   PetscCall(MatShift(A, 1.0));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -37,7 +39,7 @@ PetscErrorCode ComputeLaplacianLHS(KSP ksp, Mat J, Mat A, void *opts)
   MatNullSpace nullspace;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Assign the star-stencil coefficients.
   vpjk =  1.0 / (dx*dx);
@@ -108,7 +110,7 @@ PetscErrorCode ComputeLaplacianLHS(KSP ksp, Mat J, Mat A, void *opts)
   PetscCall(MatSetNullSpace(A, nullspace));
   PetscCall(MatNullSpaceDestroy(&nullspace));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -139,7 +141,7 @@ PetscErrorCode ComputeFullLHS(KSP ksp, Mat J, Mat A, void *opts)
   MatNullSpace    nullspace;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Compute geometric scale factors for stencil values.
   hxx = 1.0 / (2.0 * dx*dx);
@@ -279,7 +281,7 @@ PetscErrorCode ComputeFullLHS(KSP ksp, Mat J, Mat A, void *opts)
   PetscCall(MatSetNullSpace(A, nullspace));
   PetscCall(MatNullSpaceDestroy(&nullspace));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -288,18 +290,19 @@ PetscErrorCode ComputeFullLHS(KSP ksp, Mat J, Mat A, void *opts)
 
 This is essentially a distilled version of ${SLEPC_DIR}/src/eps/tutorials/ex1.c
 */
-PetscErrorCode ComputeLHSEigenvalues(KSP ksp)
+PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts)
 {
-  EPS         eps;
-  EPSType     type;
-  Mat         A;
-  PetscInt    i, its, maxit, nev, nconv;
-  PetscReal   tol, error, re, im;
-  PetscScalar kr, ki;
-  Vec         xr, xi;
+  Context     *ctx=(Context *)opts;
+  EPS          eps;
+  EPSType      type;
+  Mat          A;
+  PetscInt     i, its, maxit, nev, nconv;
+  PetscReal    tol, error, re, im;
+  PetscScalar  kr, ki;
+  Vec          xr, xi;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   /* Set up eigenvalue solver. */
   PetscCall(EPSCreate(PETSC_COMM_WORLD, &eps));
@@ -358,6 +361,6 @@ PetscErrorCode ComputeLHSEigenvalues(KSP ksp)
   PetscCall(VecDestroy(&xr));
   PetscCall(VecDestroy(&xi));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

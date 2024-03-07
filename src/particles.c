@@ -37,7 +37,7 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
   PetscReal  z1=ctx->grid.z1;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get an array representation of the ion positions.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
@@ -112,7 +112,7 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
     }
   }
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -124,7 +124,7 @@ PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
   PetscInt   np, Np;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Echo sizes.
   PetscCall(DMSwarmGetSize(swarmDM, &Np));
@@ -167,7 +167,7 @@ PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
   // Update the parameter context.
   PetscCall(DMSwarmGetSize(swarmDM, &ctx->plasma.Np));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -182,7 +182,7 @@ PetscErrorCode InitializeVelocities(Context *ctx)
   long       seed=getseed(*ctx);
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get the number of local ions.
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
@@ -203,7 +203,7 @@ PetscErrorCode InitializeVelocities(Context *ctx)
   // Restore the ion-velocities array.
   PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -226,7 +226,7 @@ PetscErrorCode CollectFluidMoments(Context *ctx)
   PetscReal     w;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get the ion-swarm cell DM.
   PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
@@ -323,7 +323,7 @@ PetscErrorCode CollectFluidMoments(Context *ctx)
   // Restore the ion-velocities array.
   PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -354,7 +354,7 @@ PetscErrorCode BorisMover3D(PetscReal dt, Context *ctx)
   PetscReal   vminus_cross_t[NDIM], vprime_cross_s[NDIM];
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   /* Compute \vec{t} = \frac{q\vec{B}}{m}\frac{\Delta t}{2}. */
   tscale = 0.5 * (q/m) * dt;
@@ -434,7 +434,7 @@ PetscErrorCode BorisMover3D(PetscReal dt, Context *ctx)
   PetscCall(DMDAVecRestoreArray(phiDM, phiLocal, &phi));
   PetscCall(DMRestoreLocalVector(phiDM, &phiLocal));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -465,7 +465,7 @@ PetscErrorCode BorisMoverBz(PetscReal dt, Context *ctx)
   PetscReal    vxm, vym, vz, vxt, vxp, vyp;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   /* Compute t = \frac{qB}{m}\frac{\Delta t}{2}. */
   tscale = 0.5 * (q/m) * dt;
@@ -530,7 +530,7 @@ PetscErrorCode BorisMoverBz(PetscReal dt, Context *ctx)
   PetscCall(DMDAVecRestoreArray(phiDM, phiLocal, &phi));
   PetscCall(DMRestoreLocalVector(phiDM, &phiLocal));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -576,7 +576,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
   PetscReal  ratio;                                   // ratio of current ion's final speed to thermal speed
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Compute the maximum relative velocity.
   vrm = 4.0*viT + PetscSqrtReal(PetscSqr(vi0x-vn0x) + PetscSqr(vi0y-vn0y) + PetscSqr(vi0z-vn0z));
@@ -692,7 +692,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
   // Report the number of actual collisions.
   ctx->log.world("Collision efficiency: %6.4f.\n", (PetscReal)Ns/(PetscReal)(Ns+Nf));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -701,7 +701,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
 PetscErrorCode UpdateVelocities(PetscReal dt, Context *ctx)
 {
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Apply the Boris mover to integrate dv/dt = E + vxB.
   PetscCall(BorisMoverBz(dt, ctx));
@@ -711,7 +711,7 @@ PetscErrorCode UpdateVelocities(PetscReal dt, Context *ctx)
     PetscCall(ComputeCollisions(dt, ctx));
   }
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -725,7 +725,7 @@ PetscErrorCode UpdatePositions(PetscReal dt, Context *ctx)
   PetscReal   x, y, z;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get an array representation of the ion positions.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
@@ -759,7 +759,7 @@ PetscErrorCode UpdatePositions(PetscReal dt, Context *ctx)
   // Update the swarm.
   PetscCall(ApplyBCAndMigrate(ctx));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

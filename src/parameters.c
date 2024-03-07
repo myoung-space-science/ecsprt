@@ -31,7 +31,6 @@ PetscErrorCode ProcessOptions(CLI *cli)
   PetscBool found;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
 
   // Read optional parameter values from user input.
   PetscCall(PetscOptionsGetBool(NULL, NULL, "--version", &boolArg, &found));
@@ -363,7 +362,6 @@ PetscErrorCode ProcessOptions(CLI *cli)
     cli->E0 = 0.0;
   }
 
-  ECHO_FUNCTION_EXIT;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -378,7 +376,7 @@ PetscErrorCode EchoOptions(Context ctx)
   PetscViewer viewer;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Open the viewer in "write" mode. This will clobber existing contents.
   PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, ctx.optionsLog, &viewer));
@@ -451,6 +449,6 @@ PetscErrorCode EchoOptions(Context ctx)
   // Free memory.
   PetscCall(PetscViewerDestroy(&viewer));
 
-  ECHO_FUNCTION_EXIT;
+  ctx.log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

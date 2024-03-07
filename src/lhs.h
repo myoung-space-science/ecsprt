@@ -15,7 +15,7 @@ typedef enum {
 extern PetscErrorCode ComputeIdentityLHS(KSP ksp, Mat J, Mat A, void *opts);
 extern PetscErrorCode ComputeLaplacianLHS(KSP ksp, Mat J, Mat A, void *opts);
 extern PetscErrorCode ComputeFullLHS(KSP ksp, Mat J, Mat A, void *opts);
-extern PetscErrorCode ComputeLHSEigenvalues(KSP ksp);
+extern PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts);
 
 typedef PetscErrorCode (*LHSFunc)(KSP ksp, Mat J, Mat A, void *opts);
 

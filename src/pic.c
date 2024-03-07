@@ -33,7 +33,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   PetscBool found;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--density-type", DensityTypes, &enumArg, &found));
   if (found) {
@@ -60,7 +60,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
     app->dt = 1.0 / ctx.ions.nu;
   }
 
-  ECHO_FUNCTION_EXIT;
+  ctx.log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -70,13 +70,13 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscViewer viewer;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Echo common parameter values.
   PetscCall(EchoOptions(ctx));
 
   // Open the viewer in "append" mode.
-  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsLog, &viewer));
+  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsLog, &viewer, &ctx));
 
   // View simulation-specific parameter values.
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Application-Specific Parameter Values\n"));
@@ -88,7 +88,7 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   // Free memory.
   PetscCall(PetscViewerDestroy(&viewer));
 
-  ECHO_FUNCTION_EXIT;
+  ctx.log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

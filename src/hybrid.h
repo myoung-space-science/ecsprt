@@ -16,14 +16,6 @@ git tag called vX.Y.Z with the message "version X.Y.Z".
 */
 #define VERSION "0.2.1"
 
-#ifdef LOG_ENTER_EXIT
-  #define ECHO_FUNCTION_ENTER {PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n--> Entering %s(...) <--\n\n", __func__));}
-  #define ECHO_FUNCTION_EXIT {PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n--> Exiting %s(...) <--\n\n", __func__));}
-#else
-  #define ECHO_FUNCTION_ENTER {}
-  #define ECHO_FUNCTION_EXIT {}
-#endif
-
 typedef enum {
   FORWARD,
   BACKWARD,
@@ -125,6 +117,7 @@ typedef struct {
   LogFunction world;
   LogFunction self;
   LogFunction ranks;
+  LogFunction checkpoint;
 } Loggers;
 
 /* Parameters common to all applications. */

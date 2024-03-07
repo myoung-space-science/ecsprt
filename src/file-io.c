@@ -16,7 +16,7 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_
   Vec           density, tmpflux, moments=ctx->moments;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Check for user-provided density file.
   PetscCall(PetscStrcmp(inpath, "", &nullPath));
@@ -68,7 +68,7 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_
   // Destroy the HDF5 viewer.
   PetscCall(PetscViewerDestroy(&viewer));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -82,18 +82,18 @@ any existing contents.
 As with `PetscViewerASCIIOpen`, you should call `PetscViewerDestroy` on the
 viewer object when you no longer need it.
 */
-PetscErrorCode OpenASCIIAppend(MPI_Comm comm, const char filename[], PetscViewer *viewer)
+PetscErrorCode OpenASCIIAppend(MPI_Comm comm, const char filename[], PetscViewer *viewer, Context *ctx)
 {
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   PetscCall(PetscViewerCreate(comm, viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERASCII));
   PetscCall(PetscViewerFileSetMode(*viewer, FILE_MODE_APPEND));
   PetscCall(PetscViewerFileSetName(*viewer, filename));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -107,7 +107,7 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   Vec           target;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Do we need to call
   // https://petsc.org/release/manualpages/Viewer/PetscViewerBinarySetUseMPIIO/
@@ -152,7 +152,7 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   // Destroy the temporary vector object.
   PetscCall(VecDestroy(&target));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -170,7 +170,7 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
   Vec           moments=ctx->moments, rhs=ctx->potential.forcing, phi=ctx->potential.solution;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Build the full file name.
   PetscCall(PetscStrcat(name, insert));
@@ -212,23 +212,23 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
   // Destroy the HDF5 viewer.
   PetscCall(PetscViewerDestroy(&viewer));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 
-PetscErrorCode ViewLHS(KSP ksp)
+PetscErrorCode ViewLHS(KSP ksp, Context *ctx)
 {
   PetscViewer viewer;
   Mat A, P;
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   PetscCall(KSPGetOperators(ksp, &A, &P));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "lhs.dat", FILE_MODE_WRITE, &viewer));
   PetscCall(MatView(A, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

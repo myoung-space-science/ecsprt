@@ -32,7 +32,7 @@ PetscErrorCode ProcessSolverOptions(Context ctx, Application *app)
   PetscBool found;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "--input", strArg, sizeof(strArg), &found));
   if (found) {
@@ -67,7 +67,7 @@ PetscErrorCode ProcessSolverOptions(Context ctx, Application *app)
     app->fluxScale[2] = realArg;
   }
 
-  ECHO_FUNCTION_EXIT;
+  ctx.log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -77,13 +77,13 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscViewer viewer;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx.log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Echo common parameter values.
   PetscCall(EchoOptions(ctx));
 
   // Open the viewer in "append" mode.
-  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsLog, &viewer));
+  PetscCall(OpenASCIIAppend(PETSC_COMM_WORLD, ctx.optionsLog, &viewer, &ctx));
 
   // View simulation-specific parameter values.
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Application-Specific Parameter Values\n"));
@@ -97,7 +97,7 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   // Free memory.
   PetscCall(PetscViewerDestroy(&viewer));
 
-  ECHO_FUNCTION_EXIT;
+  ctx.log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -162,7 +162,7 @@ int main(int argc, char **args)
     PetscBool found, true;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "--view-lhs", &true, &found));
     if (found && true) {
-      PetscCall(ViewLHS(ksp));
+      PetscCall(ViewLHS(ksp, &ctx));
     }
   }
 
@@ -171,7 +171,7 @@ int main(int argc, char **args)
     PetscBool found, true;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "--lhs-eigenvalues", &true, &found));
     if (found && true) {
-      PetscCall(ComputeLHSEigenvalues(ksp));
+      PetscCall(ComputeLHSEigenvalues(ksp, &ctx));
     }
   }
 

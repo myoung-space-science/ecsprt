@@ -13,7 +13,7 @@ PetscErrorCode UniformDistributionFromCoordinates(Context *ctx)
   DM        swarmDM=ctx->swarmDM;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   min[0] = ctx->grid.x0 + 0.0*ctx->grid.dx;
   min[1] = ctx->grid.y0 + 0.0*ctx->grid.dy;
@@ -28,7 +28,7 @@ PetscErrorCode UniformDistributionFromCoordinates(Context *ctx)
   // Use a built-in PETSc routine for setting up a uniform distribution.
   PetscCall(DMSwarmSetPointsUniformCoordinates(swarmDM, min, max, npd, INSERT_VALUES));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -46,7 +46,7 @@ PetscErrorCode UniformDistributionCellCentered(Context *ctx)
   PetscInt     ip;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get information about the discrete grid.
   PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
@@ -79,7 +79,7 @@ PetscErrorCode UniformDistributionCellCentered(Context *ctx)
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -98,7 +98,7 @@ PetscErrorCode UniformDistribution(Context *ctx)
   PetscReal    d[NDIM]={ctx->grid.dx, ctx->grid.dy, ctx->grid.dz};
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get information about the discrete grid.
   PetscCall(DMDAGetCorners(fluidDM, &i0, &j0, &k0, &ni, &nj, &nk));
@@ -141,7 +141,7 @@ PetscErrorCode UniformDistribution(Context *ctx)
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -163,7 +163,7 @@ PetscErrorCode SobolDistribution(Context *ctx)
   PetscReal      xmin, xmax, ymin, ymax, zmin, zmax;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get the total number of particles in the swarm.
   PetscCall(DMSwarmGetSize(swarmDM, &Np));
@@ -239,7 +239,7 @@ PetscErrorCode SobolDistribution(Context *ctx)
   // Free the positions-array memory.
   PetscCall(PetscFree(pos));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -276,7 +276,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   PetscInt     it=0;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Get a representation of the ion coordinates.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
@@ -330,7 +330,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   // Destroy the random-number generator.
   PetscCall(PetscRandomDestroy(&random));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

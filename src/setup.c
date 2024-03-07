@@ -10,20 +10,22 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   PetscReal tmp;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
 
   // Declare the name of the options log.
   PetscCall(PetscStrcpy(ctx->optionsLog, "options.log"));
 
   // Copy the logging functions.
-  if (cli.logLevel > 0) {
-    ctx->log.world   = printWorld;
-    ctx->log.self    = printSelf;
-    ctx->log.ranks   = printRanks;
-  } else {
-    ctx->log.world   = printNone;
-    ctx->log.self    = printNone;
-    ctx->log.ranks   = printNone;
+  ctx->log.world        = printNone;
+  ctx->log.self         = printNone;
+  ctx->log.ranks        = printNone;
+  ctx->log.checkpoint   = printNone;
+  if (cli.logLevel >= 1) {
+    ctx->log.world      = printWorld;
+    ctx->log.self       = printSelf;
+    ctx->log.ranks      = printRanks;
+  }
+  if (cli.logLevel >= 2) {
+    ctx->log.checkpoint = printWorld;
   }
 
   // Set the LHS function based on LHS type.
@@ -233,7 +235,6 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   // TODO: Should we set default collision frequencies based on an analytic
   // formulation (e.g., from Schunk & Nagy)?
 
-  ECHO_FUNCTION_EXIT;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -243,12 +244,12 @@ PetscErrorCode DestroyContext(Context *ctx)
 {
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   PetscCall(VecDestroy(&ctx->moments));
   PetscCall(DMDestroy(&ctx->swarmDM));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -276,7 +277,7 @@ PetscErrorCode CreateGridDM(Context *ctx)
   DM              dm;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Create the DM.
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &dm));
@@ -349,7 +350,7 @@ PetscErrorCode CreateGridDM(Context *ctx)
   // Assign the grid DM to the application context.
   ctx->fluidDM = dm;
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -377,7 +378,7 @@ PetscErrorCode CreatePotentialDM(Context *ctx)
   PetscInt        width=2;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Create the DM object.
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &ctx->potential.dm));
@@ -394,7 +395,7 @@ PetscErrorCode CreatePotentialDM(Context *ctx)
   // Associate the user context with this DM.
   PetscCall(DMSetApplicationContext(ctx->potential.dm, &ctx));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -432,7 +433,7 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   PetscReal       z1=ctx->grid.z1;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Create the cell DM.
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &cellDM));
@@ -479,7 +480,7 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   // Assign the ions DM to the application context.
   ctx->swarmDM = ionsDM;
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

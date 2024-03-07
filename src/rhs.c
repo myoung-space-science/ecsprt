@@ -10,7 +10,7 @@ PetscErrorCode ComputeConstantRHS(KSP ksp, Vec b, void *user)
   PetscReal  val;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Set the RHS vector equal to the background density.
   val = ctx->plasma.n0 * ctx->potential.scale;
@@ -19,7 +19,7 @@ PetscErrorCode ComputeConstantRHS(KSP ksp, Vec b, void *user)
   // Store the RHS vector in the problem context.
   ctx->potential.forcing = b;
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -43,7 +43,7 @@ PetscErrorCode ComputeSinusoidalRHS(KSP ksp, Vec b, void *user)
   MatNullSpace nullspace;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Zero the incoming vector.
   PetscCall(VecZeroEntries(b));
@@ -84,7 +84,7 @@ PetscErrorCode ComputeSinusoidalRHS(KSP ksp, Vec b, void *user)
   // Store the RHS vector in the problem context.
   ctx->potential.forcing = b;
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -118,7 +118,7 @@ PetscErrorCode ComputeFullRHS(KSP ksp, Vec b, void *user)
   MatNullSpace      nullspace;
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Precompute scale factors for each term.
   cth = ctx->gammaT * KB * ctx->electrons.T / Q;
@@ -201,7 +201,7 @@ PetscErrorCode ComputeFullRHS(KSP ksp, Vec b, void *user)
   // Store the RHS vector in the problem context.
   ctx->potential.forcing = b;
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

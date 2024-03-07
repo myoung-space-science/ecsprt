@@ -696,7 +696,7 @@ PetscErrorCode ComputeGradient(Vec F, Vec f[NDIM], Context *ctx)
   MatStencil   cols[stencilSize];
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Compute differential scale factors.
   hx = 1.0 / (2.0*dx);
@@ -761,7 +761,7 @@ PetscErrorCode ComputeGradient(Vec F, Vec f[NDIM], Context *ctx)
   PetscCall(MatMult(Ay, F, f[1]));
   PetscCall(MatMult(Az, F, f[2]));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -785,7 +785,7 @@ PetscErrorCode ComputeLaplacian(Vec F, Vec *f, Context *ctx)
   MatStencil   cols[stencilSize];
 
   PetscFunctionBeginUser;
-  ECHO_FUNCTION_ENTER;
+  ctx->log.checkpoint("\n--> Entering %s <--\n\n", __func__);
 
   // Compute differential scale factors.
   hxx =  1.0 / (dx*dx);
@@ -861,7 +861,7 @@ PetscErrorCode ComputeLaplacian(Vec F, Vec *f, Context *ctx)
   // Compute the discrete Laplacian.
   PetscCall(MatMult(A, F, *f));
 
-  ECHO_FUNCTION_EXIT;
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
