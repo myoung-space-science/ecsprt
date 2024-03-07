@@ -297,7 +297,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
       }
     }
   }
-  PRINT_RANKS("[%d] Local maximum density: %g\n", ctx->mpi.rank, localMax);
+  ctx->log.ranks("[%d] Local maximum density: %g\n", ctx->mpi.rank, localMax);
 
   // Get the local number of ions.
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
@@ -321,8 +321,8 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   }
 
   // Echo rejection efficiency.
-  NEWLINE;
-  PRINT_RANKS("[%d] Rejection efficiency: %f\n", ctx->mpi.rank, (PetscReal)ip/it);
+  ctx->log.world("\n");
+  ctx->log.ranks("[%d] Rejection efficiency: %f\n", ctx->mpi.rank, (PetscReal)ip/it);
 
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));

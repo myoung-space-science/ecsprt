@@ -21,7 +21,7 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_
   // Check for user-provided density file.
   PetscCall(PetscStrcmp(inpath, "", &nullPath));
   if (nullPath) {
-    PRINT_WORLD("Warning: Got empty path to density file; using built-in sinusoidal form of RHS.\n");
+    ctx->log.world("Warning: Got empty path to density file; using built-in sinusoidal form of RHS.\n");
     ctx->potential.rhs = ComputeSinusoidalRHS;
     PetscFunctionReturn(PETSC_SUCCESS);
   } else {
@@ -36,14 +36,14 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_
 
   // Load density from the HDF5 file.
   PetscCall(DMCreateFieldDecomposition(fluidDM, &Nf, &keys, NULL, &dms));
-  PRINT_WORLD("Attempting to load density from %s\n", fullpath);
+  ctx->log.world("Attempting to load density from %s\n", fullpath);
   field = 0;
   dm = dms[field];
   PetscCall(DMGetGlobalVector(dm, &density));
   PetscCall(PetscObjectSetName((PetscObject)density, "density-kji"));
   PetscCall(VecLoad(density, viewer));
   PetscCall(VecStrideScatter(density, field, moments, INSERT_VALUES));
-  PRINT_WORLD("Loaded density\n");
+  ctx->log.world("Loaded density\n");
 
   // Convert density into fluxes.
   for (field=1; field<Nf; field++) {
@@ -52,7 +52,7 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_
     PetscCall(VecZeroEntries(tmpflux));
     PetscCall(VecAXPY(tmpflux, fluxScale[field-1], density));
     PetscCall(VecStrideScatter(tmpflux, field, moments, INSERT_VALUES));
-    PRINT_WORLD("Created %s from density\n", keys[field]);
+    ctx->log.world("Created %s from density\n", keys[field]);
     PetscCall(DMRestoreGlobalVector(dm, &tmpflux));
   }
   PetscCall(DMRestoreGlobalVector(dms[0], &density));

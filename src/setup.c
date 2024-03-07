@@ -1,5 +1,6 @@
 #include <petsc.h>
 #include "hybrid.h"
+#include "logging.h"
 
 
 /* Set parameter values common to simulation and solver applications. */
@@ -13,6 +14,17 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
 
   // Declare the name of the options log.
   PetscCall(PetscStrcpy(ctx->optionsLog, "options.log"));
+
+  // Copy the logging functions.
+  if (cli.logLevel > 0) {
+    ctx->log.world   = printWorld;
+    ctx->log.self    = printSelf;
+    ctx->log.ranks   = printRanks;
+  } else {
+    ctx->log.world   = printNone;
+    ctx->log.self    = printNone;
+    ctx->log.ranks   = printNone;
+  }
 
   // Set the LHS function based on LHS type.
   switch (cli.lhsType) {
@@ -102,13 +114,21 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   ctx->grid.dx = cli.dx;
   ctx->grid.dy = cli.dy;
   ctx->grid.dz = cli.dz;
+  if (cli.x1 == cli.x0) {
+      ctx->log.world("Warning: zero-width x dimension\n");
+  }
+  if (cli.y1 == cli.y0) {
+      ctx->log.world("Warning: zero-width y dimension\n");
+  }
+  if (cli.z1 == cli.z0) {
+      ctx->log.world("Warning: zero-width z dimension\n");
+  }
   ctx->grid.x0 = cli.x0;
   ctx->grid.y0 = cli.y0;
   ctx->grid.z0 = cli.z0;
   ctx->grid.x1 = cli.x1;
   ctx->grid.y1 = cli.y1;
   ctx->grid.z1 = cli.z1;
-
   /* Set up boundary conditions.
   - If one boundary type for a given dimension is periodic, the other must be
     periodic. Otherwise, the notion of periodicity is meaningless.
@@ -201,7 +221,7 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   // Set default neutral temperature equal to ion temperature.
   if (ctx->neutrals.T == -1.0) {
     ctx->neutrals.T = ctx->ions.T;
-    PRINT_WORLD("Warning: Setting neutral temperature equal to ion temperature (%.1f K)\n", ctx->ions.T);
+    ctx->log.world("Warning: Setting neutral temperature equal to ion temperature (%.1f K)\n", ctx->ions.T);
   }
 
   // Set neutral thermal velocity from temperature.

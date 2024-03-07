@@ -24,20 +24,6 @@ git tag called vX.Y.Z with the message "version X.Y.Z".
   #define ECHO_FUNCTION_EXIT {}
 #endif
 
-#ifdef SILENT
-  #define PRINT_WORLD(...) {}
-  #define PRINT_SELF(...) {}
-  #define PRINT_RANKS(...) {}
-  #define NEWLINE {}
-  #define PRINTLINE {}
-#else
-  #define PRINT_WORLD(...) {PetscCall(PetscPrintf(PETSC_COMM_WORLD, __VA_ARGS__));}
-  #define PRINT_SELF(...) {PetscCall(PetscPrintf(PETSC_COMM_SELF, __VA_ARGS__));}
-  #define PRINT_RANKS(...) {PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, __VA_ARGS__)); PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));}
-  #define NEWLINE {PRINT_WORLD("\n");}
-  #define PRINTLINE {PRINT_WORLD("%d\n", __LINE__);}
-#endif
-
 typedef enum {
   FORWARD,
   BACKWARD,

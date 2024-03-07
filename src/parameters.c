@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "lhs.h"
 #include "rhs.h"
+#include "logging.h"
 
 /* Supported RHS functions. */
 const char *RHSTypes[] = {
@@ -38,6 +39,12 @@ PetscErrorCode ProcessOptions(CLI *cli)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s\n", VERSION));
     PetscCall(PetscEnd());
   }
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "--log-level", &intArg, &found));
+  if (found && (intArg > 0)) {
+    cli->logLevel = intArg;
+  } else {
+    cli->logLevel = 0;
+  }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--rhs-type", RHSTypes, &enumArg, &found));
   if (found) {
     cli->rhsType = enumArg;
@@ -52,31 +59,19 @@ PetscErrorCode ProcessOptions(CLI *cli)
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nx", &intArg, &found));
   if (found) {
-    if (intArg < 0) {
-      PRINT_WORLD("Warning: Ignoring negative value for Nx: %d\n", intArg);
-    } else {
-      cli->Nx = intArg;
-    }
+    cli->Nx = intArg;
   } else {
     cli->Nx = -1;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Ny", &intArg, &found));
   if (found) {
-    if (intArg < 0) {
-      PRINT_WORLD("Warning: Ignoring negative value for Ny: %d\n", intArg);
-    } else {
-      cli->Ny = intArg;
-    }
+    cli->Ny = intArg;
   } else {
     cli->Ny = -1;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nz", &intArg, &found));
   if (found) {
-    if (intArg < 0) {
-      PRINT_WORLD("Warning: Ignoring negative value for Nz: %d\n", intArg);
-    } else {
-      cli->Nz = intArg;
-    }
+    cli->Nz = intArg;
   } else {
     cli->Nz = -1;
   }
@@ -122,26 +117,17 @@ PetscErrorCode ProcessOptions(CLI *cli)
   } else {
     cli->x1 = 1.0;
   }
-  if (cli->x1 == cli->x0) {
-      PRINT_WORLD("Warning: zero-width x dimension\n");
-  }
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-y1", &realArg, &found));
   if (found) {
     cli->y1 = realArg;
   } else {
     cli->y1 = 1.0;
   }
-  if (cli->y1 == cli->y0) {
-      PRINT_WORLD("Warning: zero-width y dimension\n");
-  }
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-z1", &realArg, &found));
   if (found) {
     cli->z1 = realArg;
   } else {
     cli->z1 = 1.0;
-  }
-  if (cli->z1 == cli->z0) {
-      PRINT_WORLD("Warning: zero-width z dimension\n");
   }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--x0-bc", BoundaryTypes, &enumArg, &found));
   if (found) {

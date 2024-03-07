@@ -57,7 +57,6 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   if (found) {
     app->dt = realArg;
   } else {
-    PRINT_WORLD("Warning: Setting dt = 1 / nui\n");
     app->dt = 1.0 / ctx.ions.nu;
   }
 

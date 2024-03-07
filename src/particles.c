@@ -88,9 +88,9 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
   // Echo pre-migration sizes.
   PetscCall(DMSwarmGetSize(swarmDM, &Np0));
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
-  NEWLINE;
-  PRINT_RANKS("[%d] Local # of ions before migration: %d\n", ctx->mpi.rank, np);
-  PRINT_WORLD("   Global # of ions before migration: %d\n", Np0);
+  ctx->log.world("\n");
+  ctx->log.ranks("[%d] Local # of ions before migration: %d\n", ctx->mpi.rank, np);
+  ctx->log.world("   Global # of ions before migration: %d\n", Np0);
 
   // Migrate ions among processes.
   PetscCall(DMSwarmMigrate(swarmDM, PETSC_TRUE));
@@ -98,9 +98,9 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
   // Echo post-migration sizes.
   PetscCall(DMSwarmGetSize(swarmDM, &Np1));
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
-  NEWLINE;
-  PRINT_RANKS("[%d] Local # of ions after migration: %d\n", ctx->mpi.rank, np);
-  PRINT_WORLD("   Global # of ions after migration: %d\n", Np1);
+  ctx->log.world("\n");
+  ctx->log.ranks("[%d] Local # of ions after migration: %d\n", ctx->mpi.rank, np);
+  ctx->log.world("   Global # of ions after migration: %d\n", Np1);
 
   if ((ctx->ions.xBC == BC_PERIODIC) && (ctx->ions.yBC == BC_PERIODIC) && (ctx->ions.zBC == BC_PERIODIC)) {
     if (Np1 != Np0) {
@@ -129,9 +129,9 @@ PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
   // Echo sizes.
   PetscCall(DMSwarmGetSize(swarmDM, &Np));
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
-  NEWLINE;
-  PRINT_RANKS("[%d] Local # of ions before placement: %d\n", ctx->mpi.rank, np);
-  PRINT_WORLD("   Global # of ions before placement: %d\n", Np);
+  ctx->log.world("\n");
+  ctx->log.ranks("[%d] Local # of ions before placement: %d\n", ctx->mpi.rank, np);
+  ctx->log.world("   Global # of ions before placement: %d\n", Np);
 
   // Initialize coordinates in the ions DM.
   switch(densityType) {
@@ -591,7 +591,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
   } else if (Nc < 0) {
     Nc = 0;
   }
-  PRINT_RANKS("[%d] Colliding %d particles out of %d ...\n", ctx->mpi.rank, Nc, np);
+  ctx->log.ranks("[%d] Colliding %d particles out of %d ...\n", ctx->mpi.rank, Nc, np);
 
   // Get an array representation of the ion velocities.
   PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
@@ -669,7 +669,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
       vfr = PetscSqrtReal(PetscSqr(vfx) + PetscSqr(vfy) + PetscSqr(vfz));
       ratio = vfr / viT;
       if (ratio > 10) {
-        PRINT_SELF("[%d] Warning: Refusing to accept collision that results in final speed = %4.1f times thermal speed\n", ctx->mpi.rank, ratio);
+        ctx->log.self("[%d] Warning: Refusing to accept collision that results in final speed = %4.1f times thermal speed\n", ctx->mpi.rank, ratio);
         Nf++;
         // Terminate the simulation if at least 10 collisions have failed.
         if (Nf >= 10) {
@@ -690,7 +690,7 @@ PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx)
   PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Report the number of actual collisions.
-  PRINT_WORLD("Collision efficiency: %6.4f.\n", (PetscReal)Ns/(PetscReal)(Ns+Nf));
+  ctx->log.world("Collision efficiency: %6.4f.\n", (PetscReal)Ns/(PetscReal)(Ns+Nf));
 
   ECHO_FUNCTION_EXIT;
   PetscFunctionReturn(PETSC_SUCCESS);
