@@ -250,6 +250,10 @@ PetscErrorCode SinusoidalDistribution(PetscReal x, PetscReal y, PetscReal z, Pet
 
   PetscFunctionBeginUser;
 
+  // TODO: Define runtime parameters
+  // - x, y, z amplitudes
+  // - x, y, z periods
+  // - x, y, z shifts
   fx = PetscSinReal(2*PETSC_PI * x);
   *v = 1.0 + 0.25*fx;
 
@@ -259,21 +263,30 @@ PetscErrorCode SinusoidalDistribution(PetscReal x, PetscReal y, PetscReal z, Pet
 
 PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
 {
-  PetscRandom  random;
-  DM           fluidDM=ctx->fluidDM;
-  DM           swarmDM=ctx->swarmDM;
-  PetscInt     np, ip;
-  PetscInt     i0, ni, i;
-  PetscInt     j0, nj, j;
-  PetscInt     k0, nk, k;
-  PetscReal    localMax=0.0;
-  PetscScalar *coords;
-  PetscReal    Lx=ctx->grid.Lx;
-  PetscReal    Ly=ctx->grid.Ly;
-  PetscReal    Lz=ctx->grid.Lz;
-  PetscReal    x, y, z, v, w;
-  PetscReal    r[NDIM];
-  PetscInt     it=0;
+  PetscRandom   random;
+  DM            swarmDM=ctx->swarmDM;
+  DM            cellDM;
+  PetscInt      np, ip;
+  PetscInt      i0, ni, i;
+  PetscInt      j0, nj, j;
+  PetscInt      k0, nk, k;
+  PetscReal     localMax=0.0;
+  PetscScalar  *coords;
+  PetscInt      Nx=ctx->grid.Nx;
+  PetscInt      Ny=ctx->grid.Ny;
+  PetscInt      Nz=ctx->grid.Nz;
+  PetscReal     dx=ctx->grid.dx;
+  PetscReal     dy=ctx->grid.dy;
+  PetscReal     dz=ctx->grid.dz;
+  PetscReal     Lx=ctx->grid.Lx;
+  PetscReal     Ly=ctx->grid.Ly;
+  PetscReal     Lz=ctx->grid.Lz;
+  PetscReal     x, y, z, v, w;
+  PetscReal     r[NDIM];
+  PetscInt      it=0;
+  DMDALocalInfo local;
+  PetscReal     xmin, xmax, ymin, ymax, zmin, zmax;
+  PetscReal     factor;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -287,31 +300,47 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   PetscCall(PetscRandomSetSeed(random, ctx->mpi.rank));
   PetscCall(PetscRandomSeed(random));
 
+  // Get the ion-swarm cell DM.
+  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
+
   // Compute local maximum density.
-  PetscCall(DMDAGetCorners(fluidDM, &i0, &j0, &k0, &ni, &nj, &nk));
+  PetscCall(DMDAGetCorners(cellDM, &i0, &j0, &k0, &ni, &nj, &nk));
   for (i=i0; i<i0+ni; i++) {
     for (j=j0; j<j0+nj; j++) {
       for (k=k0; k<k0+nk; k++) {
-        PetscCall(density(i, j, k, &w, ctx));
+        x = (PetscReal)i / Nx;
+        y = (PetscReal)j / Ny;
+        z = (PetscReal)k / Nz;
+        PetscCall(density(x, y, z, &w, ctx));
         localMax = PetscMax(localMax, w);
       }
     }
   }
   ctx->log.ranks("[%d] Local maximum density: %g\n", ctx->mpi.rank, localMax);
 
+  // Get the index information for this processor.
+  PetscCall(DMDAGetLocalInfo(cellDM, &local));
+  xmin = dx*local.xs;
+  xmax = dx*(local.xs + local.xm);
+  ymin = dy*local.ys;
+  ymax = dy*(local.ys + local.ym);
+  zmin = dz*local.zs;
+  zmax = dz*(local.zs + local.zm);
+
   // Get the local number of ions.
   PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
 
   // Loop over all local ions.
+  factor = 1.0 / localMax;
   ip = 0;
   while (ip < np) {
     PetscCall(PetscRandomGetValuesReal(random, NDIM, r));
-    x = r[0] * Lx;
-    y = r[1] * Ly;
-    z = r[2] * Lz;
-    PetscCall(density(x, y, z, &w, ctx));
+    x = xmin + r[0]*(xmax - xmin);
+    y = ymin + r[1]*(ymax - ymin);
+    z = zmin + r[2]*(zmax - zmin);
+    PetscCall(density(x/Lx, y/Ly, z/Lz, &w, ctx));
     PetscCall(PetscRandomGetValueReal(random, &v));
-    if (w > v * localMax) {
+    if (w*factor > v) {
       coords[ip*NDIM + 0] = x;
       coords[ip*NDIM + 1] = y;
       coords[ip*NDIM + 2] = z;
@@ -322,7 +351,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
 
   // Echo rejection efficiency.
   ctx->log.world("\n");
-  ctx->log.ranks("[%d] Rejection efficiency: %f\n", ctx->mpi.rank, (PetscReal)ip/it);
+  ctx->log.ranks("[%d] Rejection efficiency: %d (placed) / %d (attempted) = %f\n", ctx->mpi.rank, ip, it, (PetscReal)ip/it);
 
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
