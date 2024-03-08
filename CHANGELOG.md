@@ -10,6 +10,7 @@ When incrementing the version number to X.Y.Z, please do the following
 ## NEXT
 
 - Allow multiple `--options` arguments to `run.sh`
+- Rename package to ECSPRT
 
 ## v0.3.1
 
