@@ -29,14 +29,14 @@ cli=${0##*/}
 script_dir="$(dirname "$(readlink -f "${0}")")"
 
 # Define the directory that will hold dependencies.
-ecspert_deps=${script_dir}/deps
+ecsprt_deps=${script_dir}/deps
 
 # Define and create the setup log.
 setuplog=${script_dir}/"setup.log"
 > ${setuplog}
 
 # Define the value to use for PETSC_ARCH with --download-petsc.
-petsc_arch=arch-ecspert
+petsc_arch=arch-ecsprt
 
 # Define the target PETSc and SLEPc packages to download, if necessary.
 petsc_version="3.20.2"
@@ -64,7 +64,7 @@ ${textbf}SYNOPSIS${textnm}
         ${textbf}$cli${textnm} [${startul}OPTION${endul}]
 
 ${textbf}DESCRIPTION${textnm}
-        This script will perform initial setup operations for ECSPERT.
+        This script will perform initial setup operations for ECSPRT.
 
         ${textbf}-h${textnm}, ${textbf}--help${textnm}
                 Display help and exit.
@@ -72,10 +72,10 @@ ${textbf}DESCRIPTION${textnm}
                 Print informative messages during the setup process.
         ${textbf}--download-petsc${textnm}
                 Download and configure PETSc.
-                This will install PETSc in ${ecspert_deps}, under arch-ecspert.
+                This will install PETSc in ${ecsprt_deps}, under arch-ecsprt.
         ${textbf}--download-slepc${textnm}
                 Download and configure SLEPc.
-                This will install SLEPc in ${ecspert_deps}, under arch-ecspert.
+                This will install SLEPc in ${ecsprt_deps}, under arch-ecsprt.
         ${textbf}--with-petsc-dir DIR${textnm}
                 Use DIR as PETSC_DIR when building PETSc and SLEPc.
                 Ignored with --download-petsc.
@@ -286,8 +286,8 @@ install_ext_dep() {
     local package_name="${1}"
 
     # Create and enter the top-level directory for external dependencies.
-    mkdir -p ${ecspert_deps}
-    pushd ${ecspert_deps} &> /dev/null
+    mkdir -p ${ecsprt_deps}
+    pushd ${ecsprt_deps} &> /dev/null
 
     # --> PETSc
     if [ ${package_name} == "petsc" ]; then
@@ -297,7 +297,7 @@ install_ext_dep() {
         print_header "Unpacking PETSc"
         tar -xvzf ${archive} &>> ${setuplog}
         ln -s "petsc-${petsc_version}" petsc
-        pushd ${ecspert_deps}/petsc &> /dev/null
+        pushd ${ecsprt_deps}/petsc &> /dev/null
         print_header "Building PETSc\nThis may take tens of minutes"
         build_petsc
         popd &> /dev/null
@@ -311,7 +311,7 @@ install_ext_dep() {
         print_header "Unpacking SLEPc"
         tar -xvzf ${archive} &>> ${setuplog}
         ln -s "slepc-${slepc_version}" slepc
-        pushd ${ecspert_deps}/slepc &> /dev/null
+        pushd ${ecsprt_deps}/slepc &> /dev/null
         print_header "Building SLEPc\nThis may take a few minutes"
         build_slepc
         popd &> /dev/null
