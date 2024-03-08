@@ -9,6 +9,8 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+## v0.4.0
+
 - Allow multiple `--options` arguments to `run.sh`
 - Rename package to ECSPRT
 
