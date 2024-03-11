@@ -2,7 +2,7 @@
 #define CALCULUS_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 extern PetscErrorCode dFdx(PetscReal ***F, PetscReal dx, PetscInt i, PetscInt j, PetscInt k, PetscReal *f, DifferenceType type);
 extern PetscErrorCode dFdy(PetscReal ***F, PetscReal dy, PetscInt i, PetscInt j, PetscInt k, PetscReal *f, DifferenceType type);

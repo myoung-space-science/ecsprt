@@ -1,7 +1,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
 {

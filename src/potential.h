@@ -2,7 +2,7 @@
 #define POTENTIAL_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 extern PetscErrorCode ComputePotential(KSP ksp, Context *ctx);
 extern PetscErrorCode ComputeInitialPhi(KSP ksp, Vec phi, void *opts);

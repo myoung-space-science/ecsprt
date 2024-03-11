@@ -4,7 +4,7 @@
 
 When incrementing the version number to X.Y.Z, please do the following
 * create a new subsection here (below **NEXT**) with the title vX.Y.Z (YYYY-MM-DD)
-* update the version number in `src/hybrid.h`
+* update the version number in `src/ecsprt.h`
 * create a tag named "vX.Y.Z" with the message "version X.Y.Z"
 
 ## NEXT

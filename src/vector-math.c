@@ -1,5 +1,5 @@
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 
 /* Compute dF/dx to second order.

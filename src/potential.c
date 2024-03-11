@@ -1,5 +1,5 @@
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 
 /* Compute the electrostatic potential and store the result in the context. */

@@ -1,7 +1,7 @@
 #include <petsc.h>
 #include <slepceps.h>
 #include "constants.h"
-#include "hybrid.h"
+#include "ecsprt.h"
 #include "lhs.h"
 
 PetscErrorCode ComputeIdentityLHS(KSP ksp, Mat J, Mat A, void *opts)

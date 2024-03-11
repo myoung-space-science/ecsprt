@@ -1,5 +1,5 @@
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 #include "distributions.h"
 #include "random.h"
 #include "vector-math.h"

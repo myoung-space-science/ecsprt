@@ -2,7 +2,7 @@
 #define PARTICLES_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 #include "pic.h"
 
 extern PetscErrorCode InitializePositions(DensityType densityType, Context *ctx);

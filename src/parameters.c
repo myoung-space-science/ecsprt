@@ -1,5 +1,5 @@
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 #include "constants.h"
 #include "lhs.h"
 #include "rhs.h"

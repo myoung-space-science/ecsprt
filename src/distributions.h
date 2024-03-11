@@ -2,7 +2,7 @@
 #define DISTRIBUTIONS_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 // Type to be used for particle distribution functions in Rejection.
 typedef PetscErrorCode (*DistributionFunction)(PetscReal x, PetscReal y, PetscReal z, PetscReal *v, Context *ctx);

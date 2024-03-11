@@ -2,7 +2,7 @@
 #define PARAMETERS_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 extern PetscErrorCode ProcessOptions(CLI *cli);
 extern PetscErrorCode EchoOptions(Context ctx);

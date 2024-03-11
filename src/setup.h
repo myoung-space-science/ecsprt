@@ -2,7 +2,7 @@
 #define INITIALIZE_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 extern PetscErrorCode SetUpContext(CLI cli, Context *ctx);
 extern PetscErrorCode DestroyContext(Context *ctx);

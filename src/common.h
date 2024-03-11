@@ -2,7 +2,7 @@
 #define COMMON_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 extern PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx);
 extern PetscErrorCode finalize(time_t startTime, time_t endTime, Context *ctx);

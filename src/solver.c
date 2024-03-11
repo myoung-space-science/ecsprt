@@ -7,7 +7,7 @@ static char help[] = "A tool for solving the 3D quasineutral electrostatic-poten
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 #include <slepceps.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 #include "common.h"
 #include "parameters.h"
 #include "setup.h"

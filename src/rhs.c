@@ -1,6 +1,6 @@
 #include <petsc.h>
 #include "vector-math.h"
-#include "hybrid.h"
+#include "ecsprt.h"
 #include "rhs.h"
 #include "particles.h"
 

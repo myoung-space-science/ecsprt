@@ -2,7 +2,7 @@
 #define RANDOM_H
 
 #include <petsc.h>
-#include "hybrid.h"
+#include "ecsprt.h"
 
 extern float ran1(long *idum);
 extern PetscErrorCode Ran1(long *idum, PetscReal *result);
