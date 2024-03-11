@@ -7,9 +7,9 @@
 #include "rhs.h"
 #include "logging.h"
 
-/* Version number
+/* Version number, project full name, and project acronym.
 
-This will appear when a user passes the --version flag.
+These will appear when a user passes the --version flag.
 
 See CHANGELOG.md for instructions on incrementing the version number.
 */
