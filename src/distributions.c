@@ -263,60 +263,93 @@ PetscErrorCode SinusoidalDistribution(PetscReal x, PetscReal y, PetscReal z, Pet
 
 PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
 {
-  PetscRandom   random;
-  DM            swarmDM=ctx->swarmDM;
-  DM            cellDM;
-  PetscInt      np, ip;
-  PetscInt      i0, ni, i;
-  PetscInt      j0, nj, j;
-  PetscInt      k0, nk, k;
-  PetscReal     localMax=0.0;
-  PetscScalar  *coords;
-  PetscInt      Nx=ctx->grid.Nx;
-  PetscInt      Ny=ctx->grid.Ny;
-  PetscInt      Nz=ctx->grid.Nz;
-  PetscReal     dx=ctx->grid.dx;
-  PetscReal     dy=ctx->grid.dy;
-  PetscReal     dz=ctx->grid.dz;
-  PetscReal     Lx=ctx->grid.Lx;
-  PetscReal     Ly=ctx->grid.Ly;
-  PetscReal     Lz=ctx->grid.Lz;
-  PetscReal     x, y, z, v, w;
-  PetscReal     r[NDIM];
-  PetscInt      it=0;
-  DMDALocalInfo local;
-  PetscReal     xmin, xmax, ymin, ymax, zmin, zmax;
-  PetscReal     factor;
+  DM             swarmDM=ctx->swarmDM;
+  DM             cellDM;
+  PetscReal     *coords;
+  PetscInt       Np, np, ip, ic;
+  PetscRandom    random;
+  PetscInt       i, j, k;
+  PetscInt       Nx=ctx->grid.Nx;
+  PetscInt       Ny=ctx->grid.Ny;
+  PetscInt       Nz=ctx->grid.Nz;
+  PetscInt       Lx=ctx->grid.Lx;
+  PetscInt       Ly=ctx->grid.Ly;
+  PetscInt       Lz=ctx->grid.Lz;
+  PetscReal      dx=ctx->grid.dx;
+  PetscReal      dy=ctx->grid.dy;
+  PetscReal      dz=ctx->grid.dz;
+  PetscReal      maxVal=0.0, normVal;
+  PetscReal      r[NDIM];
+  PetscInt       it;
+  DMDALocalInfo  local;
+  PetscReal     *pos, x, y, z, w, v;
+  PetscReal      xmin, xmax, ymin, ymax, zmin, zmax;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
-  // Get a representation of the ion coordinates.
+  // Get the total number of particles in the swarm.
+  PetscCall(DMSwarmGetSize(swarmDM, &Np));
+
+  // Allocate a 1-D array for the global positions.
+  PetscCall(PetscMalloc1(NDIM*Np, &pos));
+
+  if (ctx->mpi.rank == 0) {
+
+    // Create a random number generator.
+    PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &random));
+    PetscCall(PetscRandomSetInterval(random, 0.0, 1.0));
+    PetscCall(PetscRandomSetSeed(random, 7));
+    PetscCall(PetscRandomSeed(random));
+
+    // Compute the maximum global density.
+    for (i=0; i<Nx; i++) {
+      for (j=0; j<Ny; j++) {
+        for (k=0; k<Nz; k++) {
+          x = (PetscReal)i / Nx;
+          y = (PetscReal)j / Ny;
+          z = (PetscReal)k / Nz;
+          PetscCall(density(x, y, z, &w, ctx));
+          maxVal = PetscMax(maxVal, w);
+        }
+      }
+    }
+
+    // Compute the global positions via rejection.
+    normVal = 1.0 / maxVal;
+    it = 0;
+    while (ip < Np) {
+      PetscCall(PetscRandomGetValuesReal(random, NDIM, r));
+      x = r[0];
+      y = r[1];
+      z = r[2];
+      PetscCall(density(x, y, z, &w, ctx));
+      PetscCall(PetscRandomGetValueReal(random, &v));
+      if (w*normVal > v) {
+        pos[ip*NDIM + 0] = x*Lx;
+        pos[ip*NDIM + 1] = y*Ly;
+        pos[ip*NDIM + 2] = z*Lz;
+        ip++;
+      }
+      it++;
+    }
+
+    // Destroy the random-number generator.
+    PetscCall(PetscRandomDestroy(&random));
+
+  }
+
+  // Broadcast the global positions array.
+  PetscCallMPI(MPI_Bcast(pos, NDIM*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
+
+  // Get a representation of the particle coordinates.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
-  // Create a random number generator.
-  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &random));
-  PetscCall(PetscRandomSetInterval(random, 0.0, 1.0));
-  PetscCall(PetscRandomSetSeed(random, ctx->mpi.rank));
-  PetscCall(PetscRandomSeed(random));
+  // Get the local number of particles.
+  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
 
   // Get the ion-swarm cell DM.
   PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
-
-  // Compute local maximum density.
-  PetscCall(DMDAGetCorners(cellDM, &i0, &j0, &k0, &ni, &nj, &nk));
-  for (i=i0; i<i0+ni; i++) {
-    for (j=j0; j<j0+nj; j++) {
-      for (k=k0; k<k0+nk; k++) {
-        x = (PetscReal)i / Nx;
-        y = (PetscReal)j / Ny;
-        z = (PetscReal)k / Nz;
-        PetscCall(density(x, y, z, &w, ctx));
-        localMax = PetscMax(localMax, w);
-      }
-    }
-  }
-  ctx->log.ranks("[%d] Local maximum density: %g\n", ctx->mpi.rank, localMax);
 
   // Get the index information for this processor.
   PetscCall(DMDAGetLocalInfo(cellDM, &local));
@@ -327,40 +360,27 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   zmin = dz*local.zs;
   zmax = dz*(local.zs + local.zm);
 
-  // Get the local number of ions.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
-
-  // Loop over all local ions.
-  factor = 1.0 / localMax;
-  ip = 0;
-  while (ip < np) {
-    PetscCall(PetscRandomGetValuesReal(random, NDIM, r));
-    x = xmin + r[0]*(xmax - xmin);
-    y = ymin + r[1]*(ymax - ymin);
-    z = zmin + r[2]*(zmax - zmin);
-    PetscCall(density(x/Lx, y/Ly, z/Lz, &w, ctx));
-    PetscCall(PetscRandomGetValueReal(random, &v));
-    if (w*factor > v) {
-      coords[ip*NDIM + 0] = x;
-      coords[ip*NDIM + 1] = y;
-      coords[ip*NDIM + 2] = z;
-      ip++;
+  // Loop over global positions and assign local positions for this rank.
+  ic = 0;
+  for (ip=0; ip<Np; ip++) {
+    x = pos[ip*NDIM + 0];
+    y = pos[ip*NDIM + 1];
+    z = pos[ip*NDIM + 2];
+    if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax) && (zmin <= z) && (z < zmax)) {
+      coords[ic*NDIM + 0] = x;
+      coords[ic*NDIM + 1] = y;
+      coords[ic*NDIM + 2] = z;
+      ic++;
     }
-    it++;
   }
-
-  // Echo rejection efficiency.
-  ctx->log.world("\n");
-  ctx->log.ranks("[%d] Rejection efficiency: %d (placed) / %d (attempted) = %f\n", ctx->mpi.rank, ip, it, (PetscReal)ip/it);
 
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
-  // Destroy the random-number generator.
-  PetscCall(PetscRandomDestroy(&random));
+  // Free the positions-array memory.
+  PetscCall(PetscFree(pos));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
 
