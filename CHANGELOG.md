@@ -9,6 +9,8 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+- Reimplement particle rejection
+
 ## v0.4.1
 
 - Fix bugs in particle initialization rejection function
