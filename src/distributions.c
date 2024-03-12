@@ -266,7 +266,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   DM             swarmDM=ctx->swarmDM;
   DM             cellDM;
   PetscReal     *coords;
-  PetscInt       Np, np, ip, ic;
+  PetscInt       Np, ip, ic;
   PetscRandom    random;
   PetscInt       i, j, k;
   PetscInt       Nx=ctx->grid.Nx;
@@ -345,9 +345,6 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
   // Get a representation of the particle coordinates.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
-  // Get the local number of particles.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
-
   // Get the ion-swarm cell DM.
   PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
 
@@ -376,6 +373,9 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
 
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+
+  // Reset the number of local particles.
+  PetscCall(DMSwarmSetLocalSizes(swarmDM, ic, -1));
 
   // Free the positions-array memory.
   PetscCall(PetscFree(pos));
