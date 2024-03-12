@@ -126,6 +126,10 @@ int main(int argc, char **args)
   ctx.log.status("Processing application-specific options\n");
   PetscCall(ProcessPICOptions(ctx, &app));
 
+  /* Echo the initial state. */
+  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
+  PetscCall(EchoSetup(ctx, app));
+
   /* Echo this stage. */
   ctx.log.status("\n=== Initial stage ===\n\n");
 
@@ -144,10 +148,6 @@ int main(int argc, char **args)
   /* Set initial particle velocities. */
   ctx.log.status("Initializing velocities\n");
   PetscCall(InitializeVelocities(&ctx));
-
-  /* Echo the initial state. */
-  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
-  PetscCall(EchoSetup(ctx, app));
 
   /* Compute initial density and flux.*/
   ctx.log.status("Collecting initial moments\n");
