@@ -225,7 +225,7 @@ mark_stage() {
 print_width() {
     local c=${1}
 
-    printf "=%.0s" $(seq 1 $(tput columns))
+    printf "=%.0s" $(seq 1 $(tput cols))
     echo 
 }
 
