@@ -10,6 +10,7 @@ When incrementing the version number to X.Y.Z, please do the following
 ## NEXT
 
 - Reimplement particle rejection
+- Fix bugs in `setup.sh` and `build.sh`
 
 ## v0.4.1
 
