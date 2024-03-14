@@ -233,7 +233,7 @@ PetscErrorCode DestroyContext(Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(VecDestroy(&ctx->moments));
-  PetscCall(DMDestroy(&ctx->swarmDM));
+  PetscCall(DMDestroy(&ctx->fluidDM));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
