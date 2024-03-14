@@ -112,38 +112,45 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
 
-  /* Initialize PETSc and MPI. */
-  initialize(argc, args, help, &ctx);
-
-  /* Assign parameter values from user arguments or defaults. */
-  PetscCall(ProcessOptions(&cli));
-
   /* Log start time. */
   time(&startTime);
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n**************** START *****************\n\n"));
+
+  /* Initialize PETSc and MPI. */
+  initialize(argc, args, help, &ctx);
 
   /* Initialize SLEPc. */
   PetscCall(SlepcInitialize(&argc, &args, (char *)0, help));
 
+  /* Assign parameter values from user arguments or defaults. */
+  ctx.log.status("Processing common options\n");
+  PetscCall(ProcessOptions(&cli));
+
   /* Set up the common application context. */
+  ctx.log.status("Setting up common parameters\n");
   PetscCall(SetUpContext(cli, &ctx));
 
   /* Process application-specific options. */
+  ctx.log.status("Processing application-specific options\n");
   PetscCall(ProcessSolverOptions(ctx, &app));
 
-  /* Set up the ions. */
-  PetscCall(CreateIonsDM(&ctx));
-
   /* Echo the initial state. */
+  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
   PetscCall(EchoSetup(ctx, app));
 
+  /* Set up the fluid grid. */
+  ctx.log.status("Creating the fluid-grid DM\n");
+  PetscCall(CreateGridDM(&ctx));
+
   /* Read density and fluxes from disk. */
+  ctx.log.status("Loading fluid quantities\n");
   PetscCall(LoadFluidQuantities(app.fluxScale, app.inpath, &ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
+  ctx.log.status("Creating the electrostatic-potential DM\n");
   PetscCall(CreatePotentialDM(&ctx));
 
   /* Set up the Krylov-solver context for the electrostatic potential. */
+  ctx.log.status("Setting up the potential solver\n");
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetDM(ksp, ctx.potential.dm));
   PetscCall(KSPSetFromOptions(ksp));
@@ -152,9 +159,11 @@ int main(int argc, char **args)
   PetscCall(KSPSetComputeOperators(ksp, ComputeLHS, &ctx));
 
   /* Compute the electrostatic potential. */
+  ctx.log.status("Computing initial potential\n");
   PetscCall(ComputePotential(ksp, &ctx));
 
   /* Output arrays. */
+  ctx.log.status("Writing fluid quantities to HDF5\n");
   PetscCall(OutputFluidHDF5("", &ctx));
 
   /* View the LHS matrix structure. */
@@ -162,6 +171,7 @@ int main(int argc, char **args)
     PetscBool found, true;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "--view-lhs", &true, &found));
     if (found && true) {
+      ctx.log.status("Writing LHS structure to binary\n");
       PetscCall(ViewLHS(ksp, &ctx));
     }
   }
@@ -171,28 +181,24 @@ int main(int argc, char **args)
     PetscBool found, true;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "--lhs-eigenvalues", &true, &found));
     if (found && true) {
+    ctx.log.status("Computing LHS eigenvalues\n");
       PetscCall(ComputeLHSEigenvalues(ksp, &ctx));
     }
   }
 
   /* Free memory. */
+  ctx.log.status("Freeing objects\n");
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DestroyContext(&ctx));
-
-  /* Log end time. */
-  time(&endTime);
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n----------------------------------------\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Start time: %s", asctime(localtime(&startTime))));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "End time:   %s", asctime(localtime(&endTime))));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Elapsed time: %f s\n", (float)(endTime-startTime)));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "----------------------------------------\n"));
 
   /* Finalize SLEPc. */
   PetscCall(SlepcFinalize());
 
-  /* Finalize PETSc and MPI. */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n***************** END ******************\n"));
-  PetscCall(PetscFinalize());
+  /* Log end time. */
+  time(&endTime);
+
+  /* Complete final tasks. */
+  finalize(startTime, endTime, &ctx);
 
   return 0;
 }
