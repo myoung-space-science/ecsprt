@@ -3,6 +3,9 @@ Electrostatic Collisional Space Plasma Research Toolkit
 
 This repository is still in the early development stage.
 
+Until further notice, this repository requires building and compiling against
+the `main` branch of PETSc in order to take advantage of crucial bug fixes.
+
 ECSPRT (pronounced like "expert") currently comprises two main programs: a
 plasma simulation and an electrostatic potential solver.
 
