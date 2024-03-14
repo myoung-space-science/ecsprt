@@ -240,6 +240,7 @@ int main(int argc, char **args)
   ctx.log.status("Freeing objects\n");
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DestroyContext(&ctx));
+  PetscCall(DMDestroy(&ctx.swarmDM));
 
   /* Log end time. */
   time(&endTime);
