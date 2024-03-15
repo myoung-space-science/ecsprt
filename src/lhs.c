@@ -19,24 +19,22 @@ PetscErrorCode ComputeIdentityLHS(KSP ksp, Mat J, Mat A, void *opts)
 }
 
 
-// Note: This is more complex than necessary because it arose as a
-// simplification of ComputeFullLHS. It could be further simplified.
 PetscErrorCode ComputeLaplacianLHS(KSP ksp, Mat J, Mat A, void *opts)
 {
   Context      *ctx=(Context *)opts;
-  PetscReal    dx=ctx->grid.dx;
-  PetscReal    dy=ctx->grid.dy;
-  PetscReal    dz=ctx->grid.dz;
-  DM           dm;
-  PetscInt     i0, j0, k0;
-  PetscInt     ni, nj, nk;
-  PetscInt     i, j, k;
-  PetscScalar  vijk=1.0;
-  PetscScalar  vpjk=0.0, vmjk=0.0, vipk=0.0, vimk=0.0, vijp=0.0, vijm=0.0;
-  MatStencil   row;
-  PetscScalar  vals[ctx->potential.stencilSize];
-  MatStencil   cols[ctx->potential.stencilSize];
-  MatNullSpace nullspace;
+  PetscReal     dx=ctx->grid.dx;
+  PetscReal     dy=ctx->grid.dy;
+  PetscReal     dz=ctx->grid.dz;
+  DM            dm;
+  PetscInt      i0, j0, k0;
+  PetscInt      ni, nj, nk;
+  PetscInt      i, j, k;
+  PetscScalar   vijk=1.0;
+  PetscScalar   vpjk=0.0, vmjk=0.0, vipk=0.0, vimk=0.0, vijp=0.0, vijm=0.0;
+  MatStencil    row;
+  PetscScalar   vals[ctx->potential.stencilSize];
+  MatStencil    cols[ctx->potential.stencilSize];
+  MatNullSpace  nullspace;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
