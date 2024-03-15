@@ -11,6 +11,7 @@ When incrementing the version number to X.Y.Z, please do the following
 
 - Reimplement particle rejection
 - Fix bugs in `setup.sh` and `build.sh`
+- Fix bugs in, and refactor, solver `main`
 
 ## v0.4.1
 
