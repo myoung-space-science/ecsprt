@@ -22,7 +22,7 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_
   PetscCall(PetscStrcmp(inpath, "", &nullPath));
   if (nullPath) {
     ctx->log.world("Warning: Got empty path to density file; using built-in sinusoidal form of RHS.\n");
-    ctx->potential.rhs = ComputeSinusoidalRHS;
+    ctx->potential.rhs = ComputeSinusoidalRHS3D;
     PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscGetFullPath(inpath, fullpath, PETSC_MAX_PATH_LEN));

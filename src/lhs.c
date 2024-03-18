@@ -19,7 +19,81 @@ PetscErrorCode ComputeIdentityLHS(KSP ksp, Mat J, Mat A, void *opts)
 }
 
 
-PetscErrorCode ComputeLaplacianLHS(KSP ksp, Mat J, Mat A, void *opts)
+PetscErrorCode ComputeLaplacianLHS2D(KSP ksp, Mat J, Mat A, void *opts)
+{
+  Context      *ctx=(Context *)opts;
+  PetscReal     dx=ctx->grid.dx;
+  PetscReal     dy=ctx->grid.dy;
+  DM            dm;
+  PetscInt      i0, j0;
+  PetscInt      ni, nj;
+  PetscInt      i, j;
+  PetscScalar   vijk=1.0;
+  PetscScalar   vpjk=0.0, vmjk=0.0, vipk=0.0, vimk=0.0;
+  MatStencil    row;
+  PetscScalar   vals[ctx->potential.stencilSize];
+  MatStencil    cols[ctx->potential.stencilSize];
+  MatNullSpace  nullspace;
+
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Assign the star-stencil coefficients.
+  vpjk =  1.0 / (dx*dx);
+  vmjk =  1.0 / (dx*dx);
+  vipk =  1.0 / (dy*dy);
+  vimk =  1.0 / (dy*dy);
+
+  // Assign the diagonal coefficient.
+  vijk = -(vpjk + vipk + vmjk + vimk);
+
+  // Get the DM associated with the KSP.
+  PetscCall(KSPGetDM(ksp, &dm));
+
+  // Get this processor's indices.
+  PetscCall(DMDAGetCorners(dm, &i0, &j0, NULL, &ni, &nj, NULL));
+
+  // Loop over grid points. [DEV] Assume periodic BC.
+  for (j=j0; j<j0+nj; j++) {
+    for (i=i0; i<i0+ni; i++) {
+      row.i = i; row.j = j;
+      // Assign the value at node (i+1, j, k)
+      vals[0] = vpjk;
+      cols[0].i = i+1;
+      cols[0].j = j;
+      // Assign the value at node (i-1, j, k)
+      vals[1] = vmjk;
+      cols[1].i = i-1;
+      cols[1].j = j;
+      // Assign the value at node (i, j+1, k)
+      vals[2] = vipk;
+      cols[2].i = i;
+      cols[2].j = j+1;
+      // Assign the value at node (i, j-1, k)
+      vals[3] = vimk;
+      cols[3].i = i;
+      cols[3].j = j-1;
+      // Assign the value at node (i, j, k)
+      vals[4] = vijk;
+      cols[4].i = i;
+      cols[4].j = j;
+      PetscCall(MatSetValuesStencil(A, 1, &row, ctx->potential.stencilSize, cols, vals, INSERT_VALUES));
+    }
+  }
+
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
+  PetscCall(MatSetNullSpace(A, nullspace));
+  PetscCall(MatNullSpaceDestroy(&nullspace));
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode ComputeLaplacianLHS3D(KSP ksp, Mat J, Mat A, void *opts)
 {
   Context      *ctx=(Context *)opts;
   PetscReal     dx=ctx->grid.dx;
@@ -113,7 +187,150 @@ PetscErrorCode ComputeLaplacianLHS(KSP ksp, Mat J, Mat A, void *opts)
 }
 
 
-PetscErrorCode ComputeFullLHS(KSP ksp, Mat J, Mat A, void *opts)
+PetscErrorCode ComputeFullLHS2D(KSP ksp, Mat J, Mat A, void *opts)
+{
+  Context       *ctx=(Context *)opts;
+  DM             fluidDM=ctx->fluidDM;
+  PetscReal      kappa=ctx->electrons.kappa;
+  PetscReal      dx=ctx->grid.dx;
+  PetscReal      dy=ctx->grid.dy;
+  PetscReal      hxx, hyy, hod;
+  PetscReal      scale=ctx->potential.scale;
+  PetscReal      sxx, syy, sod;
+  Vec            moments;
+  FluidNode    **fluid;
+  DM             dm;
+  PetscInt       i0, j0;
+  PetscInt       ni, nj;
+  PetscInt       i, j;
+  PetscReal      nijk, npjk, nmjk, nipk, nimk;
+  Vec            F;
+  PetscReal    **f;
+  MatStencil     row;
+  PetscReal      vals[ctx->potential.stencilSize];
+  MatStencil     cols[ctx->potential.stencilSize];
+  MatNullSpace   nullspace;
+
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Compute geometric scale factors for stencil values.
+  hxx = 1.0 / (2.0 * dx*dx);
+  hyy = 1.0 / (2.0 * dy*dy);
+  hod = 1.0 / (8.0 * dy*dx);
+
+  // Compute coefficient scale factors;
+  sxx = scale * hxx;
+  syy = scale * hyy;
+  sod = scale * kappa*hod;
+
+  // Get density and flux arrays.
+  PetscCall(DMGetLocalVector(fluidDM, &moments));
+  PetscCall(DMGlobalToLocalBegin(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMGlobalToLocalEnd(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMDAVecGetArray(fluidDM, moments, &fluid));
+
+  // Get the DM associated with the KSP.
+  PetscCall(KSPGetDM(ksp, &dm));
+
+  // Get a local fluid of zeros that shares data with the KSP DM.
+  PetscCall(DMGetLocalVector(dm, &F));
+  PetscCall(VecZeroEntries(F));
+  PetscCall(DMDAVecGetArray(dm, F, &f));
+
+  // Get this processor's indices.
+  PetscCall(DMDAGetCorners(dm, &i0, &j0, NULL, &ni, &nj, NULL));
+
+  // Loop over grid points.
+  for (j=j0; j<j0+nj; j++) {
+    for (i=i0; i<i0+ni; i++) {
+
+      // Assign density values.
+      nijk = fluid[j][i].n;
+      nmjk = fluid[j][i-1].n;
+      npjk = fluid[j][i+1].n;
+      nimk = fluid[j-1][i].n;
+      nipk = fluid[j+1][i].n;
+
+      // Assign the x-y corner coefficients
+      f[j+1][i+1] = sod*(nipk - npjk);
+      f[j-1][i+1] = sod*(npjk - nimk);
+      f[j+1][i-1] = sod*(nmjk - nipk);
+      f[j-1][i-1] = sod*(nimk - nmjk);
+
+      // Assign the star-stencil coefficients
+      f[j][i+1] =  sxx*(npjk + nijk) + sod*(nipk - nimk);
+      f[j][i-1] =  sxx*(nijk + nmjk) - sod*(nipk - nimk);
+      f[j+1][i] =  syy*(nipk + nijk) - sod*(npjk - nmjk);
+      f[j-1][i] =  syy*(nijk + nimk) + sod*(npjk - nmjk);
+
+      // Assign the diagonal coefficient
+      f[j][i] = -(sxx*(npjk + 2*nijk + nmjk) + syy*(nipk + 2*nijk + nimk));
+
+      // Assign the value at node (i+1, j, k).
+      vals[0] = f[j][i+1];
+      cols[0].i = i+1;
+      cols[0].j = j;
+      // Assign the value at node (i-1, j, k).
+      vals[1] = f[j][i-1];
+      cols[1].i = i-1;
+      cols[1].j = j;
+      // Assign the value at node (i, j+1, k).
+      vals[2] = f[j+1][i];
+      cols[2].i = i;
+      cols[2].j = j+1;
+      // Assign the value at node (i, j-1, k).
+      vals[3] = f[j-1][i];
+      cols[3].i = i;
+      cols[3].j = j-1;
+      // Assign the value at node (i+1, j+1, k).
+      vals[4] = f[j+1][i+1];
+      cols[4].i = i+1;
+      cols[4].j = j+1;
+      // Assign the value at node (i+1, j-1, k).
+      vals[5] = f[j-1][i+1];
+      cols[5].i = i+1;
+      cols[5].j = j-1;
+      // Assign the value at node (i-1, j+1, k).
+      vals[6] = f[j+1][i-1];
+      cols[6].i = i-1;
+      cols[6].j = j+1;
+      // Assign the value at node (i-1, j-1, k).
+      vals[7] = f[j-1][i-1];
+      cols[7].i = i-1;
+      cols[7].j = j-1;
+      // Assign the value at node (i, j, k).
+      vals[8] = f[j][i];
+      cols[8].i = i;
+      cols[8].j = j;
+      row.i = i; row.j = j;
+      PetscCall(MatSetValuesStencil(A, 1, &row, ctx->potential.stencilSize, cols, vals, INSERT_VALUES));
+    }
+  }
+
+  // Restore the coefficient array and corresponding vector.
+  PetscCall(DMDAVecRestoreArray(dm, F, &f));
+  PetscCall(DMRestoreLocalVector(dm, &F));
+
+  // Restore density array and corresponding vector.
+  PetscCall(DMDAVecRestoreArray(fluidDM, moments, &fluid));
+  PetscCall(DMRestoreLocalVector(fluidDM, &moments));
+
+  // Assemble the distributed operator matrix.
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+
+  // Remove the operator null space.
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
+  PetscCall(MatSetNullSpace(A, nullspace));
+  PetscCall(MatNullSpaceDestroy(&nullspace));
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode ComputeFullLHS3D(KSP ksp, Mat J, Mat A, void *opts)
 {
   Context        *ctx=(Context *)opts;
   DM              fluidDM=ctx->fluidDM;
