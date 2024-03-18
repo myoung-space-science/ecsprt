@@ -22,13 +22,33 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
     ctx->potential.stencilType = DMDA_STENCIL_STAR;
     break;
   case LHS_LAPLACIAN:
-    ctx->potential.lhs = ComputeLaplacianLHS;
-    ctx->potential.stencilSize = 7;
+    switch (cli.ndim) {
+    case 2:
+      ctx->potential.lhs = ComputeLaplacianLHS2D;
+      ctx->potential.stencilSize = 5;
+      break;
+    case 3:
+      ctx->potential.lhs = ComputeLaplacianLHS3D;
+      ctx->potential.stencilSize = 7;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
+    }
     ctx->potential.stencilType = DMDA_STENCIL_STAR;
     break;
   case LHS_FULL:
-    ctx->potential.lhs = ComputeFullLHS;
-    ctx->potential.stencilSize = 11;
+    switch (cli.ndim) {
+    case 2:
+      ctx->potential.lhs = ComputeFullLHS2D;
+      ctx->potential.stencilSize = 9;
+      break;
+    case 3:
+      ctx->potential.lhs = ComputeFullLHS3D;
+      ctx->potential.stencilSize = 11;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
+    }
     ctx->potential.stencilType = DMDA_STENCIL_BOX;
     break;
   default:
@@ -41,10 +61,30 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
     ctx->potential.rhs = ComputeConstantRHS;
     break;
   case RHS_SINUSOIDAL:
-    ctx->potential.rhs = ComputeSinusoidalRHS;
+    switch (cli.ndim)
+    {
+    case 2:
+      ctx->potential.rhs = ComputeSinusoidalRHS2D;
+      break;
+    case 3:
+      ctx->potential.rhs = ComputeSinusoidalRHS3D;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
+    }
     break;
   case RHS_FULL:
-    ctx->potential.rhs = ComputeFullRHS;
+    switch (cli.ndim)
+    {
+    case 2:
+      ctx->potential.rhs = ComputeFullRHS2D;
+      break;
+    case 3:
+      ctx->potential.rhs = ComputeFullRHS3D;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
+    }
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unknown RHS type: \"%s\"\n", RHSTypes[cli.rhsType]);
