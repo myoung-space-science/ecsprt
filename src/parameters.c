@@ -44,6 +44,12 @@ PetscErrorCode ProcessOptions(CLI *cli)
   } else {
     cli->lhsType = LHS_FULL;
   }
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ndim", &intArg, &found));
+  if (found) {
+    cli->ndim = intArg;
+  } else {
+    cli->ndim = 3;
+  }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nx", &intArg, &found));
   if (found) {
     cli->Nx = intArg;
