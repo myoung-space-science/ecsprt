@@ -141,6 +141,7 @@ typedef struct {
 
 /* Command-line options for all applications. */
 typedef struct {
+  PetscInt     ndim;    // number of spatial dimensions
   RHSType      rhsType; // type of RHS vector to use
   LHSType      lhsType; // type of LHS operator to use
   PetscInt     Nx;      // number of cells in x dimension
