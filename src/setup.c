@@ -6,6 +6,7 @@
 #include "particles.h"
 #include "moments.h"
 #include "boundaries.h"
+#include "collisions.h"
 
 
 /* Set parameter values common to simulation and solver applications. */
@@ -108,6 +109,7 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
   }
+  ctx->ions.collide = ScatterElastic;
 
   // Set fundamental parameter values.
   ctx->electrons.q = -Q;
