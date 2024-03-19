@@ -11,6 +11,7 @@ static char help[] = "A 3D hybrid particle-in-cell (PIC) simulation.";
 #include "parameters.h"
 #include "setup.h"
 #include "positions.h"
+#include "velocities.h"
 #include "particles.h"
 #include "potential.h"
 #include "file-io.h"
@@ -22,6 +23,7 @@ typedef struct {
   PetscInt    it;          // time-step counter
   PetscInt    Dt;          // output cadence
   DensityType densityType; // type of initial density
+  VelocitiesType velocitiesType; // type of initial velocity distribution
 } Application;
 
 /* Process command-line arguments specific to the PIC simulation. */
@@ -40,6 +42,12 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
     app->densityType = enumArg;
   } else {
     app->densityType = DENSITY_FLAT_SOBOL;
+  }
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--velocity-dist", VelocitiesTypes, &enumArg, &found));
+  if (found) {
+    app->velocitiesType = enumArg;
+  } else {
+    app->velocitiesType = VELOCITIES_NORMAL;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nt", &intArg, &found));
   if (found) {
@@ -147,7 +155,7 @@ int main(int argc, char **args)
 
   /* Set initial particle velocities. */
   ctx.log.status("Initializing velocities\n");
-  PetscCall(InitializeVelocities(&ctx));
+  PetscCall(InitializeVelocities(app.velocitiesType, &ctx));
 
   /* Compute initial density and flux.*/
   ctx.log.status("Collecting initial moments\n");
