@@ -3,6 +3,7 @@
 #include "lhs.h"
 #include "rhs.h"
 #include "logging.h"
+#include "particles.h"
 
 
 /* Set parameter values common to simulation and solver applications. */
@@ -90,6 +91,18 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unknown RHS type: \"%s\"\n", RHSTypes[cli.rhsType]);
+  }
+
+  switch (cli.ndim)
+  {
+  case 2:
+    ctx->ions.applyBC = Apply2DBC;
+    break;
+  case 3:
+    ctx->ions.applyBC = Apply3DBC;
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
   }
 
   // Set fundamental parameter values.
