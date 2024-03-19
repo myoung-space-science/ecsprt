@@ -4,6 +4,7 @@ default: pic
 
 pic: pic.o \
 		common.o \
+		moments.o \
 		vector-math.o \
 		file-io.o \
 		lhs.o \
@@ -20,6 +21,7 @@ pic: pic.o \
 
 solver: solver.o \
 		common.o \
+		moments.o \
 		vector-math.o \
 		file-io.o \
 		lhs.o \
