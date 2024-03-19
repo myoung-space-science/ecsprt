@@ -1,9 +1,9 @@
-#ifndef SIMULATION_H
-#define SIMULATION_H
+#ifndef PIC_H
+#define PIC_H
 
 #include <petsc.h>
 
-/* Supported density functions. */
+/* Defined types of density functions. */
 typedef enum {
   DENSITY_FLAT_SOBOL,
   DENSITY_FLAT_REVERSE,
@@ -15,6 +15,15 @@ typedef enum {
   DENSITY_GAUSSIAN,
 } DensityType;
 
+/* Array that will hold names of density functions. */
 extern const char *DensityTypes[];
 
-#endif // SIMULATION_H
+/* Defined types of initial velocity distributions */
+typedef enum {
+  VELOCITIES_NORMAL
+} VelocitiesType;
+
+/* Array that will hold names of initial velocity distributions. */
+extern const char *VelocitiesTypes[];
+
+#endif // PIC_H
