@@ -5,6 +5,8 @@
 #include "ecsprt.h"
 #include "pic.h"
 
+extern PetscErrorCode Apply2DBC(PetscInt np, PetscReal *pos, PetscReal *vel, void *opts);
+extern PetscErrorCode Apply3DBC(PetscInt np, PetscReal *pos, PetscReal *vel, void *opts);
 extern PetscErrorCode InitializePositions(DensityType densityType, Context *ctx);
 extern PetscErrorCode InitializeVelocities(Context *ctx);
 extern PetscErrorCode CollectFluidMoments(Context *ctx);
