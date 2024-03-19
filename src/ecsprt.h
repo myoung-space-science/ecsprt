@@ -97,6 +97,7 @@ typedef struct {
   BCType    xBC;     // x-axis boundary condition
   BCType    yBC;     // y-axis boundary condition
   BCType    zBC;     // z-axis boundary condition
+  BCFunc    applyBC; // function to use when applying boundary conditions
 } Species;
 
 /* Parameters of the linear potential system. */
