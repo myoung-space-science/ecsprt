@@ -308,16 +308,94 @@ PetscErrorCode DestroyContext(Context *ctx)
 }
 
 
-/* Create the data manager for Eulerian fluid quantities.
+PetscErrorCode Create2DGridDM(Context *ctx)
+{
+  PetscInt        Nx=(ctx->grid.Nx > 0 ? ctx->grid.Nx : 7);
+  PetscInt        Ny=(ctx->grid.Ny > 0 ? ctx->grid.Ny : 7);
+  DMBoundaryType  xBC=ctx->grid.xBC;
+  DMBoundaryType  yBC=ctx->grid.yBC;
+  DMDAStencilType stencilType=ctx->potential.stencilType;
+  PetscInt        dof=4;
+  PetscInt        width=1;
+  DM              dm;
 
-This routine ultimately determines the number of grid cells in each dimension
-(Nx, Ny, and Nz) and the total number of charged particles (Np). In the former
-case, we want to let the user specify Nx, Ny, or Nz via the PETSc options
-`-da_grid_x`, `-da_grid_y`, and `-da_grid_z`. In the latter case, we want the
-default value of Np to correspond to one particle per cell, which we can't
-compute until we are certain about the values of Nx, Ny, and Nz.
-*/
-PetscErrorCode CreateGridDM(Context *ctx)
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Create the DM.
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, xBC, yBC, stencilType, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, &dm));
+  // Perform basic setup.
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "grid_"));
+  PetscCall(DMDASetElementType(dm, DMDA_ELEMENT_Q1));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "GridDM"));
+  // Synchronize values of Nx, Ny, and Nz.
+  PetscCall(DMDAGetInfo(dm, NULL, &Nx, &Ny, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  if (ctx->grid.Nx == -1) {
+    ctx->grid.Nx = Nx;
+  }
+  if (ctx->grid.Ny == -1) {
+    ctx->grid.Ny = Ny;
+  }
+  // Set the local number of points in each dimension.
+  PetscCall(DMDAGetCorners(dm, NULL, NULL, NULL, &ctx->grid.nx, &ctx->grid.ny, NULL));
+  // Set the number of charged particles equal to the default, if necessary.
+  if (ctx->plasma.Np == -1) {
+    ctx->plasma.Np = ctx->grid.Nx * ctx->grid.Ny * ctx->grid.Nz;
+  }
+  /* Set the physical grid attributes.
+
+  At this point, the code has set the values of Nx, Ny, and Nz. Let q represent
+  each of {x,y,z}. If the user did not pass in a positive value for dq, this
+  section will set Lq = q1-q0 and compute dq in terms of Lq. Otherwise it will
+  compute Lq, q0, and q1 in terms of dq and Nq. Note that the latter case may
+  result in overwriting user values of q0 and q1.
+  */
+  if (ctx->grid.dx <= 0.0) {
+    ctx->grid.Lx = ctx->grid.x1 - ctx->grid.x0;
+    ctx->grid.dx = ctx->grid.Lx / (PetscReal)ctx->grid.Nx;
+  } else {
+    ctx->grid.Lx = ctx->grid.dx * (PetscReal)ctx->grid.Nx;
+    ctx->grid.x0 = 0.0;
+    ctx->grid.x1 = ctx->grid.Lx;
+  }
+  if (ctx->grid.dy <= 0.0) {
+    ctx->grid.Ly = ctx->grid.y1 - ctx->grid.y0;
+    ctx->grid.dy = ctx->grid.Ly / (PetscReal)ctx->grid.Ny;
+  } else {
+    ctx->grid.Ly = ctx->grid.dy * (PetscReal)ctx->grid.Ny;
+    ctx->grid.y0 = 0.0;
+    ctx->grid.y1 = ctx->grid.Ly;
+  }
+  if (ctx->grid.dz <= 0.0) {
+    ctx->grid.Lz = ctx->grid.z1 - ctx->grid.z0;
+    ctx->grid.dz = ctx->grid.Lz / (PetscReal)ctx->grid.Nz;
+  } else {
+    ctx->grid.Lz = ctx->grid.dz * (PetscReal)ctx->grid.Nz;
+    ctx->grid.z0 = 0.0;
+    ctx->grid.z1 = ctx->grid.Lz;
+  }
+
+  // Set uniform coordinates on the DM.
+  PetscCall(DMDASetUniformCoordinates(dm, ctx->grid.x0, ctx->grid.x1, ctx->grid.y0, ctx->grid.y1, 0.0, 0.0));
+  // Declare grid-quantity names.
+  PetscCall(DMDASetFieldName(dm, 0, "density"));
+  PetscCall(DMDASetFieldName(dm, 1, "x flux"));
+  PetscCall(DMDASetFieldName(dm, 2, "y flux"));
+  PetscCall(DMDASetFieldName(dm, 3, "z flux"));
+  // Create a persistent vector for outputing fluid quantities.
+  PetscCall(DMCreateGlobalVector(dm, &ctx->moments));
+  PetscCall(VecZeroEntries(ctx->moments));
+  // Assign the grid DM to the application context.
+  ctx->fluidDM = dm;
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode Create3DGridDM(Context *ctx)
 {
   PetscInt        Nx=(ctx->grid.Nx > 0 ? ctx->grid.Nx : 7);
   PetscInt        Ny=(ctx->grid.Ny > 0 ? ctx->grid.Ny : 7);
@@ -409,17 +487,71 @@ PetscErrorCode CreateGridDM(Context *ctx)
 }
 
 
-/* Create the data manager for the electrostatic potential.
+/* Create the data manager for Eulerian fluid quantities.
 
-The logical grid for the electrostatic potential will have the same shape,
-stencil type, and boundary conditions as the logical grid for fluid quantities.
-Unlike the latter, it will use a stencil width of 2 in order to accommodate
-second-order finite differencing of the electric field.
-
-This function should follow `CreateGridDM`, which performs various set-up and
-sychronization tasks on grid parameters.
+This routine ultimately determines the number of grid cells in each dimension
+(Nx, Ny, and Nz) and the total number of charged particles (Np). In the former
+case, we want to let the user specify Nx, Ny, or Nz via the PETSc options
+`-da_grid_x`, `-da_grid_y`, and `-da_grid_z`. In the latter case, we want the
+default value of Np to correspond to one particle per cell, which we can't
+compute until we are certain about the values of Nx, Ny, and Nz.
 */
-PetscErrorCode CreatePotentialDM(Context *ctx)
+PetscErrorCode CreateGridDM(PetscInt ndim, Context *ctx)
+{
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  switch (ndim)
+  {
+  case 2:
+    Create2DGridDM(ctx);
+    break;
+  case 3:
+    Create3DGridDM(ctx);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", ndim);
+  }
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode Create2DPotentialDM(Context *ctx)
+{
+  PetscInt        Nx=ctx->grid.Nx;
+  PetscInt        Ny=ctx->grid.Ny;
+  DMBoundaryType  xBC=ctx->grid.xBC;
+  DMBoundaryType  yBC=ctx->grid.yBC;
+  DMDAStencilType stencilType=ctx->potential.stencilType;
+  PetscInt        dof=1;
+  PetscInt        width=2;
+
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Create the DM object.
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, xBC, yBC, stencilType, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, &ctx->potential.dm));
+  // Perform basic setup.
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)(ctx->potential.dm), "potential_"));
+  PetscCall(DMDASetElementType(ctx->potential.dm, DMDA_ELEMENT_Q1));
+  PetscCall(DMSetFromOptions(ctx->potential.dm));
+  PetscCall(DMSetUp(ctx->potential.dm));
+  PetscCall(PetscObjectSetName((PetscObject)(ctx->potential.dm), "PotentialDM"));
+  // Set uniform coordinates on the DM.
+  PetscCall(DMDASetUniformCoordinates(ctx->potential.dm, ctx->grid.x0, ctx->grid.x1, ctx->grid.y0, ctx->grid.y1, 0.0, 0.0));
+  // Assign the field name.
+  PetscCall(DMDASetFieldName(ctx->potential.dm, 0, "potential"));
+  // Associate the user context with this DM.
+  PetscCall(DMSetApplicationContext(ctx->potential.dm, &ctx));
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode Create3DPotentialDM(Context *ctx)
 {
   PetscInt        Nx=ctx->grid.Nx;
   PetscInt        Ny=ctx->grid.Ny;
@@ -454,17 +586,110 @@ PetscErrorCode CreatePotentialDM(Context *ctx)
 }
 
 
-/* Create the data manager for ion distributions.
+/* Create the data manager for the electrostatic potential.
 
-The logical grid for the ion distributions will have the same shape, stencil
-width, degrees of freedom, and boundary conditions as the logical grid for fluid
-quantities. Unlike the latter, it will unconditionally use a box stencil type in
-order to accommodate nearest-neighbor moment collection.
+The logical grid for the electrostatic potential will have the same shape,
+stencil type, and boundary conditions as the logical grid for fluid quantities.
+Unlike the latter, it will use a stencil width of 2 in order to accommodate
+second-order finite differencing of the electric field.
 
 This function should follow `CreateGridDM`, which performs various set-up and
 sychronization tasks on grid parameters.
 */
-PetscErrorCode CreateIonsDM(Context *ctx)
+PetscErrorCode CreatePotentialDM(PetscInt ndim, Context *ctx)
+{
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  switch (ndim)
+  {
+  case 2:
+    Create2DPotentialDM(ctx);
+    break;
+  case 3:
+    Create3DPotentialDM(ctx);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", ndim);
+  }
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode Create2DIonsDM(Context *ctx)
+{
+  PetscInt        Nx=ctx->grid.Nx;
+  PetscInt        Ny=ctx->grid.Ny;
+  DMBoundaryType  xBC=ctx->grid.xBC;
+  DMBoundaryType  yBC=ctx->grid.yBC;
+  DMDAStencilType stencilType=DMDA_STENCIL_BOX;
+  PetscInt        dof=4; // TODO: Formally tie this to the fluid grid DM.
+  PetscInt        width=1; // TODO: Formally tie this to the fluid grid DM.
+  PetscInt        dim;
+  DM              ionsDM, cellDM;
+  PetscInt        bufsize=0;
+  PetscInt        np;
+  PetscReal       x0=ctx->grid.x0;
+  PetscReal       y0=ctx->grid.y0;
+  PetscReal       x1=ctx->grid.x1;
+  PetscReal       y1=ctx->grid.y1;
+
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Create the cell DM.
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, xBC, yBC, stencilType, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, &cellDM));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)cellDM, "cell_"));
+  PetscCall(DMDASetElementType(cellDM, DMDA_ELEMENT_Q1));
+  PetscCall(DMSetFromOptions(cellDM));
+  PetscCall(DMSetUp(cellDM));
+  PetscCall(PetscObjectSetName((PetscObject)cellDM, "CellDM"));
+  // Set uniform coordinates on the DM.
+  PetscCall(DMDASetUniformCoordinates(cellDM, x0, x1, y0, y1, 0.0, 0.0));
+  // Create the ions DM.
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &ionsDM));
+  // Perform basic setup.
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ionsDM, "ions_"));
+  PetscCall(DMSetFromOptions(ionsDM));
+  PetscCall(DMSetType(ionsDM, DMSWARM));
+  PetscCall(PetscObjectSetName((PetscObject)ionsDM, "Ions"));
+  // Synchronize the ions DM with the vlasov DM.
+  PetscCall(DMGetDimension(cellDM, &dim));
+  PetscCall(DMSetDimension(ionsDM, dim));
+  PetscCall(DMSwarmSetCellDM(ionsDM, cellDM));
+  // Declare this to be a PIC swarm. This must occur after setting `dim`.
+  PetscCall(DMSwarmSetType(ionsDM, DMSWARM_PIC));
+  // Register non-default fields that each particle will have.
+  PetscCall(DMSwarmInitializeFieldRegister(ionsDM));
+  // --> (x, y, z) velocity components
+  PetscCall(DMSwarmRegisterPetscDatatypeField(ionsDM, "velocity", NDIM, PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(ionsDM));
+  // Set the per-processor swarm size and buffer length for efficient resizing.
+  np = (PetscInt)(ctx->plasma.Np / ctx->mpi.size);
+  bufsize = (PetscInt)(0.25 * np);
+  PetscCall(DMSwarmSetLocalSizes(ionsDM, np, bufsize));
+  // View information about the ions DM.
+  {
+    /* NOTE: This is work-around for the fact that there appears to be no way to
+    request -*_dm_view for DMSwarm objects from the command line. See
+    ${PETSC_DIR}/src/dm/impls/swarm/swarm.c::DMInitialize_Swarm */
+    PetscBool requested, found;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-ions_dm_view", &requested, &found));
+    if (found && requested) {
+      PetscCall(DMView(ionsDM, PETSC_VIEWER_STDOUT_WORLD));
+    }
+  }
+  // Assign the ions DM to the application context.
+  ctx->swarmDM = ionsDM;
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode Create3DIonsDM(Context *ctx)
 {
   PetscInt        Nx=ctx->grid.Nx;
   PetscInt        Ny=ctx->grid.Ny;
@@ -533,6 +758,38 @@ PetscErrorCode CreateIonsDM(Context *ctx)
   }
   // Assign the ions DM to the application context.
   ctx->swarmDM = ionsDM;
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+/* Create the data manager for ion distributions.
+
+The logical grid for the ion distributions will have the same shape, stencil
+width, degrees of freedom, and boundary conditions as the logical grid for fluid
+quantities. Unlike the latter, it will unconditionally use a box stencil type in
+order to accommodate nearest-neighbor moment collection.
+
+This function should follow `CreateGridDM`, which performs various set-up and
+sychronization tasks on grid parameters.
+*/
+PetscErrorCode CreateIonsDM(PetscInt ndim, Context *ctx)
+{
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  switch (ndim)
+  {
+  case 2:
+    Create2DIonsDM(ctx);
+    break;
+  case 3:
+    Create3DIonsDM(ctx);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", ndim);
+  }
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -6,8 +6,8 @@
 
 extern PetscErrorCode SetUpContext(CLI cli, Context *ctx);
 extern PetscErrorCode DestroyContext(Context *ctx);
-extern PetscErrorCode CreatePotentialDM(Context *ctx);
-extern PetscErrorCode CreateGridDM(Context *ctx);
-extern PetscErrorCode CreateIonsDM(Context *ctx);
+extern PetscErrorCode CreateGridDM(PetscInt ndim, Context *ctx);
+extern PetscErrorCode CreatePotentialDM(PetscInt ndim, Context *ctx);
+extern PetscErrorCode CreateIonsDM(PetscInt ndim, Context *ctx);
 
 #endif // INITIALIZE_H

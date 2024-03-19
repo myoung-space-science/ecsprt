@@ -143,11 +143,11 @@ int main(int argc, char **args)
 
   /* Set up the fluid grid. */
   ctx.log.status("Creating the fluid-grid DM\n");
-  PetscCall(CreateGridDM(&ctx));
+  PetscCall(CreateGridDM(cli.ndim, &ctx));
 
   /* Set up the ion swarm. */
   ctx.log.status("Creating the particle-swarm DM\n");
-  PetscCall(CreateIonsDM(&ctx));
+  PetscCall(CreateIonsDM(cli.ndim, &ctx));
 
   /* Set initial particle positions. */
   ctx.log.status("Initializing positions\n");
@@ -163,7 +163,7 @@ int main(int argc, char **args)
 
   /* Set up the discrete grid for the electrostatic potential. */
   ctx.log.status("Creating the electrostatic-potential DM\n");
-  PetscCall(CreatePotentialDM(&ctx));
+  PetscCall(CreatePotentialDM(cli.ndim, &ctx));
 
   /* Set up the Krylov-solver context for the electrostatic potential. */
   ctx.log.status("Setting up the potential solver\n");
