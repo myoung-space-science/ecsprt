@@ -15,7 +15,6 @@ pic: pic.o \
 		particles.o \
 		positions.o \
 		potential.o \
-		push.o \
 		random.o \
 		rhs.o \
 		setup.o \
@@ -35,7 +34,6 @@ solver: solver.o \
 		particles.o \
 		positions.o \
 		potential.o \
-		push.o \
 		random.o \
 		rhs.o \
 		setup.o \

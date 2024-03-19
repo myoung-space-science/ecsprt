@@ -7,7 +7,6 @@
 #include "particles.h"
 #include "pic.h"
 #include "boundaries.h"
-#include "push.h"
 #include "collisions.h"
 
 /* Names of supported density functions. */
