@@ -4,6 +4,7 @@ default: pic
 
 pic: pic.o \
 		boundaries.o \
+		collisions.o \
 		common.o \
 		moments.o \
 		vector-math.o \
@@ -23,6 +24,7 @@ pic: pic.o \
 
 solver: solver.o \
 		boundaries.o \
+		collisions.o \
 		common.o \
 		moments.o \
 		vector-math.o \
