@@ -22,8 +22,8 @@ typedef struct {
   PetscReal   dt;          // time-step width
   PetscInt    it;          // time-step counter
   PetscInt    Dt;          // output cadence
-  DensityType densityType; // type of initial density
-  VelocitiesType velocitiesType; // type of initial velocity distribution
+  PDistType PDistType; // type of initial position distribution
+  VDistType VDistType; // type of initial velocity distribution
 } Application;
 
 /* Process command-line arguments specific to the PIC simulation. */
@@ -37,17 +37,17 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   PetscFunctionBeginUser;
   ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
 
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--density-type", DensityTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--density-type", PDistTypes, &enumArg, &found));
   if (found) {
-    app->densityType = enumArg;
+    app->PDistType = enumArg;
   } else {
-    app->densityType = DENSITY_FLAT_SOBOL;
+    app->PDistType = PDIST_FLAT_SOBOL;
   }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--velocity-dist", VelocitiesTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--velocity-dist", VDistTypes, &enumArg, &found));
   if (found) {
-    app->velocitiesType = enumArg;
+    app->VDistType = enumArg;
   } else {
-    app->velocitiesType = VELOCITIES_NORMAL;
+    app->VDistType = VDIST_NORMAL;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nt", &intArg, &found));
   if (found) {
@@ -90,7 +90,7 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Application-Specific Parameter Values\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Nt = %d\n", app.Nt));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "dt = %f [s]\n", app.dt));
-  PetscCall(PetscViewerASCIIPrintf(viewer,     "density type = %s\n", DensityTypes[app.densityType]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "density type = %s\n", PDistTypes[app.PDistType]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "#End of Application-Specific Parameter Values\n"));
 
   // Free memory.
@@ -151,11 +151,11 @@ int main(int argc, char **args)
 
   /* Set initial particle positions. */
   ctx.log.status("Initializing positions\n");
-  PetscCall(InitializePositions(app.densityType, &ctx));
+  PetscCall(InitializePositions(app.PDistType, &ctx));
 
   /* Set initial particle velocities. */
   ctx.log.status("Initializing velocities\n");
-  PetscCall(InitializeVelocities(app.velocitiesType, &ctx));
+  PetscCall(InitializeVelocities(app.VDistType, &ctx));
 
   /* Compute initial density and flux.*/
   ctx.log.status("Collecting initial moments\n");

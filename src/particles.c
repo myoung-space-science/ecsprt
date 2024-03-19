@@ -8,13 +8,13 @@
 #include "pic.h"
 
 /* Names of supported density functions. */
-const char *DensityTypes[] ={
-  "flat-sobol", "flat-reverse", "flat-normal", "uniform", "uniform-coordinates", "uniform-centered", "sinusoidal", "gaussian", "DensityType", "DENSITY_", NULL
+const char *PDistTypes[] ={
+  "flat-sobol", "flat-reverse", "flat-normal", "uniform", "uniform-coordinates", "uniform-centered", "sinusoidal", "gaussian", "PDistType", "PDIST_", NULL
 };
 
 /* Names of supported initial velocity distributions. */
-const char *VelocitiesTypes[] = {
-  "normal", "VelocitiesType", "VELOCITY_", NULL
+const char *VDistTypes[] = {
+  "normal", "VDistType", "VDIST_", NULL
 };
 
 /* Names of supported boundary conditions. */
@@ -181,7 +181,7 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
 
 
 /* Compute the initial ion positions. */
-PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
+PetscErrorCode InitializePositions(PDistType PDistType, Context *ctx)
 {
   DM         swarmDM=ctx->swarmDM;
   PetscInt   np, Np;
@@ -197,30 +197,30 @@ PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
   ctx->log.world("   Global # of ions before placement: %d\n", Np);
 
   // Initialize coordinates in the ions DM.
-  switch(densityType) {
-    case DENSITY_FLAT_NORMAL:
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", DensityTypes[DENSITY_FLAT_NORMAL]);
+  switch(PDistType) {
+    case PDIST_FLAT_NORMAL:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_FLAT_NORMAL]);
       break;
-    case DENSITY_FLAT_REVERSE:
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", DensityTypes[DENSITY_FLAT_REVERSE]);
+    case PDIST_FLAT_REVERSE:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_FLAT_REVERSE]);
       break;
-    case DENSITY_FLAT_SOBOL:
+    case PDIST_FLAT_SOBOL:
       PetscCall(SobolDistribution(ctx));
       break;
-    case DENSITY_UNIFORM:
+    case PDIST_UNIFORM:
       PetscCall(UniformDistribution(ctx));
       break;
-    case DENSITY_UNIFORM_COORDINATES:
+    case PDIST_UNIFORM_COORDINATES:
       PetscCall(UniformDistributionFromCoordinates(ctx));
       break;
-    case DENSITY_UNIFORM_CENTERED:
+    case PDIST_UNIFORM_CENTERED:
       PetscCall(UniformDistributionCellCentered(ctx));
       break;
-    case DENSITY_SINUSOIDAL:
+    case PDIST_SINUSOIDAL:
       PetscCall(Rejection(SinusoidalDistribution, ctx));
       break;
-    case DENSITY_GAUSSIAN:
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", DensityTypes[DENSITY_GAUSSIAN]);
+    case PDIST_GAUSSIAN:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_GAUSSIAN]);
       break;
   }
 
@@ -236,13 +236,13 @@ PetscErrorCode InitializePositions(DensityType densityType, Context *ctx)
 
 
 /* Compute the initial ion velocities. */
-PetscErrorCode InitializeVelocities(VelocitiesType velocitiesType, Context *ctx)
+PetscErrorCode InitializeVelocities(VDistType VDistType, Context *ctx)
 {
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
-  switch (velocitiesType) {
-    case VELOCITIES_NORMAL:
+  switch (VDistType) {
+    case VDIST_NORMAL:
       PetscCall(NormalVelocities(ctx));
       break;
     default:

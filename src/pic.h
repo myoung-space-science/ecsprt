@@ -3,27 +3,27 @@
 
 #include <petsc.h>
 
-/* Defined types of density functions. */
+/* Defined types of initial position distributions. */
 typedef enum {
-  DENSITY_FLAT_SOBOL,
-  DENSITY_FLAT_REVERSE,
-  DENSITY_FLAT_NORMAL,
-  DENSITY_UNIFORM,
-  DENSITY_UNIFORM_COORDINATES,
-  DENSITY_UNIFORM_CENTERED,
-  DENSITY_SINUSOIDAL,
-  DENSITY_GAUSSIAN,
-} DensityType;
+  PDIST_FLAT_SOBOL,
+  PDIST_FLAT_REVERSE,
+  PDIST_FLAT_NORMAL,
+  PDIST_UNIFORM,
+  PDIST_UNIFORM_COORDINATES,
+  PDIST_UNIFORM_CENTERED,
+  PDIST_SINUSOIDAL,
+  PDIST_GAUSSIAN,
+} PDistType;
 
 /* Array that will hold names of density functions. */
-extern const char *DensityTypes[];
+extern const char *PDistTypes[];
 
 /* Defined types of initial velocity distributions */
 typedef enum {
-  VELOCITIES_NORMAL
-} VelocitiesType;
+  VDIST_NORMAL
+} VDistType;
 
 /* Array that will hold names of initial velocity distributions. */
-extern const char *VelocitiesTypes[];
+extern const char *VDistTypes[];
 
 #endif // PIC_H
