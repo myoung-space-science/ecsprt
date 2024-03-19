@@ -5,6 +5,7 @@
 #include "logging.h"
 #include "particles.h"
 #include "moments.h"
+#include "boundaries.h"
 
 
 /* Set parameter values common to simulation and solver applications. */

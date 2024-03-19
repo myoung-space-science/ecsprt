@@ -3,6 +3,7 @@ localbin = ../bin
 default: pic
 
 pic: pic.o \
+		boundaries.o \
 		common.o \
 		moments.o \
 		vector-math.o \
@@ -20,6 +21,7 @@ pic: pic.o \
 	-$(CLINKER) -o ${localbin}/$@ $^ $(LDLIBS)
 
 solver: solver.o \
+		boundaries.o \
 		common.o \
 		moments.o \
 		vector-math.o \
