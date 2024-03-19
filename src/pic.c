@@ -90,7 +90,8 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Application-Specific Parameter Values\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Nt = %d\n", app.Nt));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "dt = %f [s]\n", app.dt));
-  PetscCall(PetscViewerASCIIPrintf(viewer,     "density type = %s\n", PDistTypes[app.PDistType]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "initial positions = %s\n", PDistTypes[app.PDistType]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "initial velocities = %s\n", VDistTypes[app.VDistType]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "#End of Application-Specific Parameter Values\n"));
 
   // Free memory.
