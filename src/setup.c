@@ -156,28 +156,36 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   ctx->neutrals.vT   = cli.vnT;
   ctx->neutrals.T    = cli.Tn;
 
-  // Copy grid parameters.
+  /* Copy grid parameters. */
+  // x dimension
   ctx->grid.Nx = cli.Nx;
-  ctx->grid.Ny = cli.Ny;
-  ctx->grid.Nz = cli.Nz;
   ctx->grid.dx = cli.dx;
-  ctx->grid.dy = cli.dy;
-  ctx->grid.dz = cli.dz;
   if (cli.x1 == cli.x0) {
       ctx->log.world("Warning: zero-width x dimension\n");
   }
+  ctx->grid.x0 = cli.x0;
+  ctx->grid.x1 = cli.x1;
+  // y dimension
+  ctx->grid.Ny = cli.Ny;
+  ctx->grid.dy = cli.dy;
   if (cli.y1 == cli.y0) {
       ctx->log.world("Warning: zero-width y dimension\n");
   }
-  if (cli.z1 == cli.z0) {
-      ctx->log.world("Warning: zero-width z dimension\n");
-  }
-  ctx->grid.x0 = cli.x0;
   ctx->grid.y0 = cli.y0;
-  ctx->grid.z0 = cli.z0;
-  ctx->grid.x1 = cli.x1;
   ctx->grid.y1 = cli.y1;
-  ctx->grid.z1 = cli.z1;
+  // z dimension
+  if (cli.ndim == 3) {
+    ctx->grid.Nz = cli.Nz;
+    ctx->grid.dz = cli.dz;
+    if (cli.z1 == cli.z0) {
+        ctx->log.world("Warning: zero-width z dimension\n");
+    }
+    ctx->grid.z0 = cli.z0;
+    ctx->grid.z1 = cli.z1;
+  } else {
+    ctx->grid.Nz = 1;
+    ctx->grid.dz = 0.0;
+  }
   /* Set up boundary conditions.
   - If one boundary type for a given dimension is periodic, the other must be
     periodic. Otherwise, the notion of periodicity is meaningless.
