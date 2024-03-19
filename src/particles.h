@@ -9,7 +9,6 @@ extern PetscErrorCode Apply2DBC(PetscInt np, PetscReal *pos, PetscReal *vel, voi
 extern PetscErrorCode Apply3DBC(PetscInt np, PetscReal *pos, PetscReal *vel, void *opts);
 extern PetscErrorCode InitializePositions(PDistType PDistType, Context *ctx);
 extern PetscErrorCode InitializeVelocities(VDistType VDistType, Context *ctx);
-extern PetscErrorCode CollectFluidMoments(Context *ctx);
 extern PetscErrorCode BorisMover3D(PetscReal dt, Context *ctx);
 extern PetscErrorCode BorisMoverBz(PetscReal dt, Context *ctx);
 extern PetscErrorCode ComputeCollisions(PetscReal dt, Context *ctx);

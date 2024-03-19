@@ -160,7 +160,7 @@ int main(int argc, char **args)
 
   /* Compute initial density and flux.*/
   ctx.log.status("Collecting initial moments\n");
-  PetscCall(CollectFluidMoments(&ctx));
+  PetscCall(ctx.ions.collect(&ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
   ctx.log.status("Creating the electrostatic-potential DM\n");
@@ -217,7 +217,7 @@ int main(int argc, char **args)
 
     /* Compute density and flux from ion positions. */
     ctx.log.status("Collecting moments\n");
-    PetscCall(CollectFluidMoments(&ctx));
+    PetscCall(ctx.ions.collect(&ctx));
 
     /* Compute potential from density. */
     ctx.log.status("Computing potential\n");

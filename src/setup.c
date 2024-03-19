@@ -4,6 +4,7 @@
 #include "rhs.h"
 #include "logging.h"
 #include "particles.h"
+#include "moments.h"
 
 
 /* Set parameter values common to simulation and solver applications. */
@@ -97,9 +98,11 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   {
   case 2:
     ctx->ions.applyBC = Apply2DBC;
+    ctx->ions.collect = Collect2DFluidMoments;
     break;
   case 3:
     ctx->ions.applyBC = Apply3DBC;
+    ctx->ions.collect = Collect3DFluidMoments;
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
