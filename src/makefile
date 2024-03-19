@@ -14,7 +14,8 @@ pic: pic.o \
 		potential.o \
 		random.o \
 		rhs.o \
-		setup.o
+		setup.o \
+		velocities.o
 	-$(CLINKER) -o ${localbin}/$@ $^ $(LDLIBS)
 
 solver: solver.o \
@@ -29,7 +30,8 @@ solver: solver.o \
 		potential.o \
 		random.o \
 		rhs.o \
-		setup.o
+		setup.o \
+		velocities.o
 	-$(CLINKER) -o ${localbin}/$@ $^ $(LDLIBS) $(SLEPC_EPS_LIB)
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
