@@ -98,6 +98,7 @@ typedef struct {
   BCType    yBC;     // y-axis boundary condition
   BCType    zBC;     // z-axis boundary condition
   BCFunc    applyBC; // function to use when applying boundary conditions
+  CollectFunc collect; // function to collect particle moments
 } Species;
 
 /* Parameters of the linear potential system. */
