@@ -5,5 +5,7 @@
 #include "ecsprt.h"
 
 extern PetscErrorCode NormalVelocities(Context *ctx);
+extern PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx);
+extern PetscErrorCode BorisMoverBz(PetscReal dt, Context *ctx);
 
 #endif // VELOCITIES_H
