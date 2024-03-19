@@ -1,6 +1,6 @@
 #include <petsc.h>
 #include "ecsprt.h"
-#include "distributions.h"
+#include "positions.h"
 #include "random.h"
 #include "vector-math.h"
 #include "particles.h"

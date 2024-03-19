@@ -1,7 +1,7 @@
 #include <petsc.h>
 #include "ecsprt.h"
 #include "random.h"
-#include "distributions.h"
+#include "positions.h"
 
 
 PetscErrorCode UniformDistributionFromCoordinates(Context *ctx)

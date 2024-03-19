@@ -5,12 +5,12 @@ default: pic
 pic: pic.o \
 		common.o \
 		vector-math.o \
-		distributions.o \
 		file-io.o \
 		lhs.o \
 		logging.o \
 		parameters.o \
 		particles.o \
+		positions.o \
 		potential.o \
 		random.o \
 		rhs.o \
@@ -20,12 +20,12 @@ pic: pic.o \
 solver: solver.o \
 		common.o \
 		vector-math.o \
-		distributions.o \
 		file-io.o \
 		lhs.o \
 		logging.o \
 		parameters.o \
 		particles.o \
+		positions.o \
 		potential.o \
 		random.o \
 		rhs.o \
