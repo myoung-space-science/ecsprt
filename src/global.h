@@ -28,5 +28,6 @@ typedef PetscErrorCode (*LHSFunc)(KSP ksp, Mat J, Mat A, void *opts);
 typedef PetscErrorCode (*RHSFunc)(KSP ksp, Vec b, void *opts);
 typedef PetscErrorCode (*BCFunc)(PetscInt np, PetscReal *pos, PetscReal *vel, void *opts);
 typedef PetscErrorCode (*CollectFunc)(void *opts);
+typedef PetscErrorCode (*CollideFunc)(PetscReal dt, void *opts);
 
 #endif // GLOBAL_H
