@@ -1,5 +1,5 @@
-#ifndef DISTRIBUTIONS_H
-#define DISTRIBUTIONS_H
+#ifndef POSITIONS_H
+#define POSITIONS_H
 
 #include <petsc.h>
 #include "ecsprt.h"
@@ -17,4 +17,4 @@ extern PetscErrorCode Rejection(DistributionFunction density, Context *ctx);
 // DistributionFunction implementations.
 extern PetscErrorCode SinusoidalDistribution(PetscReal x, PetscReal y, PetscReal z, PetscReal *v, Context *ctx);
 
-#endif // DISTRIBUTIONS_H
+#endif // POSITIONS_H
