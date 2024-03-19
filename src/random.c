@@ -1,5 +1,4 @@
 #include <petsc.h>
-#include "ecsprt.h"
 #include "random.h"
 
 #define IA 16807

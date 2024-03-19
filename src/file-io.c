@@ -1,6 +1,8 @@
 #include <petsc.h>
 #include <petscviewerhdf5.h>
 #include "ecsprt.h"
+#include "lhs.h"
+#include "rhs.h"
 
 
 PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_MAX_PATH_LEN], Context *ctx)

@@ -14,6 +14,7 @@ static char help[] = "A tool for solving the 3D quasineutral electrostatic-poten
 #include "particles.h"
 #include "potential.h"
 #include "file-io.h"
+#include "lhs.h"
 
 
 typedef struct {

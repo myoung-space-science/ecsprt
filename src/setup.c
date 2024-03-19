@@ -1,5 +1,7 @@
 #include <petsc.h>
 #include "ecsprt.h"
+#include "lhs.h"
+#include "rhs.h"
 #include "logging.h"
 
 

@@ -3,9 +3,8 @@
 
 #include <petsc.h>
 #include "constants.h"
-#include "lhs.h"
-#include "rhs.h"
 #include "logging.h"
+#include "global.h"
 
 /* Version number, project full name, and project acronym.
 
