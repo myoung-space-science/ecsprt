@@ -4,6 +4,11 @@
 #include "velocities.h"
 #include "vector-math.h"
 
+/* Names of supported initial velocity distributions. */
+const char *VDistTypes[] = {
+  "normal", "VDistType", "VDIST_", NULL
+};
+
 
 /* Generate a normal distribution of velocities with zero mean and unit variance. */
 PetscErrorCode NormalVelocities(Context *ctx)
@@ -35,6 +40,25 @@ PetscErrorCode NormalVelocities(Context *ctx)
 
   // Restore the ion-velocities array.
   PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+/* Compute the initial ion velocities. */
+PetscErrorCode InitializeVelocities(VDistType VDistType, Context *ctx)
+{
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  switch (VDistType) {
+    case VDIST_NORMAL:
+      PetscCall(NormalVelocities(ctx));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unknown initial velocity distribution");
+  }
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -242,6 +266,25 @@ PetscErrorCode BorisMoverBz(PetscReal dt, Context *ctx)
   // Restore the borrowed potential array and local vector.
   PetscCall(DMDAVecRestoreArray(phiDM, phiLocal, &phi));
   PetscCall(DMRestoreLocalVector(phiDM, &phiLocal));
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+/* Update the ion velocities based on external forces and collisions. */
+PetscErrorCode UpdateVelocities(PetscReal dt, Context *ctx)
+{
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Apply the Boris mover to integrate dv/dt = E + vxB.
+  PetscCall(BorisMoverBz(dt, ctx));
+
+  // Apply the appropriate collision algorithm.
+  if (ctx->neutrals.m > 0.0) {
+    PetscCall(ctx->ions.collide(dt, ctx));
+  }
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -12,7 +12,6 @@ pic: pic.o \
 		lhs.o \
 		logging.o \
 		parameters.o \
-		particles.o \
 		positions.o \
 		potential.o \
 		random.o \
@@ -31,7 +30,6 @@ solver: solver.o \
 		lhs.o \
 		logging.o \
 		parameters.o \
-		particles.o \
 		positions.o \
 		potential.o \
 		random.o \

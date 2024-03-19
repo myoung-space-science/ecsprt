@@ -2,7 +2,6 @@
 #include "vector-math.h"
 #include "ecsprt.h"
 #include "rhs.h"
-#include "particles.h"
 
 PetscErrorCode ComputeConstantRHS(KSP ksp, Vec b, void *user)
 {

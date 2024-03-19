@@ -15,6 +15,11 @@ const char *LHSTypes[] = {
   "identity", "laplacian", "full", "LHSType", "LHS_", NULL
 };
 
+/* Names of supported boundary conditions. */
+const char *BCTypes[] = {
+  "periodic", "injection-reflection", "BC_", NULL
+};
+
 /* Supported boundary conditions. */
 const char *BoundaryTypes[] = {
   "periodic", "injection", "reflection", "dirichlet", "neumann", "BoundaryType", "BT_", NULL

@@ -3,7 +3,6 @@
 #include "lhs.h"
 #include "rhs.h"
 #include "logging.h"
-#include "particles.h"
 #include "moments.h"
 #include "boundaries.h"
 #include "collisions.h"
