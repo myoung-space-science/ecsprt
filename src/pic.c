@@ -37,7 +37,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   PetscFunctionBeginUser;
   ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
 
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--density-type", PDistTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--position-dist", PDistTypes, &enumArg, &found));
   if (found) {
     app->PDistType = enumArg;
   } else {
