@@ -8,7 +8,8 @@
 extern PetscErrorCode NormalVelocities(Context *ctx);
 extern PetscErrorCode InitializeVelocities(VDistType VDistType, Context *ctx);
 extern PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx);
-extern PetscErrorCode BorisMoverBz(PetscReal dt, Context *ctx);
+extern PetscErrorCode BorisMoverBz2D(PetscReal dt, void *opts);
+extern PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts);
 extern PetscErrorCode UpdateVelocities(PetscReal dt, Context *ctx);
 
 #endif // VELOCITIES_H
