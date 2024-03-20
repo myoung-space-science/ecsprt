@@ -151,7 +151,7 @@ int main(int argc, char **args)
 
   /* Set initial particle positions. */
   ctx.log.status("Initializing positions\n");
-  PetscCall(InitializePositions(app.PDistType, cli.ndim, &ctx));
+  PetscCall(InitializePositions(cli.ndim, app.PDistType, &ctx));
 
   /* Set initial particle velocities. */
   ctx.log.status("Initializing velocities\n");
@@ -208,11 +208,11 @@ int main(int argc, char **args)
 
     /* Update velocities. */
     ctx.log.status("Updating velocities\n");
-    PetscCall(UpdateVelocities(app.dt, cli.ndim, &ctx));
+    PetscCall(UpdateVelocities(cli.ndim, app.dt, &ctx));
 
     /* Update positions. */
     ctx.log.status("Updating positions\n");
-    PetscCall(UpdatePositions(app.dt, cli.ndim, &ctx));
+    PetscCall(UpdatePositions(cli.ndim, app.dt, &ctx));
 
     /* Compute density and flux from ion positions. */
     ctx.log.status("Collecting moments\n");

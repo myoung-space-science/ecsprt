@@ -5,7 +5,7 @@
 
 This function is based on, but not identical to, EPPIC elastic_scatter.
 */
-PetscErrorCode ScatterElastic(PetscReal dt, PetscInt ndim, void *opts)
+PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
 {
   Context   *ctx=(Context *)opts;                                              // the application context
   PetscInt   Nc;                                                               // the number of collisions to attempt

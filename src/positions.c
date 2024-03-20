@@ -400,7 +400,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
 
 
 /* Compute the initial ion positions. */
-PetscErrorCode InitializePositions(PDistType PDistType, PetscInt ndim, Context *ctx)
+PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *ctx)
 {
   DM         swarmDM=ctx->swarmDM;
   PetscInt   np, Np;
@@ -455,7 +455,7 @@ PetscErrorCode InitializePositions(PDistType PDistType, PetscInt ndim, Context *
 
 
 /* Update the ion positions according to $\frac{d\vec{r}}{dt} = \vec{v}$. */
-PetscErrorCode UpdatePositions(PetscReal dt, PetscInt ndim, Context *ctx)
+PetscErrorCode UpdatePositions(PetscInt ndim, PetscReal dt, Context *ctx)
 {
   DM          swarmDM=ctx->swarmDM;
   PetscReal  *pos, *vel;

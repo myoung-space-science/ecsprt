@@ -3,6 +3,6 @@
 
 #include "ecsprt.h"
 
-extern PetscErrorCode ScatterElastic(PetscReal dt, PetscInt ndim, void *opts);
+extern PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts);
 
 #endif // COLLISIONS_H
