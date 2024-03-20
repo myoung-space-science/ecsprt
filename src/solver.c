@@ -133,17 +133,9 @@ int main(int argc, char **args)
   ctx.log.status("Processing application-specific options\n");
   PetscCall(ProcessSolverOptions(ctx, &app));
 
-  /* Echo the initial state. */
-  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
-  PetscCall(EchoSetup(ctx, app));
-
   /* Set up the fluid grid. */
   ctx.log.status("Creating the fluid-grid DM\n");
   PetscCall(CreateGridDM(cli.ndim, &ctx));
-
-  /* Read density and fluxes from disk. */
-  ctx.log.status("Loading fluid quantities\n");
-  PetscCall(LoadFluidQuantities(app.fluxScale, app.inpath, &ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
   ctx.log.status("Creating the electrostatic-potential DM\n");
@@ -157,6 +149,14 @@ int main(int argc, char **args)
   PetscCall(KSPSetComputeInitialGuess(ksp, ComputeInitialPhi, &ctx));
   PetscCall(KSPSetComputeRHS(ksp, ComputeRHS, &ctx));
   PetscCall(KSPSetComputeOperators(ksp, ComputeLHS, &ctx));
+
+  /* Echo the initial state. */
+  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
+  PetscCall(EchoSetup(ctx, app));
+
+  /* Read density and fluxes from disk. */
+  ctx.log.status("Loading fluid quantities\n");
+  PetscCall(LoadFluidQuantities(app.fluxScale, app.inpath, &ctx));
 
   /* Compute the electrostatic potential. */
   ctx.log.status("Computing initial potential\n");

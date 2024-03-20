@@ -134,13 +134,6 @@ int main(int argc, char **args)
   ctx.log.status("Processing application-specific options\n");
   PetscCall(ProcessPICOptions(ctx, &app));
 
-  /* Echo the initial state. */
-  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
-  PetscCall(EchoSetup(ctx, app));
-
-  /* Echo this stage. */
-  ctx.log.status("\n=== Initial stage ===\n\n");
-
   /* Set up the fluid grid. */
   ctx.log.status("Creating the fluid-grid DM\n");
   PetscCall(CreateGridDM(cli.ndim, &ctx));
@@ -148,18 +141,6 @@ int main(int argc, char **args)
   /* Set up the ion swarm. */
   ctx.log.status("Creating the particle-swarm DM\n");
   PetscCall(CreateIonsDM(cli.ndim, &ctx));
-
-  /* Set initial particle positions. */
-  ctx.log.status("Initializing positions\n");
-  PetscCall(InitializePositions(cli.ndim, app.PDistType, &ctx));
-
-  /* Set initial particle velocities. */
-  ctx.log.status("Initializing velocities\n");
-  PetscCall(InitializeVelocities(cli.ndim, app.VDistType, &ctx));
-
-  /* Compute initial density and flux.*/
-  ctx.log.status("Collecting initial moments\n");
-  PetscCall(ctx.ions.collect(&ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
   ctx.log.status("Creating the electrostatic-potential DM\n");
@@ -173,6 +154,25 @@ int main(int argc, char **args)
   PetscCall(KSPSetComputeInitialGuess(ksp, ComputeInitialPhi, &ctx));
   PetscCall(KSPSetComputeRHS(ksp, ComputeRHS, &ctx));
   PetscCall(KSPSetComputeOperators(ksp, ComputeLHS, &ctx));
+
+  /* Echo the initial state. */
+  ctx.log.status("Echoing parameter values to %s\n", ctx.optionsLog);
+  PetscCall(EchoSetup(ctx, app));
+
+  /* Echo this stage. */
+  ctx.log.status("\n=== Initial stage ===\n\n");
+
+  /* Set initial particle positions. */
+  ctx.log.status("Initializing positions\n");
+  PetscCall(InitializePositions(cli.ndim, app.PDistType, &ctx));
+
+  /* Set initial particle velocities. */
+  ctx.log.status("Initializing velocities\n");
+  PetscCall(InitializeVelocities(cli.ndim, app.VDistType, &ctx));
+
+  /* Compute initial density and flux.*/
+  ctx.log.status("Collecting initial moments\n");
+  PetscCall(ctx.ions.collect(&ctx));
 
   /* Compute initial electrostatic potential. */
   ctx.log.status("Computing initial potential\n");
