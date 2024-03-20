@@ -526,7 +526,74 @@ scalar function F(x, y, z) at (x0, y0, z0). It computes the numerator of each
 finite-difference term using 2nd-order centered, forward, and backward
 approximations. It assumes that F contains the appropriate ghost nodes.
 */
-PetscErrorCode DifferenceVector(PetscReal ***F, PetscReal x0, PetscReal y0, PetscReal z0, Grid grid, PetscReal f[NDIM])
+PetscErrorCode DifferenceVector2D(PetscReal **F, PetscReal x0, PetscReal y0, Grid grid, PetscReal f[2])
+{
+  PetscInt    Nx=grid.Nx, Ny=grid.Ny;
+  PetscInt    ixl, ixh, iyl, iyh;
+  PetscReal   wxh, wyh;
+  PetscReal   hh, lh, hl, ll;
+  PetscReal   Ewh, Ewl;
+
+  PetscFunctionBeginUser;
+
+  // Compute the x-dimension neighbors and corresponding weights.
+  ixl = (PetscInt)x0;
+  ixh = ixl+1;
+  wxh = x0 - (PetscReal)ixl;
+  // Compute the y-dimension neighbors and corresponding weights.
+  iyl = (PetscInt)y0;
+  iyh = iyl+1;
+  wyh = y0 - (PetscReal)iyl;
+  // Compute the central difference in x at each grid point.
+  if (ixl >= 0) {
+    // 2nd-order central difference at ixl
+    hl = F[iyh][ixl+1] - F[iyh][ixl-1];
+    ll = F[iyl][ixl+1] - F[iyl][ixl-1];
+  } else {
+    // 2nd-order forward difference at ixl
+    hl = -1.0*F[iyh][ixl+2] + 4.0*F[iyh][ixl+1] - 3.0*F[iyh][ixl];
+    ll = -1.0*F[iyl][ixl+2] + 4.0*F[iyl][ixl+1] - 3.0*F[iyl][ixl];
+  }
+  if (ixh < Nx) {
+    // 2nd-order central difference at ixh
+    hh = F[iyh][ixh+1] - F[iyh][ixh-1];
+    lh = F[iyl][ixh+1] - F[iyl][ixh-1];
+  } else {
+    // 2nd-order backward difference at ixh
+    hh = +3.0*F[iyh][ixh] - 4.0*F[iyh][ixh-1] + 1.0*F[iyh][ixh-2];
+    lh = +3.0*F[iyl][ixh] - 4.0*F[iyl][ixh-1] + 1.0*F[iyl][ixh-2];
+  }
+  Ewh = lh + wyh*(hh - lh);
+  Ewl = ll + wyh*(hl - ll);
+  f[0] = Ewl + wxh*(Ewh - Ewl);
+  // Compute the central difference in y at each grid point.
+  if (iyl >= 0) {
+    // 2nd-order central difference at iyl
+    lh = F[iyl+1][ixh] - F[iyl-1][ixh];
+    ll = F[iyl+1][ixl] - F[iyl-1][ixl];
+  } else {
+    // 2nd-order forward difference at iyl
+    lh = -1.0*F[iyl+2][ixh] + 4.0*F[iyl+1][ixh] - 3.0*F[iyl][ixh];
+    ll = -1.0*F[iyl+2][ixl] + 4.0*F[iyl+1][ixl] - 3.0*F[iyl][ixl];
+  }
+  if (iyh < Ny) {
+    // 2nd-order central difference at iyh
+    hh = F[iyh+1][ixh] - F[iyh-1][ixh];
+    hl = F[iyh+1][ixl] - F[iyh-1][ixl];
+  } else {
+    // 2nd-order backward difference at iyh
+    hh = +3.0*F[iyh][ixh] - 4.0*F[iyh-1][ixh] + 1.0*F[iyh-2][ixh];
+    hl = +3.0*F[iyh][ixl] - 4.0*F[iyh-1][ixl] + 1.0*F[iyh-2][ixl];
+  }
+  Ewh = lh + wyh*(hh - lh);
+  Ewl = ll + wyh*(hl - ll);
+  f[1] = Ewl + wxh*(Ewh - Ewl);
+
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode DifferenceVector3D(PetscReal ***F, PetscReal x0, PetscReal y0, PetscReal z0, Grid grid, PetscReal f[3])
 {
   PetscInt    Nx=grid.Nx, Ny=grid.Ny, Nz=grid.Nz;
   PetscInt    ixl, ixh, iyl, iyh, izl, izh;
