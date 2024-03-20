@@ -152,6 +152,103 @@ PetscErrorCode UniformDistribution(Context *ctx)
 }
 
 
+PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx)
+{
+  DM             swarmDM=ctx->swarmDM;
+  DM             cellDM;
+  long           seed=getseed(*ctx);
+  PetscReal     *coords;
+  PetscInt       Np, np, ip, ic;
+  PetscReal      s;
+  PetscReal      L[3]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
+  PetscReal      dx=ctx->grid.dx;
+  PetscReal      dy=ctx->grid.dy;
+  PetscReal      dz=ctx->grid.dz;
+  PetscInt       dim;
+  DMDALocalInfo  local;
+  PetscReal     *pos, x, y, z;
+  PetscReal      xmin, xmax, ymin, ymax, zmin, zmax;
+
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Get the total number of particles in the swarm.
+  PetscCall(DMSwarmGetSize(swarmDM, &Np));
+
+  // Allocate a 1-D array for the global positions.
+  PetscCall(PetscMalloc1(ndim*Np, &pos));
+
+  if (ctx->mpi.rank == 0) {
+
+    // Generate a normal distribution of global positions on rank 0.
+    for (ip=0; ip<Np; ip++) {
+      for (dim=0; dim<ndim; dim++) {
+        PetscCall(Ran3(&seed, &s));
+        pos[ip*ndim + dim] = s*L[dim];
+      }
+    }
+
+  }
+
+  // Broadcast the global positions array.
+  PetscCallMPI(MPI_Bcast(pos, ndim*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
+
+  // Get a representation of the particle coordinates.
+  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+
+  // Get the local number of particles.
+  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+
+  // Get the ion-swarm cell DM.
+  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
+
+  // Get the index information for this processor.
+  PetscCall(DMDAGetLocalInfo(cellDM, &local));
+  xmin = dx*local.xs;
+  ymin = dy*local.ys;
+  zmin = dz*local.zs;
+  xmax = dx*(local.xs + local.xm);
+  ymax = dy*(local.ys + local.ym);
+  zmax = dz*(local.zs + local.zm);
+
+  // Loop over global positions and assign local positions for this rank.
+  /* NOTE: DMSwarm has already allocated space for the coordinates array. */
+  ic = 0;
+  if (ndim == 2) {
+    for (ip=0; ip<Np; ip++) {
+      x = pos[ip*ndim + 0];
+      y = pos[ip*ndim + 1];
+      if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax)) {
+        coords[ic*ndim + 0] = x;
+        coords[ic*ndim + 1] = y;
+        ic++;
+      }
+    }
+  } else if (ndim == 3) {
+    for (ip=0; ip<Np; ip++) {
+      x = pos[ip*ndim + 0];
+      y = pos[ip*ndim + 1];
+      z = pos[ip*ndim + 2];
+      if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax) && (zmin <= z) && (z < zmax)) {
+        coords[ic*ndim + 0] = x;
+        coords[ic*ndim + 1] = y;
+        coords[ic*ndim + 2] = z;
+        ic++;
+      }
+    }
+  }
+
+  // Restore the coordinates array.
+  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+
+  // Free the positions-array memory.
+  PetscCall(PetscFree(pos));
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
 PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
 {
   DM             swarmDM=ctx->swarmDM;
@@ -418,7 +515,7 @@ PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *
   // Initialize coordinates in the ions DM.
   switch(PDistType) {
     case PDIST_FLAT_NORMAL:
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_FLAT_NORMAL]);
+      PetscCall(NormalDistribution(ndim, ctx));
       break;
     case PDIST_FLAT_REVERSE:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_FLAT_REVERSE]);
