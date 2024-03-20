@@ -152,17 +152,18 @@ PetscErrorCode UniformDistribution(Context *ctx)
 }
 
 
-PetscErrorCode SobolDistribution(Context *ctx)
+PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
 {
   DM             swarmDM=ctx->swarmDM;
   DM             cellDM;
-  PetscInt       seed=-1, ndim=NDIM;
+  PetscInt       seed=-1;
   PetscReal     *coords;
   PetscInt       Np, np, ip, ic;
-  PetscReal      r[NDIM];
-  PetscReal      lmin[NDIM], lmax[NDIM];
-  PetscReal      d[NDIM]={ctx->grid.dx, ctx->grid.dy, ctx->grid.dz};
-  PetscReal      L[NDIM]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
+  PetscReal      s[ndim];
+  PetscReal      L[ndim];
+  PetscReal      dx=ctx->grid.dx;
+  PetscReal      dy=ctx->grid.dy;
+  PetscReal      dz=ctx->grid.dz;
   PetscInt       dim;
   DMDALocalInfo  local;
   PetscReal     *pos, x, y, z;
@@ -175,25 +176,30 @@ PetscErrorCode SobolDistribution(Context *ctx)
   PetscCall(DMSwarmGetSize(swarmDM, &Np));
 
   // Allocate a 1-D array for the global positions.
-  PetscCall(PetscMalloc1(NDIM*Np, &pos));
+  PetscCall(PetscMalloc1(ndim*Np, &pos));
+
+  // Assign grid lengths for looping.
+  L[0] = ctx->grid.Lx;
+  L[1] = ctx->grid.Ly;
+  L[2] = ctx->grid.Lz;
 
   if (ctx->mpi.rank == 0) {
 
     // Initialize the psuedo-random number generator.
-    PetscCall(Sobseq(&seed, r-1));
+    PetscCall(Sobseq(&seed, s-1));
 
     // Generate a Sobol' sequence of global positions on rank 0.
     for (ip=0; ip<Np; ip++) {
-      PetscCall(Sobseq(&ndim, r-1));
-      for (dim=0; dim<NDIM; dim++) {
-        pos[ip*NDIM + dim] = r[dim]*L[dim];
+      PetscCall(Sobseq(&ndim, s-1));
+      for (dim=0; dim<ndim; dim++) {
+        pos[ip*ndim + dim] = s[dim]*L[dim];
       }
     }
 
   }
 
   // Broadcast the global positions array.
-  PetscCallMPI(MPI_Bcast(pos, NDIM*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Bcast(pos, ndim*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
 
   // Get a representation of the particle coordinates.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
@@ -206,36 +212,38 @@ PetscErrorCode SobolDistribution(Context *ctx)
 
   // Get the index information for this processor.
   PetscCall(DMDAGetLocalInfo(cellDM, &local));
-  lmin[0] = d[0]*local.xs;
-  lmin[1] = d[1]*local.ys;
-  lmin[2] = d[2]*local.zs;
-  lmax[0] = d[0]*(local.xs + local.xm);
-  lmax[1] = d[1]*(local.ys + local.ym);
-  lmax[2] = d[2]*(local.zs + local.zm);
+  xmin = dx*local.xs;
+  ymin = dy*local.ys;
+  zmin = dz*local.zs;
+  xmax = dx*(local.xs + local.xm);
+  ymax = dy*(local.ys + local.ym);
+  zmax = dz*(local.zs + local.zm);
 
   // Loop over global positions and assign local positions for this rank.
-  /*
-    NOTE: I think we can get away with a single loop here (as opposed to one
-    loop to count the number of local particles, followed by allocating the
-    local array, then a second loop to assign local positions) because DMSwarm
-    has already allocated space for the estimated number of local particles.
-  */
-  xmin = lmin[0];
-  xmax = lmax[0];
-  ymin = lmin[1];
-  ymax = lmax[1];
-  zmin = lmin[2];
-  zmax = lmax[2];
+  /* NOTE: DMSwarm has already allocated space for the coordinates array. */
   ic = 0;
-  for (ip=0; ip<Np; ip++) {
-    x = pos[ip*NDIM + 0];
-    y = pos[ip*NDIM + 1];
-    z = pos[ip*NDIM + 2];
-    if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax) && (zmin <= z) && (z < zmax)) {
-      coords[ic*NDIM + 0] = x;
-      coords[ic*NDIM + 1] = y;
-      coords[ic*NDIM + 2] = z;
-      ic++;
+  if (ndim == 2) {
+    for (ip=0; ip<Np; ip++) {
+      x = pos[ip*ndim + 0];
+      y = pos[ip*ndim + 1];
+      if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax)) {
+        coords[ic*ndim + 0] = x;
+        coords[ic*ndim + 1] = y;
+        ic++;
+      }
+    }
+  }
+  if (ndim == 3) {
+    for (ip=0; ip<Np; ip++) {
+      x = pos[ip*ndim + 0];
+      y = pos[ip*ndim + 1];
+      z = pos[ip*ndim + 2];
+      if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax) && (zmin <= z) && (z < zmax)) {
+        coords[ic*ndim + 0] = x;
+        coords[ic*ndim + 1] = y;
+        coords[ic*ndim + 2] = z;
+        ic++;
+      }
     }
   }
 

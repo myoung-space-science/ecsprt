@@ -12,7 +12,7 @@ typedef PetscErrorCode (*DistributionFunction)(PetscReal x, PetscReal y, PetscRe
 extern PetscErrorCode UniformDistribution(Context *ctx);
 extern PetscErrorCode UniformDistributionFromCoordinates(Context *ctx);
 extern PetscErrorCode UniformDistributionCellCentered(Context *ctx);
-extern PetscErrorCode SobolDistribution(Context *ctx);
+extern PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx);
 extern PetscErrorCode Rejection(DistributionFunction density, Context *ctx);
 extern PetscErrorCode InitializePositions(PDistType PDistType, Context *ctx);
 extern PetscErrorCode UpdatePositions(PetscReal dt, Context *ctx);
