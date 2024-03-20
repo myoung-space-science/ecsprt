@@ -5,6 +5,7 @@
 #include "logging.h"
 #include "moments.h"
 #include "boundaries.h"
+#include "velocities.h"
 #include "collisions.h"
 
 
@@ -100,10 +101,12 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   case 2:
     ctx->ions.applyBC = Apply2DBC;
     ctx->ions.collect = Collect2DFluidMoments;
+    ctx->ions.push    = BorisMoverBz2D;
     break;
   case 3:
     ctx->ions.applyBC = Apply3DBC;
     ctx->ions.collect = Collect3DFluidMoments;
+    ctx->ions.push    = BorisMoverBz3D;
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", cli.ndim);
