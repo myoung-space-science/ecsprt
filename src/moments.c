@@ -47,8 +47,8 @@ PetscErrorCode Collect2DFluidMoments(void *opts)
   // Loop over ions.
   for (ip=0; ip<np; ip++) {
     // Normalize each coordinate to a fractional number of grid cells.
-    x = pos[ip*NDIM + 0] / dx;
-    y = pos[ip*NDIM + 1] / dy;
+    x = pos[ip*ndim + 0] / dx;
+    y = pos[ip*ndim + 1] / dy;
 
     // TODO: This needs to incorporate BC (at least for certain BC), in addition
     // to whatever action `ApplyBCAndMigrate` takes.
@@ -151,9 +151,9 @@ PetscErrorCode Collect3DFluidMoments(void *opts)
   // Loop over ions.
   for (ip=0; ip<np; ip++) {
     // Normalize each coordinate to a fractional number of grid cells.
-    x = pos[ip*NDIM + 0] / dx;
-    y = pos[ip*NDIM + 1] / dy;
-    z = pos[ip*NDIM + 2] / dz;
+    x = pos[ip*ndim + 0] / dx;
+    y = pos[ip*ndim + 1] / dy;
+    z = pos[ip*ndim + 2] / dz;
 
     // TODO: This needs to incorporate BC (at least for certain BC), in addition
     // to whatever action `ApplyBCAndMigrate` takes.
