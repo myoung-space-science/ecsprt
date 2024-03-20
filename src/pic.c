@@ -140,7 +140,7 @@ int main(int argc, char **args)
 
   /* Set up the ion swarm. */
   ctx.log.status("Creating the particle-swarm DM\n");
-  PetscCall(CreateIonsDM(cli.ndim, &ctx));
+  PetscCall(CreateSwarmDM(cli.ndim, &ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
   ctx.log.status("Creating the electrostatic-potential DM\n");

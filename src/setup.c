@@ -498,10 +498,10 @@ width, degrees of freedom, and boundary conditions as the logical grid for fluid
 quantities. Unlike the latter, it will unconditionally use a box stencil type in
 order to accommodate nearest-neighbor moment collection.
 
-This function should follow `CreateFluidDM`, which performs various set-up and
+This function calls `CreateFluidDM`, which performs various set-up and
 sychronization tasks on grid parameters.
 */
-PetscErrorCode CreateIonsDM(PetscInt ndim, Context *ctx)
+PetscErrorCode CreateSwarmDM(PetscInt ndim, Context *ctx)
 {
   PetscInt        dim;
   DM              swarmDM;
@@ -517,10 +517,10 @@ PetscErrorCode CreateIonsDM(PetscInt ndim, Context *ctx)
   // Create the swarm DM.
   PetscCall(DMCreate(PETSC_COMM_WORLD, &swarmDM));
   // Perform basic setup.
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)swarmDM, "ions_"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)swarmDM, "swarm_"));
   PetscCall(DMSetFromOptions(swarmDM));
   PetscCall(DMSetType(swarmDM, DMSWARM));
-  PetscCall(PetscObjectSetName((PetscObject)swarmDM, "Ions"));
+  PetscCall(PetscObjectSetName((PetscObject)swarmDM, "Swarm"));
   // Synchronize the swarm DM with the fluid DM.
   PetscCall(DMGetDimension(ctx->fluidDM, &dim));
   PetscCall(DMSetDimension(swarmDM, dim));
@@ -542,7 +542,7 @@ PetscErrorCode CreateIonsDM(PetscInt ndim, Context *ctx)
     request -*_dm_view for DMSwarm objects from the command line. See
     ${PETSC_DIR}/src/dm/impls/swarm/swarm.c::DMInitialize_Swarm */
     PetscBool requested, found;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-ions_dm_view", &requested, &found));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-swarm_dm_view", &requested, &found));
     if (found && requested) {
       PetscCall(DMView(swarmDM, PETSC_VIEWER_STDOUT_WORLD));
     }
