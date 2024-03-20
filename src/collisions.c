@@ -7,36 +7,36 @@ This function is based on, but not identical to, EPPIC elastic_scatter.
 */
 PetscErrorCode ScatterElastic(PetscReal dt, PetscInt ndim, void *opts)
 {
-  Context   *ctx=(Context *)opts;                     // the application context
-  PetscInt   Nc;                                      // the number of collisions to attempt
-  PetscInt   Ns=0;                                    // the number of successful collision attempts
-  PetscInt   Nf=0;                                    // the number of failed collision attempts
-  PetscInt   np;                                      // the number of ions on this rank
-  PetscInt   ip;                                      // the current ion
+  Context   *ctx=(Context *)opts;                                              // the application context
+  PetscInt   Nc;                                                               // the number of collisions to attempt
+  PetscInt   Ns=0;                                                             // the number of successful collision attempts
+  PetscInt   Nf=0;                                                             // the number of failed collision attempts
+  PetscInt   np;                                                               // the number of ions on this rank
+  PetscInt   ip;                                                               // the current ion
   PetscInt   dim;
-  PetscReal  fc=ctx->ions.nu * dt;                    // the product of the collision rate and the time step
-  PetscReal  viT=ctx->ions.vT;                        // the ion-species thermal speed
-  PetscReal  vi0[3]={ctx->ions.v0x, ctx->ions.v0y, ctx->ions.v0z}; // zeroth-order ion velocity
+  PetscReal  fc=ctx->ions.nu * dt;                                             // the product of the collision rate and the time step
+  PetscReal  viT=ctx->ions.vT;                                                 // the ion-species thermal speed
+  PetscReal  vi0[3]={ctx->ions.v0x, ctx->ions.v0y, ctx->ions.v0z};             // zeroth-order ion velocity
   PetscReal  vn0[3]={ctx->neutrals.v0x, ctx->neutrals.v0y, ctx->neutrals.v0z}; // zeroth-order neutral velocity
-  PetscReal  vnT=ctx->neutrals.vT;                    // the neutral-species thermal speed
-  PetscReal  vrm=0.0;                                     // the maximum ion-neutral relative velocity
+  PetscReal  vnT=ctx->neutrals.vT;                                             // the neutral-species thermal speed
+  PetscReal  vrm=0.0;                                                          // the maximum ion-neutral relative velocity
   PetscReal  tmp;
-  PetscReal  mi=ctx->ions.m;                          // the ion-species mass
-  PetscReal  mn=ctx->neutrals.m;                      // the neutral-species mass
-  PetscReal  M=mn+mi;                                 // the total mass (mi+mn)
+  PetscReal  mi=ctx->ions.m;                                                   // the ion-species mass
+  PetscReal  mn=ctx->neutrals.m;                                               // the neutral-species mass
+  PetscReal  M=mn+mi;                                                          // the total mass (mi+mn)
   DM         swarmDM=ctx->swarmDM;
   PetscReal *vel;
-  PetscReal  vn[3];                           // neutral-particle velocity
-  PetscReal  vi[3];                           // ion velocity
-  PetscReal  vr[3]={0.0, 0.0, 0.0};                           // ion-neutral relative-velocity
-  PetscReal  vc[3];                           // center-of-mass velocity
-  PetscReal  vrr;                                     // ion-neutral relative-velocity magnitude
-  PetscReal  vcr;                                     // the ion speed with respect to the center of mass
+  PetscReal  vn[3];                                                            // neutral-particle velocity
+  PetscReal  vi[3];                                                            // ion velocity
+  PetscReal  vr[3]={0.0, 0.0, 0.0};                                            // ion-neutral relative-velocity
+  PetscReal  vc[3];                                                            // center-of-mass velocity
+  PetscReal  vrr;                                                              // ion-neutral relative-velocity magnitude
+  PetscReal  vcr;                                                              // the ion speed with respect to the center of mass
   PetscReal  costht, sintht, cosphi, sinphi;
-  PetscReal  uperp, uphi;                 // components of the unit scattering vector
+  PetscReal  uperp, uphi;                                                      // components of the unit scattering vector
   PetscReal  u0[3]={0.0, 0.0, 0.0}, u1[3], u2[3], vf[3], vfr;
   long       seed=getseed(*ctx);
-  PetscReal  ratio;                                   // ratio of current ion's final speed to thermal speed
+  PetscReal  ratio;                                                            // ratio of current ion's final speed to thermal speed
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
