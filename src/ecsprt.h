@@ -99,6 +99,7 @@ typedef struct {
   BCType    zBC;     // z-axis boundary condition
   BCFunc    applyBC; // function to use when applying boundary conditions
   CollectFunc collect; // function to collect particle moments
+  PushFunc    push;    // function to update particle velocities without collisions
   CollideFunc collide; // function to collide particles
 } Species;
 
