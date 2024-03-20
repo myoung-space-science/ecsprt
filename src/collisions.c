@@ -34,7 +34,9 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
   PetscReal  vcr;                                                              // the ion speed with respect to the center of mass
   PetscReal  costht, sintht, cosphi, sinphi;
   PetscReal  uperp, uphi;                                                      // components of the unit scattering vector
-  PetscReal  u0[3]={0.0, 0.0, 0.0}, u1[3], u2[3], vf[3], vfr;
+  PetscReal  u0x, u0y, u0z;
+  PetscReal  u1x, u1y, u1z;
+  PetscReal  u2[3], vf[3], vfr;
   long       seed=getseed(*ctx);
   PetscReal  ratio;                                                            // ratio of current ion's final speed to thermal speed
 
@@ -94,28 +96,28 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
       vcr = PetscSqrtReal(tmp);
 
       // Compute the unit scattering vector relative to the CoM z axis.
-      u0[2] = 2.0*ran3(&seed) - 1.0;
-      uperp = PetscSqrtReal(1.0 - PetscSqr(u0[2]));
+      u0z = 2.0*ran3(&seed) - 1.0;
+      uperp = PetscSqrtReal(1.0 - PetscSqr(u0z));
       uphi = 2*PETSC_PI * ran3(&seed);
-      u0[1] = uperp*PetscCosReal(uphi);
-      u0[2] = uperp*PetscSinReal(uphi);
+      u0x = uperp*PetscCosReal(uphi);
+      u0y = uperp*PetscSinReal(uphi);
 
       // Rotate the CoM frame to align its z axis with the incident direction.
       costht = vr[2] / vrr;
       sintht = PetscSqrtReal(1.0 - PetscSqr(costht));
-      cosphi = vr[1] / (vrr*sintht);
-      sinphi = vr[2] / (vrr*sintht);
+      cosphi = vr[0] / (vrr*sintht);
+      sinphi = vr[1] / (vrr*sintht);
 
       /* Rotate the unit scattering vector to the incident coordinate system.
       1. rotation about CoM y axis:          (xc, yc, zc) -> (xp, yp, zp)
       2. rotation about intermediate z axis: (xp, yp, zp) -> (xi, yi, zi)
       */
-      u1[0] = u0[2]*sintht + u0[0]*costht;
-      u1[1] = u0[2];
-      u1[2] = u0[2]*costht - u0[0]*sintht;
-      u2[0] = u1[0]*cosphi - u1[1]*sinphi;
-      u2[1] = u1[0]*sinphi + u1[1]*cosphi;
-      u2[2] = u1[2];
+      u1x = u0z*sintht + u0x*costht;
+      u1y = u0y;
+      u1z = u0z*costht - u0x*sintht;
+      u2[0] = u1x*cosphi - u1y*sinphi;
+      u2[1] = u1x*sinphi + u1y*cosphi;
+      u2[2] = u1z;
 
       /* Assign final CoM velocity components.
       vfx = vcr * ((uz*sintht + ux*costht)*cosphi - uy*sinphi)
@@ -134,6 +136,7 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
       */
       vfr = PetscSqrtReal(tmp);
       ratio = vfr / viT;
+      ctx->log.ranks("vfr / viT = %6.4f / %6.4f = %6.4f\n", vfr, viT, ratio);
       if (ratio > 10) {
         ctx->log.self("[%d] Warning: Refusing to accept collision that results in final speed = %4.1f times thermal speed\n", ctx->mpi.rank, ratio);
         Nf++;
