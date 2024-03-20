@@ -400,7 +400,7 @@ PetscErrorCode Rejection(DistributionFunction density, Context *ctx)
 
 
 /* Compute the initial ion positions. */
-PetscErrorCode InitializePositions(PDistType PDistType, Context *ctx)
+PetscErrorCode InitializePositions(PDistType PDistType, PetscInt ndim, Context *ctx)
 {
   DM         swarmDM=ctx->swarmDM;
   PetscInt   np, Np;
@@ -424,7 +424,7 @@ PetscErrorCode InitializePositions(PDistType PDistType, Context *ctx)
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_FLAT_REVERSE]);
       break;
     case PDIST_FLAT_SOBOL:
-      PetscCall(SobolDistribution(ctx));
+      PetscCall(SobolDistribution(ndim, ctx));
       break;
     case PDIST_UNIFORM:
       PetscCall(UniformDistribution(ctx));
@@ -455,12 +455,11 @@ PetscErrorCode InitializePositions(PDistType PDistType, Context *ctx)
 
 
 /* Update the ion positions according to $\frac{d\vec{r}}{dt} = \vec{v}$. */
-PetscErrorCode UpdatePositions(PetscReal dt, Context *ctx)
+PetscErrorCode UpdatePositions(PetscReal dt, PetscInt ndim, Context *ctx)
 {
   DM          swarmDM=ctx->swarmDM;
   PetscReal  *pos, *vel;
-  PetscInt    ip, np;
-  PetscReal   x, y, z;
+  PetscInt    ip, np, dim;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -476,16 +475,9 @@ PetscErrorCode UpdatePositions(PetscReal dt, Context *ctx)
 
   // Loop over ions.
   for (ip=0; ip<np; ip++) {
-    // Update the x position.
-    x = pos[ip*NDIM + 0] + vel[ip*NDIM + 0]*dt;
-    // Update the y position.
-    y = pos[ip*NDIM + 1] + vel[ip*NDIM + 1]*dt;
-    // Update the z position.
-    z = pos[ip*NDIM + 2] + vel[ip*NDIM + 2]*dt;
-    // Copy new positions.
-    pos[ip*NDIM + 0] = x;
-    pos[ip*NDIM + 1] = y;
-    pos[ip*NDIM + 2] = z;
+    for (dim=0; dim<ndim; dim++) {
+      pos[ip*ndim + dim] += vel[ip*ndim + dim]*dt;
+    }
   }
 
   // Restore the ion-velocities array.
