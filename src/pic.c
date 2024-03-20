@@ -208,7 +208,7 @@ int main(int argc, char **args)
 
     /* Update velocities. */
     ctx.log.status("Updating velocities\n");
-    PetscCall(UpdateVelocities(app.dt, &ctx));
+    PetscCall(UpdateVelocities(app.dt, cli.ndim, &ctx));
 
     /* Update positions. */
     ctx.log.status("Updating positions\n");

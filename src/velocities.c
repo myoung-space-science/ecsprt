@@ -370,7 +370,7 @@ PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts)
 
 
 /* Update the ion velocities based on external forces and collisions. */
-PetscErrorCode UpdateVelocities(PetscReal dt, Context *ctx)
+PetscErrorCode UpdateVelocities(PetscReal dt, PetscInt ndim, Context *ctx)
 {
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -380,7 +380,7 @@ PetscErrorCode UpdateVelocities(PetscReal dt, Context *ctx)
 
   // Apply the appropriate collision algorithm.
   if (ctx->neutrals.m > 0.0) {
-    PetscCall(ctx->ions.collide(dt, ctx));
+    PetscCall(ctx->ions.collide(dt, ndim, ctx));
   }
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
