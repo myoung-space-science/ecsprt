@@ -11,13 +11,16 @@ const char *VDistTypes[] = {
 
 
 /* Generate a normal distribution of velocities with zero mean and unit variance. */
-PetscErrorCode NormalVelocities(Context *ctx)
+PetscErrorCode NormalVelocities(PetscInt ndim, Context *ctx)
 {
   DM         swarmDM=ctx->swarmDM;
   PetscInt   np, ip;
   PetscReal *vel;
-  PetscReal  dvx, dvy, dvz;
+  PetscReal  vT[3]={ctx->ions.vTx, ctx->ions.vTy, ctx->ions.vTz};
+  PetscReal  v0[3]={ctx->ions.v0x, ctx->ions.v0y, ctx->ions.v0z};
+  PetscReal  dv;
   long       seed=getseed(*ctx);
+  PetscInt   dim;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -30,12 +33,10 @@ PetscErrorCode NormalVelocities(Context *ctx)
 
   // Loop over ions and assign parameter values.
   for (ip=0; ip<np; ip++) {
-    PetscCall(Gasdev(&seed, &dvx));
-    PetscCall(Gasdev(&seed, &dvy));
-    PetscCall(Gasdev(&seed, &dvz));
-    vel[ip*NDIM + 0] = ctx->ions.vTx*dvx + ctx->ions.v0x;
-    vel[ip*NDIM + 1] = ctx->ions.vTy*dvy + ctx->ions.v0y;
-    vel[ip*NDIM + 2] = ctx->ions.vTz*dvz + ctx->ions.v0z;
+    for (dim=0; dim<ndim; dim++) {
+      PetscCall(Gasdev(&seed, &dv));
+      vel[ip*ndim + dim] = vT[dim]*dv + v0[dim];
+    }
   }
 
   // Restore the ion-velocities array.
@@ -47,14 +48,14 @@ PetscErrorCode NormalVelocities(Context *ctx)
 
 
 /* Compute the initial ion velocities. */
-PetscErrorCode InitializeVelocities(VDistType VDistType, Context *ctx)
+PetscErrorCode InitializeVelocities(PetscInt ndim, VDistType VDistType, Context *ctx)
 {
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   switch (VDistType) {
     case VDIST_NORMAL:
-      PetscCall(NormalVelocities(ctx));
+      PetscCall(NormalVelocities(ndim, ctx));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unknown initial velocity distribution");

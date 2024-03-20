@@ -155,7 +155,7 @@ int main(int argc, char **args)
 
   /* Set initial particle velocities. */
   ctx.log.status("Initializing velocities\n");
-  PetscCall(InitializeVelocities(app.VDistType, &ctx));
+  PetscCall(InitializeVelocities(cli.ndim, app.VDistType, &ctx));
 
   /* Compute initial density and flux.*/
   ctx.log.status("Collecting initial moments\n");
