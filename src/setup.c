@@ -311,49 +311,13 @@ PetscErrorCode DestroyContext(Context *ctx)
 }
 
 
-/* Create the data manager for Eulerian fluid quantities.
-
-This routine ultimately determines the number of grid cells in each dimension
-(Nx, Ny, and Nz) and the total number of charged particles (Np). In the former
-case, we want to let the user specify Nx, Ny, or Nz via the PETSc options
-`-da_grid_x`, `-da_grid_y`, and `-da_grid_z`. In the latter case, we want the
-default value of Np to correspond to one particle per cell, which we can't
-compute until we are certain about the values of Nx, Ny, and Nz.
-*/
-PetscErrorCode CreateGridDM(PetscInt ndim, Context *ctx)
+PetscErrorCode NormalizeGrid(DM dm, Context *ctx)
 {
-  PetscInt        Nx=(ctx->grid.Nx > 0 ? ctx->grid.Nx : 7);
-  PetscInt        Ny=(ctx->grid.Ny > 0 ? ctx->grid.Ny : 7);
-  PetscInt        Nz=(ctx->grid.Nz > 0 ? ctx->grid.Nz : 7);
-  DMBoundaryType  xBC=ctx->grid.xBC;
-  DMBoundaryType  yBC=ctx->grid.yBC;
-  DMBoundaryType  zBC=ctx->grid.zBC;
-  DMDAStencilType stencilType=ctx->potential.stencilType;
-  PetscInt        dof=4;
-  PetscInt        width=1;
-  DM              dm;
+  PetscInt Nx, Ny, Nz;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
-  // Create the DM object in 2 or 3 dimensions.
-  switch (ndim)
-  {
-  case 2:
-    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, xBC, yBC, stencilType, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, &dm));
-    break;
-  case 3:
-    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &dm));
-    break;
-  default:
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", ndim);
-  }
-  // Perform basic setup.
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "grid_"));
-  PetscCall(DMDASetElementType(dm, DMDA_ELEMENT_Q1));
-  PetscCall(DMSetFromOptions(dm));
-  PetscCall(DMSetUp(dm));
-  PetscCall(PetscObjectSetName((PetscObject)dm, "GridDM"));
   // Synchronize values of Nx, Ny, and Nz.
   PetscCall(DMDAGetInfo(dm, NULL, &Nx, &Ny, &Nz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   if (ctx->grid.Nx == -1) {
@@ -404,6 +368,56 @@ PetscErrorCode CreateGridDM(PetscInt ndim, Context *ctx)
     ctx->grid.z1 = ctx->grid.Lz;
   }
 
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+/* Create the data manager for Eulerian fluid quantities.
+
+This routine ultimately determines the number of grid cells in each dimension
+(Nx, Ny, and Nz) and the total number of charged particles (Np). In the former
+case, we want to let the user specify Nx, Ny, or Nz via the PETSc options
+`-da_grid_x`, `-da_grid_y`, and `-da_grid_z`. In the latter case, we want the
+default value of Np to correspond to one particle per cell, which we can't
+compute until we are certain about the values of Nx, Ny, and Nz.
+*/
+PetscErrorCode CreateGridDM(PetscInt ndim, Context *ctx)
+{
+  PetscInt        Nx=(ctx->grid.Nx > 0 ? ctx->grid.Nx : 7);
+  PetscInt        Ny=(ctx->grid.Ny > 0 ? ctx->grid.Ny : 7);
+  PetscInt        Nz=(ctx->grid.Nz > 0 ? ctx->grid.Nz : 7);
+  DMBoundaryType  xBC=ctx->grid.xBC;
+  DMBoundaryType  yBC=ctx->grid.yBC;
+  DMBoundaryType  zBC=ctx->grid.zBC;
+  DMDAStencilType stencilType=ctx->potential.stencilType;
+  PetscInt        dof=4;
+  PetscInt        width=1;
+  DM              dm;
+
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Create the DM object in 2 or 3 dimensions.
+  switch (ndim)
+  {
+  case 2:
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, xBC, yBC, stencilType, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, &dm));
+    break;
+  case 3:
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &dm));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", ndim);
+  }
+  // Perform basic setup.
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "grid_"));
+  PetscCall(DMDASetElementType(dm, DMDA_ELEMENT_Q1));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "GridDM"));
+  // Synchronize values of grid parameters.
+  PetscCall(NormalizeGrid(dm, ctx));
   // Set uniform coordinates on the DM.
   PetscCall(DMDASetUniformCoordinates(dm, ctx->grid.x0, ctx->grid.x1, ctx->grid.y0, ctx->grid.y1, ctx->grid.z0, ctx->grid.z1));
   // Declare grid-quantity names.
