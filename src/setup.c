@@ -382,7 +382,7 @@ case, we want to let the user specify Nx, Ny, or Nz via the PETSc options
 default value of Np to correspond to one particle per cell, which we can't
 compute until we are certain about the values of Nx, Ny, and Nz.
 */
-PetscErrorCode CreateGridDM(PetscInt ndim, Context *ctx)
+PetscErrorCode CreateFluidDM(PetscInt ndim, Context *ctx)
 {
   PetscInt        Nx=(ctx->grid.Nx > 0 ? ctx->grid.Nx : 7);
   PetscInt        Ny=(ctx->grid.Ny > 0 ? ctx->grid.Ny : 7);
@@ -411,11 +411,11 @@ PetscErrorCode CreateGridDM(PetscInt ndim, Context *ctx)
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", ndim);
   }
   // Perform basic setup.
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "grid_"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "fluid_"));
   PetscCall(DMDASetElementType(dm, DMDA_ELEMENT_Q1));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
-  PetscCall(PetscObjectSetName((PetscObject)dm, "GridDM"));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "FluidDM"));
   // Synchronize values of grid parameters.
   PetscCall(NormalizeGrid(dm, ctx));
   // Set uniform coordinates on the DM.
@@ -443,7 +443,7 @@ stencil type, and boundary conditions as the logical grid for fluid quantities.
 Unlike the latter, it will use a stencil width of 2 in order to accommodate
 second-order finite differencing of the electric field.
 
-This function should follow `CreateGridDM`, which performs various set-up and
+This function should follow `CreateFluidDM`, which performs various set-up and
 sychronization tasks on grid parameters.
 */
 PetscErrorCode CreatePotentialDM(PetscInt ndim, Context *ctx)
@@ -498,7 +498,7 @@ width, degrees of freedom, and boundary conditions as the logical grid for fluid
 quantities. Unlike the latter, it will unconditionally use a box stencil type in
 order to accommodate nearest-neighbor moment collection.
 
-This function should follow `CreateGridDM`, which performs various set-up and
+This function should follow `CreateFluidDM`, which performs various set-up and
 sychronization tasks on grid parameters.
 */
 PetscErrorCode CreateIonsDM(PetscInt ndim, Context *ctx)
@@ -512,7 +512,7 @@ PetscErrorCode CreateIonsDM(PetscInt ndim, Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Create the fluid DM in 2 or 3 dimensions.
-  PetscCall(CreateGridDM(ndim, ctx));
+  PetscCall(CreateFluidDM(ndim, ctx));
 
   // Create the swarm DM.
   PetscCall(DMCreate(PETSC_COMM_WORLD, &swarmDM));

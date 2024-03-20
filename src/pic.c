@@ -136,7 +136,7 @@ int main(int argc, char **args)
 
   /* Set up the fluid grid. */
   ctx.log.status("Creating the fluid-grid DM\n");
-  PetscCall(CreateGridDM(cli.ndim, &ctx));
+  PetscCall(CreateFluidDM(cli.ndim, &ctx));
 
   /* Set up the ion swarm. */
   ctx.log.status("Creating the particle-swarm DM\n");

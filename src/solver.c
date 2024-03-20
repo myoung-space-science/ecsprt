@@ -135,7 +135,7 @@ int main(int argc, char **args)
 
   /* Set up the fluid grid. */
   ctx.log.status("Creating the fluid-grid DM\n");
-  PetscCall(CreateGridDM(cli.ndim, &ctx));
+  PetscCall(CreateFluidDM(cli.ndim, &ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
   ctx.log.status("Creating the electrostatic-potential DM\n");
