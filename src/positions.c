@@ -262,7 +262,7 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   PetscReal      dy=ctx->grid.dy;
   PetscReal      dz=ctx->grid.dz;
   PetscInt       dim;
-  PetscBool      inside;
+  PetscInt       ntmp;
   DMDALocalInfo  local;
   PetscReal     *pos;
   PetscReal      r[3];
@@ -312,18 +312,19 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   /* NOTE: DMSwarm has already allocated space for the coordinates array. */
   ic = 0;
   for (ip=0; ip<Np; ip++) {
-    // Store the current particle's global position.
+    /* Store the current particle's global position. */
     for (dim=0; dim<ndim; dim++) {
       r[dim] = pos[ip*ndim + dim];
     }
-    // Test whether this particle's global position is within the local box.
-    inside = PETSC_FALSE;
+    /* Test whether this particle's global position is within the local box. */
+    ntmp = 0;
     for (dim=0; dim<ndim; dim++) {
-      if ((r[dim] < lmin[dim]) || (r[dim] >= lmax[dim])) break;
-      inside = PETSC_TRUE;
+      if ((lmin[dim] <= r[dim]) && (r[dim] < lmax[dim])) {
+        ntmp++;
+      }
     }
-    // If so, assign this particle's position to the set of local coordinates.
-    if (inside) {
+    /* If so, assign this particle's position to the set of local coordinates. */
+    if (ntmp == ndim) {
       for (dim=0; dim<ndim; dim++) {
         coords[ic*ndim + dim] = r[dim];
       }
