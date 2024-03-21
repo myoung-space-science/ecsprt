@@ -6,7 +6,7 @@
 
 /* Names of supported density functions. */
 const char *PDistTypes[] ={
-  "flat-sobol", "flat-reverse", "flat-normal", "uniform", "uniform-coordinates", "uniform-centered", "sinusoidal", "gaussian", "PDistType", "PDIST_", NULL
+  "sobol", "reverse", "normal", "uniform", "sinusoidal", "gaussian", "PDistType", "PDIST_", NULL
 };
 
 
@@ -507,26 +507,20 @@ PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *
 
   // Initialize coordinates in the ions DM.
   switch(PDistType) {
-    case PDIST_FLAT_NORMAL:
+    case PDIST_NORMAL:
       PetscCall(NormalDistribution(ndim, ctx));
       break;
-    case PDIST_FLAT_REVERSE:
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_FLAT_REVERSE]);
+    case PDIST_REVERSE:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_REVERSE]);
       break;
-    case PDIST_FLAT_SOBOL:
+    case PDIST_SOBOL:
       PetscCall(SobolDistribution(ndim, ctx));
       break;
     case PDIST_UNIFORM:
-      PetscCall(UniformDistribution(ctx));
-      break;
-    case PDIST_UNIFORM_COORDINATES:
-      PetscCall(UniformDistributionFromCoordinates(ctx));
-      break;
-    case PDIST_UNIFORM_CENTERED:
-      PetscCall(UniformDistributionCellCentered(ctx));
+      PetscCall(UniformCoordinates(ndim, ctx));
       break;
     case PDIST_SINUSOIDAL:
-      PetscCall(Rejection(SinusoidalDistribution, ctx));
+      PetscCall(Rejection(ndim, SinusoidalDistribution, ctx));
       break;
     case PDIST_GAUSSIAN:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Not implemented: %s density", PDistTypes[PDIST_GAUSSIAN]);
