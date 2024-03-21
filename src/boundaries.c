@@ -1,96 +1,50 @@
 #include "ecsprt.h"
 
 
-PetscErrorCode Apply2DBC(PetscInt np, PetscReal *pos, PetscReal *vel, void *opts)
+/* Apply boundary conditions to particle positions and velocities. */
+PetscErrorCode ApplyBC(PetscInt ndim, PetscInt np, PetscReal *pos, PetscReal *vel, void *opts)
 {
   Context   *ctx=(Context *)opts;
-  PetscInt   ip, ndim=2;
-  PetscReal  x, y;
-  PetscReal  Lx=ctx->grid.Lx;
-  PetscReal  Ly=ctx->grid.Ly;
-  PetscReal  x0=ctx->grid.x0;
-  PetscReal  y0=ctx->grid.y0;
-  PetscReal  x1=ctx->grid.x1;
-  PetscReal  y1=ctx->grid.y1;
+  PetscInt   ip, dim;
+  PetscReal  r[ndim];
+  BCType     bc[3]={ctx->ions.xBC, ctx->ions.yBC, ctx->ions.zBC};
+  PetscReal  L[3]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
+  PetscReal  r0[3]={ctx->grid.x0, ctx->grid.y0, ctx->grid.z0};
+  PetscReal  r1[3]={ctx->grid.x1, ctx->grid.y1, ctx->grid.z1};
 
   PetscFunctionBeginUser;
 
-  // TODO: Implement other BC in ion loop. Some of those BC will require
-  // modifying the velocity (e.g., vx = -vx for reflection at the x boundary, or
-  // vx = vx0 for injection/advection along the x axis).
-
   // Loop over ions.
   for (ip=0; ip<np; ip++) {
-    // Extract current positions.
-    x = pos[ip*ndim + 0];
-    y = pos[ip*ndim + 1];
-    // Update the x position.
-    if (ctx->ions.xBC == BC_PERIODIC) {
-      if (x < x0) {x += Lx;}
-      if (x >= x1) {x -= Lx;}
+    for (dim=0; dim<ndim; dim++) {
+      // Extract the current coordinate.
+      r[dim] = pos[ip*ndim + dim];
+      // Check periodic boundary conditions.
+      if (bc[dim] == BC_PERIODIC) {
+        if (r[dim] < r0[dim]) {r[dim] += L[dim];}
+        if (r[dim] >= r1[dim]) {r[dim] -= L[dim];}
+      }
+      // Copy the updated coordinate.
+      pos[ip*ndim + dim] = r[dim];
     }
-    // Update the y position.
-    if (ctx->ions.yBC == BC_PERIODIC) {
-      if (y < y0) {y += Ly;}
-      if (y >= y1) {y -= Ly;}
-    }
-    // Copy new positions.
-    pos[ip*ndim + 0] = x;
-    pos[ip*ndim + 1] = y;
   }
 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 
+PetscErrorCode Apply2DBC(PetscInt np, PetscReal *pos, PetscReal *vel, void *opts)
+{
+  PetscFunctionBeginUser;
+  PetscCall(ApplyBC(2, np, pos, vel, opts));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
 PetscErrorCode Apply3DBC(PetscInt np, PetscReal *pos, PetscReal *vel, void *opts)
 {
-  Context   *ctx=(Context *)opts;
-  PetscInt  ip, ndim=3;
-  PetscReal x, y, z;
-  PetscReal Lx=ctx->grid.Lx;
-  PetscReal Ly=ctx->grid.Ly;
-  PetscReal Lz=ctx->grid.Lz;
-  PetscReal x0=ctx->grid.x0;
-  PetscReal y0=ctx->grid.y0;
-  PetscReal z0=ctx->grid.z0;
-  PetscReal x1=ctx->grid.x1;
-  PetscReal y1=ctx->grid.y1;
-  PetscReal z1=ctx->grid.z1;
-
   PetscFunctionBeginUser;
-
-  // TODO: Implement other BC in ion loop. Some of those BC will require
-  // modifying the velocity (e.g., vx = -vx for reflection at the x boundary, or
-  // vx = vx0 for injection/advection along the x axis).
-
-  // Loop over ions.
-  for (ip=0; ip<np; ip++) {
-    // Extract current positions.
-    x = pos[ip*ndim + 0];
-    y = pos[ip*ndim + 1];
-    z = pos[ip*ndim + 2];
-    // Update the x position.
-    if (ctx->ions.xBC == BC_PERIODIC) {
-      if (x < x0) {x += Lx;}
-      if (x >= x1) {x -= Lx;}
-    }
-    // Update the y position.
-    if (ctx->ions.yBC == BC_PERIODIC) {
-      if (y < y0) {y += Ly;}
-      if (y >= y1) {y -= Ly;}
-    }
-    // Update the z position.
-    if (ctx->ions.zBC == BC_PERIODIC) {
-      if (z < z0) {z += Lz;}
-      if (z >= z1) {z -= Lz;}
-    }
-    // Copy new positions.
-    pos[ip*ndim + 0] = x;
-    pos[ip*ndim + 1] = y;
-    pos[ip*ndim + 2] = z;
-  }
-
+  PetscCall(ApplyBC(3, np, pos, vel, opts));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
