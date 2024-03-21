@@ -530,7 +530,7 @@ PetscErrorCode CreateSwarmDM(PetscInt ndim, Context *ctx)
   // Register non-default fields that each particle will have.
   PetscCall(DMSwarmInitializeFieldRegister(swarmDM));
   // --> (x, y, z) velocity components
-  PetscCall(DMSwarmRegisterPetscDatatypeField(swarmDM, "velocity", NDIM, PETSC_REAL));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(swarmDM, "velocity", ndim, PETSC_REAL));
   PetscCall(DMSwarmFinalizeFieldRegister(swarmDM));
   // Set the per-processor swarm size and buffer length for efficient resizing.
   np = (PetscInt)(ctx->plasma.Np / ctx->mpi.size);
