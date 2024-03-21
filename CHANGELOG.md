@@ -9,6 +9,8 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+## v0.5.0
+
 - Implement `-ndim {2,3}` option for `pic` simulations
 - Significantly update and refactor initial particle distributions
 - Extend tests
