@@ -257,14 +257,15 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   PetscReal     *coords;
   PetscInt       Np, np, ip, ic;
   PetscReal      s[ndim];
-  PetscReal      L[ndim];
+  PetscReal      L[3]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
   PetscReal      dx=ctx->grid.dx;
   PetscReal      dy=ctx->grid.dy;
   PetscReal      dz=ctx->grid.dz;
-  PetscInt       dim;
+  PetscInt       dim, bcd;
   DMDALocalInfo  local;
-  PetscReal     *pos, x, y, z;
-  PetscReal      xmin, xmax, ymin, ymax, zmin, zmax;
+  PetscReal     *pos;
+  PetscReal      r[3];
+  PetscReal      lmin[3], lmax[3];
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -275,17 +276,10 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   // Allocate a 1-D array for the global positions.
   PetscCall(PetscMalloc1(ndim*Np, &pos));
 
-  // Assign grid lengths for looping.
-  L[0] = ctx->grid.Lx;
-  L[1] = ctx->grid.Ly;
-  L[2] = ctx->grid.Lz;
-
+  // Generate a Sobol' sequence of global positions on rank 0.
   if (ctx->mpi.rank == 0) {
 
-    // Initialize the psuedo-random number generator.
     PetscCall(Sobseq(&seed, s-1));
-
-    // Generate a Sobol' sequence of global positions on rank 0.
     for (ip=0; ip<Np; ip++) {
       PetscCall(Sobseq(&ndim, s-1));
       for (dim=0; dim<ndim; dim++) {
@@ -309,36 +303,22 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
 
   // Get the index information for this processor.
   PetscCall(DMDAGetLocalInfo(cellDM, &local));
-  xmin = dx*local.xs;
-  ymin = dy*local.ys;
-  zmin = dz*local.zs;
-  xmax = dx*(local.xs + local.xm);
-  ymax = dy*(local.ys + local.ym);
-  zmax = dz*(local.zs + local.zm);
+  lmin[0] = dx*local.xs;
+  lmin[1] = dy*local.ys;
+  lmin[2] = dz*local.zs;
+  lmax[0] = dx*(local.xs + local.xm);
+  lmax[1] = dy*(local.ys + local.ym);
+  lmax[2] = dz*(local.zs + local.zm);
 
   // Loop over global positions and assign local positions for this rank.
   /* NOTE: DMSwarm has already allocated space for the coordinates array. */
   ic = 0;
-  if (ndim == 2) {
-    for (ip=0; ip<Np; ip++) {
-      x = pos[ip*ndim + 0];
-      y = pos[ip*ndim + 1];
-      if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax)) {
-        coords[ic*ndim + 0] = x;
-        coords[ic*ndim + 1] = y;
-        ic++;
-      }
-    }
-  }
-  if (ndim == 3) {
-    for (ip=0; ip<Np; ip++) {
-      x = pos[ip*ndim + 0];
-      y = pos[ip*ndim + 1];
-      z = pos[ip*ndim + 2];
-      if ((xmin <= x) && (x < xmax) && (ymin <= y) && (y < ymax) && (zmin <= z) && (z < zmax)) {
-        coords[ic*ndim + 0] = x;
-        coords[ic*ndim + 1] = y;
-        coords[ic*ndim + 2] = z;
+  for (ip=0; ip<Np; ip++) {
+    for (dim=0; dim<ndim; dim++) {
+      r[dim] = pos[ip*ndim + dim];
+      for (bcd=0; bcd<ndim; bcd++) {
+        if ((r[bcd] < lmin[bcd]) || (r[bcd] >= lmax[bcd])) continue;
+        coords[ic*ndim + dim] = r[dim];
         ic++;
       }
     }
