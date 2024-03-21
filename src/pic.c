@@ -40,7 +40,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   if (found) {
     app->PDistType = enumArg;
   } else {
-    app->PDistType = PDIST_FLAT_SOBOL;
+    app->PDistType = PDIST_SOBOL;
   }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--velocity-dist", VDistTypes, &enumArg, &found));
   if (found) {
