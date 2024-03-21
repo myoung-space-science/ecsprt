@@ -80,24 +80,24 @@ typedef struct {
 
 /* Parameters of a plasma species. */
 typedef struct {
-  PetscReal q;       // charge
-  PetscReal m;       // mass
-  PetscReal nu;      // frequency of collisions with neutral particles
-  PetscReal Omega;   // gyrofrequency components
-  PetscReal kappa;   // magnetization components
-  PetscReal v0x;     // drift velocity in x dimension
-  PetscReal v0y;     // drift velocity in y dimension
-  PetscReal v0z;     // drift velocity in z dimension
-  PetscReal v0;      // drift-velocity magnitude
-  PetscReal vTx;     // thermal velocity in x dimension
-  PetscReal vTy;     // thermal velocity in y dimension
-  PetscReal vTz;     // thermal velocity in z dimension
-  PetscReal vT;      // thermal-velocity magnitude
-  PetscReal T;       // temperature
-  BCType    xBC;     // x-axis boundary condition
-  BCType    yBC;     // y-axis boundary condition
-  BCType    zBC;     // z-axis boundary condition
-  BCFunc    applyBC; // function to use when applying boundary conditions
+  PetscReal   q;       // charge
+  PetscReal   m;       // mass
+  PetscReal   nu;      // frequency of collisions with neutral particles
+  PetscReal   Omega;   // gyrofrequency components
+  PetscReal   kappa;   // magnetization components
+  PetscReal   v0x;     // drift velocity in x dimension
+  PetscReal   v0y;     // drift velocity in y dimension
+  PetscReal   v0z;     // drift velocity in z dimension
+  PetscReal   v0;      // drift-velocity magnitude
+  PetscReal   vTx;     // thermal velocity in x dimension
+  PetscReal   vTy;     // thermal velocity in y dimension
+  PetscReal   vTz;     // thermal velocity in z dimension
+  PetscReal   vT;      // thermal-velocity magnitude
+  PetscReal   T;       // temperature
+  BCType      xBC;     // x-axis boundary condition
+  BCType      yBC;     // y-axis boundary condition
+  BCType      zBC;     // z-axis boundary condition
+  BCFunc      applyBC; // function to use when applying boundary conditions
   CollectFunc collect; // function to collect particle moments
   PushFunc    push;    // function to update particle velocities without collisions
   CollideFunc collide; // function to collide particles
@@ -105,15 +105,15 @@ typedef struct {
 
 /* Parameters of the linear potential system. */
 typedef struct {
-  DM              dm;           // data manager for the logical grid
-  Vec             solution;     // the solution vector
-  Vec             forcing;      // the forcing vector
-  LHSFunc         lhs;          // function to use when constructing LHS operator
-  RHSFunc         rhs;          // function to use when constructing RHS function
-  PetscReal       scale;        // value by which to scale RHS and LHS
-  PetscBool       viewLHS;      // option to view LHS operator structure
-  PetscInt        stencilSize;  // number of points in the LHS-matrix stencil
-  DMDAStencilType stencilType;  // type of LHS-matrix stencil
+  DM              dm;          // data manager for the logical grid
+  Vec             solution;    // the solution vector
+  Vec             forcing;     // the forcing vector
+  LHSFunc         lhs;         // function to use when constructing LHS operator
+  RHSFunc         rhs;         // function to use when constructing RHS function
+  PetscReal       scale;       // value by which to scale RHS and LHS
+  PetscBool       viewLHS;     // option to view LHS operator structure
+  PetscInt        stencilSize; // number of points in the LHS-matrix stencil
+  DMDAStencilType stencilType; // type of LHS-matrix stencil
 } Linear;
 
 /* Logging functions. */
@@ -195,9 +195,9 @@ typedef struct {
   PetscReal    vnTz;    // neutral-particle thermal velocity in z dimension
   PetscReal    vnT;     // neutral-particle thermal-velocity magnitude
   PetscReal    Tn;      // neutral-particle temperature
-  BoundaryType xBT[2];  // x-axis boundary condition(s)
-  BoundaryType yBT[2];  // y-axis boundary condition(s)
-  BoundaryType zBT[2];  // z-axis boundary condition(s)
+  BoundaryType xBC;     // x-axis boundary condition(s)
+  BoundaryType yBC;     // y-axis boundary condition(s)
+  BoundaryType zBC;     // z-axis boundary condition(s)
 } CLI;
 
 /* Fluid quantities defined at each spatial grid point. */
