@@ -5,7 +5,7 @@
 #include "rhs.h"
 
 
-PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[NDIM], char inpath[PETSC_MAX_PATH_LEN], Context *ctx)
+PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[3], char inpath[PETSC_MAX_PATH_LEN], Context *ctx)
 {
   PetscBool     nullPath;
   char          fullpath[PETSC_MAX_PATH_LEN];
