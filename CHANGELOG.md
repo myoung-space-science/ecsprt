@@ -9,6 +9,12 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+- Implement `-ndim {2,3}` option for `pic` simulations
+- Significantly update and refactor initial particle distributions
+- Extend tests
+
+## v0.4.2
+
 - Reimplement particle rejection
 - Fix bugs in `setup.sh` and `build.sh`
 - Fix bugs in, and refactor, solver `main`
