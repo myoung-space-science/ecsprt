@@ -255,7 +255,7 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   DM             cellDM;
   PetscInt       seed=-1;
   PetscReal     *coords;
-  PetscInt       Np, np, ip, ic;
+  PetscInt       Np, ip, ic;
   PetscReal      s[ndim];
   PetscReal      L[3]={ctx->grid.Lx, ctx->grid.Ly, ctx->grid.Lz};
   PetscReal      dx=ctx->grid.dx;
@@ -295,9 +295,6 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
 
   // Get a representation of the particle coordinates.
   PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-
-  // Get the local number of particles.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
 
   // Get the ion-swarm cell DM.
   PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
