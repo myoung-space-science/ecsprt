@@ -337,6 +337,9 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   // Restore the coordinates array.
   PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
+  // Reset the number of local particles.
+  PetscCall(DMSwarmSetLocalSizes(swarmDM, ic, -1));
+
   // Free the positions-array memory.
   PetscCall(PetscFree(pos));
 
