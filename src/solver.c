@@ -18,7 +18,7 @@ static char help[] = "A tool for solving the 3D quasineutral electrostatic-poten
 
 typedef struct {
   char      inpath[PETSC_MAX_PATH_LEN]; // path to input file
-  PetscReal fluxScale[NDIM];            // values by which to scale density into flux
+  PetscReal fluxScale[3];               // values by which to scale density into flux
   PetscBool viewLHS;                    // option to view LHS operator structure
 } Application;
 
