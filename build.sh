@@ -293,7 +293,7 @@ if [ ${optimize} == 1 ]; then
 fi
 echo &>> ${buildlog}
 print_width "=" &>> ${buildlog}
-echo "    Running make on ECSPRT" &>> ${buildlog}
+echo "    Running make on ECSPRT at $(date +'%Y-%m-%d %H:%M:%S')" &>> ${buildlog}
 print_width "=" &>> ${buildlog}
 make ${prog} CPPFLAGS="${cppflags}" CFLAGS="${cflags}" &>> ${buildlog}
 popd &> /dev/null
