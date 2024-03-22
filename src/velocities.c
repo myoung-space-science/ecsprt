@@ -102,7 +102,7 @@ PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
   }
 
   /* Compute \vec{s} = \frac{2\vec{t}}{1 + \vec{t}\cdot\vec{t}}. */
-  PetscCall(DotProduct(t, t, &t_dot_t));
+  PetscCall(DotProduct(3, t, t, &t_dot_t));
   for (dim=0; dim<3; dim++) {
     s[dim] = 2.0 * t[dim] / (1 + t_dot_t);
   }
