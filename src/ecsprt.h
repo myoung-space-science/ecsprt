@@ -133,59 +133,59 @@ typedef struct {
 
 /* Command-line options for all applications. */
 typedef struct {
-  PetscInt     ndim;    // number of spatial dimensions
-  RHSType      rhsType; // type of RHS vector to use
-  LHSType      lhsType; // type of LHS operator to use
-  PetscInt     Nx;      // number of cells in x dimension
-  PetscInt     Ny;      // number of cells in y dimension
-  PetscInt     Nz;      // number of cells in z dimension
-  PetscReal    dx;      // physical cell spacing in x dimension
-  PetscReal    dy;      // physical cell spacing in y dimension
-  PetscReal    dz;      // physical cell spacing in z dimension
-  PetscReal    x0;      // lower physical bound of x dimension
-  PetscReal    y0;      // lower physical bound of y dimension
-  PetscReal    z0;      // lower physical bound of z dimension
-  PetscReal    x1;      // upper physical bound of x dimension
-  PetscReal    y1;      // upper physical bound of y dimension
-  PetscReal    z1;      // upper physical bound of z dimension
-  PetscReal    B0;      // constant magnetic-field amplitude
-  PetscReal    E0;      // constant electric-field amplitude
-  PetscReal    n0;      // plasma density
-  PetscReal    qi;      // ion charge
-  PetscReal    mi;      // ion mass
-  PetscReal    nui;     // frequency of collisions between ions and neutral particles
-  PetscReal    vi0x;    // ion drift velocity in x dimension
-  PetscReal    vi0y;    // ion drift velocity in y dimension
-  PetscReal    vi0z;    // ion drift velocity in z dimension
-  PetscReal    vi0;     // ion drift-velocity magnitude
-  PetscReal    viTx;    // ion thermal velocity in x dimension
-  PetscReal    viTy;    // ion thermal velocity in y dimension
-  PetscReal    viTz;    // ion thermal velocity in z dimension
-  PetscReal    viT;     // ion thermal-velocity magnitude
-  PetscReal    Ti;      // ion temperature
-  PetscReal    nue;     // frequency of collisions between electrons and neutral particles
-  PetscReal    ve0x;    // electron drift velocity in x dimension
-  PetscReal    ve0y;    // electron drift velocity in y dimension
-  PetscReal    ve0z;    // electron drift velocity in z dimension
-  PetscReal    ve0;     // electron drift-velocity magnitude
-  PetscReal    veTx;    // electron thermal velocity in x dimension
-  PetscReal    veTy;    // electron thermal velocity in y dimension
-  PetscReal    veTz;    // electron thermal velocity in z dimension
-  PetscReal    veT;     // electron thermal-velocity magnitude
-  PetscReal    Te;      // electron temperature
-  PetscReal    mn;      // neutral-particle mass
-  PetscReal    vn0x;    // neutral-particle drift velocity in x dimension
-  PetscReal    vn0y;    // neutral-particle drift velocity in y dimension
-  PetscReal    vn0z;    // neutral-particle drift velocity in z dimension
-  PetscReal    vn0;     // neutral-particle drift-velocity magnitude
-  PetscReal    vnTx;    // neutral-particle thermal velocity in x dimension
-  PetscReal    vnTy;    // neutral-particle thermal velocity in y dimension
-  PetscReal    vnTz;    // neutral-particle thermal velocity in z dimension
-  PetscReal    vnT;     // neutral-particle thermal-velocity magnitude
-  PetscReal    Tn;      // neutral-particle temperature
-  BCType       xBC;     // x-axis boundary condition(s)
-  BCType       yBC;     // y-axis boundary condition(s)
-  BCType       zBC;     // z-axis boundary condition(s)
+  PetscInt  ndim;    // number of spatial dimensions
+  RHSType   rhsType; // type of RHS vector to use
+  LHSType   lhsType; // type of LHS operator to use
+  PetscInt  Nx;      // number of cells in x dimension
+  PetscInt  Ny;      // number of cells in y dimension
+  PetscInt  Nz;      // number of cells in z dimension
+  PetscReal dx;      // physical cell spacing in x dimension
+  PetscReal dy;      // physical cell spacing in y dimension
+  PetscReal dz;      // physical cell spacing in z dimension
+  PetscReal x0;      // lower physical bound of x dimension
+  PetscReal y0;      // lower physical bound of y dimension
+  PetscReal z0;      // lower physical bound of z dimension
+  PetscReal x1;      // upper physical bound of x dimension
+  PetscReal y1;      // upper physical bound of y dimension
+  PetscReal z1;      // upper physical bound of z dimension
+  PetscReal B0;      // constant magnetic-field amplitude
+  PetscReal E0;      // constant electric-field amplitude
+  PetscReal n0;      // plasma density
+  PetscReal qi;      // ion charge
+  PetscReal mi;      // ion mass
+  PetscReal nui;     // frequency of collisions between ions and neutral particles
+  PetscReal vi0x;    // ion drift velocity in x dimension
+  PetscReal vi0y;    // ion drift velocity in y dimension
+  PetscReal vi0z;    // ion drift velocity in z dimension
+  PetscReal vi0;     // ion drift-velocity magnitude
+  PetscReal viTx;    // ion thermal velocity in x dimension
+  PetscReal viTy;    // ion thermal velocity in y dimension
+  PetscReal viTz;    // ion thermal velocity in z dimension
+  PetscReal viT;     // ion thermal-velocity magnitude
+  PetscReal Ti;      // ion temperature
+  PetscReal nue;     // frequency of collisions between electrons and neutral particles
+  PetscReal ve0x;    // electron drift velocity in x dimension
+  PetscReal ve0y;    // electron drift velocity in y dimension
+  PetscReal ve0z;    // electron drift velocity in z dimension
+  PetscReal ve0;     // electron drift-velocity magnitude
+  PetscReal veTx;    // electron thermal velocity in x dimension
+  PetscReal veTy;    // electron thermal velocity in y dimension
+  PetscReal veTz;    // electron thermal velocity in z dimension
+  PetscReal veT;     // electron thermal-velocity magnitude
+  PetscReal Te;      // electron temperature
+  PetscReal mn;      // neutral-particle mass
+  PetscReal vn0x;    // neutral-particle drift velocity in x dimension
+  PetscReal vn0y;    // neutral-particle drift velocity in y dimension
+  PetscReal vn0z;    // neutral-particle drift velocity in z dimension
+  PetscReal vn0;     // neutral-particle drift-velocity magnitude
+  PetscReal vnTx;    // neutral-particle thermal velocity in x dimension
+  PetscReal vnTy;    // neutral-particle thermal velocity in y dimension
+  PetscReal vnTz;    // neutral-particle thermal velocity in z dimension
+  PetscReal vnT;     // neutral-particle thermal-velocity magnitude
+  PetscReal Tn;      // neutral-particle temperature
+  BCType    xBC;     // x-axis boundary condition(s)
+  BCType    yBC;     // y-axis boundary condition(s)
+  BCType    zBC;     // z-axis boundary condition(s)
 } CLI;
 
 /* Fluid quantities defined at each spatial grid point. */
