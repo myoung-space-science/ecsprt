@@ -311,12 +311,6 @@ PetscErrorCode NormalizeGrid(DM dm, Context *ctx)
   if (ctx->grid.Nz == -1) {
     ctx->grid.Nz = Nz;
   }
-  // Set the local number of points in each dimension.
-  PetscCall(DMDAGetCorners(dm, NULL, NULL, NULL, &ctx->grid.nx, &ctx->grid.ny, &ctx->grid.nz));
-  // Set the number of charged particles equal to the default, if necessary.
-  if (ctx->plasma.Np == -1) {
-    ctx->plasma.Np = ctx->grid.Nx * ctx->grid.Ny * ctx->grid.Nz;
-  }
   /* Set the physical grid attributes.
 
   At this point, the code has set the values of Nx, Ny, and Nz. Let q represent
@@ -514,6 +508,12 @@ PetscErrorCode CreateSwarmDM(PetscInt ndim, Context *ctx)
   // --> (x, y, z) velocity components
   PetscCall(DMSwarmRegisterPetscDatatypeField(swarmDM, "velocity", ndim, PETSC_REAL));
   PetscCall(DMSwarmFinalizeFieldRegister(swarmDM));
+  // Set the local number of points in each dimension.
+  PetscCall(DMDAGetCorners(ctx->fluidDM, NULL, NULL, NULL, &ctx->grid.nx, &ctx->grid.ny, &ctx->grid.nz));
+  // Set the number of charged particles equal to the default, if necessary.
+  if (ctx->plasma.Np == -1) {
+    ctx->plasma.Np = ctx->grid.Nx * ctx->grid.Ny * ctx->grid.Nz;
+  }
   // Set the per-processor swarm size and buffer length for efficient resizing.
   np = (PetscInt)(ctx->plasma.Np / ctx->mpi.size);
   bufsize = (PetscInt)(0.25 * np);
