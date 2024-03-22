@@ -21,10 +21,10 @@ extern PetscErrorCode d2Fdzy(PetscReal ***F, PetscReal dz, PetscReal dy, PetscIn
 
 extern PetscErrorCode DifferenceVector2D(PetscReal **F, PetscReal x0, PetscReal y0, Grid grid, PetscReal f[2]);
 extern PetscErrorCode DifferenceVector3D(PetscReal ***F, PetscReal x0, PetscReal y0, PetscReal z0, Grid grid, PetscReal f[3]);
-extern PetscErrorCode DotProduct(PetscReal a[NDIM], PetscReal b[NDIM], PetscReal *c);
-extern PetscErrorCode CrossProduct(PetscReal a[NDIM], PetscReal b[NDIM], PetscReal c[NDIM]);
+extern PetscErrorCode DotProduct(PetscInt ndim, PetscReal a[], PetscReal b[], PetscReal *c);
+extern PetscErrorCode CrossProduct(PetscReal a[3], PetscReal b[3], PetscReal *c);
 
-extern PetscErrorCode ComputeGradient(Vec F, Vec f[NDIM], Context *ctx);
+extern PetscErrorCode ComputeGradient(Vec F, Vec f[3], Context *ctx);
 extern PetscErrorCode ComputeLaplacian(Vec F, Vec *f, Context *ctx);
 
 #endif // CALCULUS_H

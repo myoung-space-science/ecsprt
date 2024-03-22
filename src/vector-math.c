@@ -723,18 +723,27 @@ PetscErrorCode DifferenceVector3D(PetscReal ***F, PetscReal x0, PetscReal y0, Pe
 
 
 /* Compute the dot product given by $\vec{c} = \vec{a} \cdot \vec{b}$. */
-PetscErrorCode DotProduct(PetscReal a[NDIM], PetscReal b[NDIM], PetscReal *c)
+PetscErrorCode DotProduct(PetscInt ndim, PetscReal a[], PetscReal b[], PetscReal *c)
 {
+  PetscReal tmp=0.0;
+  PetscInt  dim;
+
   PetscFunctionBeginUser;
 
-  *c = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+  for (dim=0; dim<ndim; dim++) {
+    tmp += a[dim]*b[dim];
+  }
+  *c = tmp;
 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 
-/* Compute the cross product given by $\vec{c} = \vec{a} \times \vec{b}$. */
-PetscErrorCode CrossProduct(PetscReal a[NDIM], PetscReal b[NDIM], PetscReal c[NDIM])
+/* Compute the cross product given by $\vec{c} = \vec{a} \times \vec{b}$.
+
+This routine assumes that both input arrays have 3 elements.
+*/
+PetscErrorCode CrossProduct(PetscReal a[3], PetscReal b[3], PetscReal *c)
 {
   PetscFunctionBeginUser;
 
@@ -746,7 +755,11 @@ PetscErrorCode CrossProduct(PetscReal a[NDIM], PetscReal b[NDIM], PetscReal c[ND
 }
 
 
-PetscErrorCode ComputeGradient(Vec F, Vec f[NDIM], Context *ctx)
+/* Compute $f = \nabla F$.
+
+This routine assumes that both input arrays have 3 elements.
+*/
+PetscErrorCode ComputeGradient(Vec F, Vec f[3], Context *ctx)
 {
   PetscReal    dx=ctx->grid.dx;
   PetscReal    dy=ctx->grid.dy;
