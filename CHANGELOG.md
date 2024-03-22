@@ -15,6 +15,7 @@ When incrementing the version number to X.Y.Z, please do the following
 
 - Redefine boundary condition parameters
 - Rename some CLI flags
+- Add support for specifying number of particles per processor
 
 ## v0.5.0 (2024-03-21)
 
