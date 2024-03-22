@@ -21,6 +21,7 @@ typedef struct {
   PetscReal   dt;          // time-step width
   PetscInt    it;          // time-step counter
   PetscInt    Dt;          // output cadence
+  PetscInt    Np;          // total number of charged particles
   PDistType   PDistType;   // type of initial position distribution
   VDistType   VDistType;   // type of initial velocity distribution
 } Application;
@@ -32,6 +33,8 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   PetscEnum enumArg;
   PetscInt  intArg;
   PetscBool found;
+  PetscInt  NpTotal, NpPerCell, Np;
+  PetscInt  Ncell=ctx.grid.Nx*ctx.grid.Ny*ctx.grid.Nz;
 
   PetscFunctionBeginUser;
   ctx.log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -47,6 +50,18 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
     app->VDistType = enumArg;
   } else {
     app->VDistType = VDIST_NORMAL;
+  }
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-Np", &intArg, &found));
+  if (found) {
+    NpTotal = intArg;
+  } else {
+    NpTotal = -1;
+  }
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nppc", &intArg, &found));
+  if (found) {
+    NpPerCell = intArg;
+  } else {
+    NpPerCell = -1;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nt", &intArg, &found));
   if (found) {
@@ -65,6 +80,20 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
     app->dt = realArg;
   } else {
     app->dt = 1.0 / ctx.ions.nu;
+  }
+
+  /* Set the total number of charged particles. */
+  if (NpTotal > 0) {
+    Np = NpTotal;
+  } else if (NpPerCell > 0) {
+    Np = NpPerCell * Ncell;
+  } else {
+    Np = Ncell;
+  }
+  if (Np > 0) {
+    app->Np = Np;
+  } else {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Failed to set Np > 0\n");
   }
 
   ctx.log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
@@ -89,6 +118,7 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n#Application-Specific Parameter Values\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Nt = %d\n", app.Nt));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "dt = %f [s]\n", app.dt));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "Np = %d\n", app.Np));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "initial positions = %s\n", PDistTypes[app.PDistType]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "initial velocities = %s\n", VDistTypes[app.VDistType]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "#End of Application-Specific Parameter Values\n"));
@@ -140,7 +170,7 @@ int main(int argc, char **args)
 
   /* Set up the ion swarm. */
   ctx.log.status("Creating the particle-swarm DM\n");
-  PetscCall(CreateSwarmDM(cli.ndim, &ctx));
+  PetscCall(CreateSwarmDM(cli.ndim, app.Np, &ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
   ctx.log.status("Creating the electrostatic-potential DM\n");

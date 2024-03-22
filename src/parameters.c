@@ -150,12 +150,6 @@ PetscErrorCode ProcessOptions(CLI *cli)
   } else {
     cli->zBC = BC_PERIODIC;
   }
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-Np", &intArg, &found));
-  if (found) {
-    cli->Np = intArg;
-  } else {
-    cli->Np = -1;
-  }
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-n0", &realArg, &found));
   if (found) {
     cli->n0 = realArg;
@@ -396,7 +390,6 @@ PetscErrorCode EchoOptions(Context ctx)
     PetscCall(PetscViewerASCIIPrintf(viewer,   "stencil type = star\n"));
   }
   PetscCall(PetscViewerASCIIPrintf(viewer,     "stencil size = %d\n", ctx.potential.stencilSize));
-  PetscCall(PetscViewerASCIIPrintf(viewer,     "Np = %d\n", ctx.plasma.Np));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "B0 = %g [T]\n", ctx.plasma.B0));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "E0 = %g [N/C]\n", ctx.plasma.E0));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "qe = %e [C]\n", ctx.electrons.q));

@@ -423,9 +423,6 @@ PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *
   // Apply BC and migrate particles.
   PetscCall(ApplyBCAndMigrate(ctx));
 
-  // Update the parameter context.
-  PetscCall(DMSwarmGetSize(swarmDM, &ctx->plasma.Np));
-
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

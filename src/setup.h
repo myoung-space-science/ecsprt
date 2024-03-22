@@ -8,6 +8,6 @@ extern PetscErrorCode SetUpContext(CLI cli, Context *ctx);
 extern PetscErrorCode DestroyContext(Context *ctx);
 extern PetscErrorCode CreateFluidDM(PetscInt ndim, Context *ctx);
 extern PetscErrorCode CreatePotentialDM(PetscInt ndim, Context *ctx);
-extern PetscErrorCode CreateSwarmDM(PetscInt ndim, Context *ctx);
+extern PetscErrorCode CreateSwarmDM(PetscInt ndim, PetscInt Np, Context *ctx);
 
 #endif // INITIALIZE_H

@@ -64,7 +64,6 @@ typedef struct {
 typedef struct {
   PetscReal B0; // constant magnetic-field amplitude
   PetscReal E0; // constant electric-field amplitude
-  PetscInt  Np; // number of charged particles
   PetscReal n0; // background density
 } Plasma;
 
@@ -151,7 +150,6 @@ typedef struct {
   PetscReal    z1;      // upper physical bound of z dimension
   PetscReal    B0;      // constant magnetic-field amplitude
   PetscReal    E0;      // constant electric-field amplitude
-  PetscInt     Np;      // number of charged particles
   PetscReal    n0;      // plasma density
   PetscReal    qi;      // ion charge
   PetscReal    mi;      // ion mass

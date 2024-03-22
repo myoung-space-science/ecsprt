@@ -124,7 +124,6 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   ctx->plasma.n0     = cli.n0;
   ctx->plasma.B0     = cli.B0;
   ctx->plasma.E0     = cli.E0;
-  ctx->plasma.Np     = cli.Np;
   ctx->ions.q        = cli.qi;
   ctx->ions.m        = cli.mi;
   ctx->ions.v0x      = cli.vi0x;
@@ -160,7 +159,7 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
 
   /* Copy grid parameters. */
   // x dimension
-  ctx->grid.Nx = cli.Nx;
+  ctx->grid.Nx = cli.Nx > 0 ? cli.Nx : 7;
   ctx->grid.dx = cli.dx;
   if (cli.x1 == cli.x0) {
       ctx->log.world("Warning: zero-width x dimension\n");
@@ -168,7 +167,7 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   ctx->grid.x0 = cli.x0;
   ctx->grid.x1 = cli.x1;
   // y dimension
-  ctx->grid.Ny = cli.Ny;
+  ctx->grid.Ny = cli.Ny > 0 ? cli.Ny : 7;
   ctx->grid.dy = cli.dy;
   if (cli.y1 == cli.y0) {
       ctx->log.world("Warning: zero-width y dimension\n");
@@ -177,7 +176,7 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
   ctx->grid.y1 = cli.y1;
   // z dimension
   if (cli.ndim == 3) {
-    ctx->grid.Nz = cli.Nz;
+    ctx->grid.Nz = cli.Nz > 0 ? cli.Nz : 7;
     ctx->grid.dz = cli.dz;
     if (cli.z1 == cli.z0) {
         ctx->log.world("Warning: zero-width z dimension\n");
@@ -466,7 +465,7 @@ order to accommodate nearest-neighbor moment collection.
 This function calls `CreateFluidDM`, which performs various set-up and
 sychronization tasks on grid parameters.
 */
-PetscErrorCode CreateSwarmDM(PetscInt ndim, Context *ctx)
+PetscErrorCode CreateSwarmDM(PetscInt ndim, PetscInt Np, Context *ctx)
 {
   PetscInt        dim;
   DM              swarmDM;
@@ -499,12 +498,8 @@ PetscErrorCode CreateSwarmDM(PetscInt ndim, Context *ctx)
   PetscCall(DMSwarmFinalizeFieldRegister(swarmDM));
   // Set the local number of points in each dimension.
   PetscCall(DMDAGetCorners(ctx->fluidDM, NULL, NULL, NULL, &ctx->grid.nx, &ctx->grid.ny, &ctx->grid.nz));
-  // Set the number of charged particles equal to the default, if necessary.
-  if (ctx->plasma.Np == -1) {
-    ctx->plasma.Np = ctx->grid.Nx * ctx->grid.Ny * ctx->grid.Nz;
-  }
   // Set the per-processor swarm size and buffer length for efficient resizing.
-  np = (PetscInt)(ctx->plasma.Np / ctx->mpi.size);
+  np = (PetscInt)(Np / ctx->mpi.size);
   bufsize = (PetscInt)(0.25 * np);
   PetscCall(DMSwarmSetLocalSizes(swarmDM, np, bufsize));
   // View information about the swarm DM.
