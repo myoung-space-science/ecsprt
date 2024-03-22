@@ -22,16 +22,6 @@ typedef enum {
   CENTERED,
 } DifferenceType;
 
-extern const char *BoundaryTypes[];
-typedef enum {
-  BT_PERIODIC,
-  BT_INJECTION,
-  BT_REFLECTION,
-  BT_ADVECTION,
-  BT_DIRICHLET,
-  BT_NEUMANN,
-} BoundaryType;
-
 extern const char *BCTypes[];
 typedef enum {
   BC_PERIODIC,
@@ -195,9 +185,9 @@ typedef struct {
   PetscReal    vnTz;    // neutral-particle thermal velocity in z dimension
   PetscReal    vnT;     // neutral-particle thermal-velocity magnitude
   PetscReal    Tn;      // neutral-particle temperature
-  BoundaryType xBC;     // x-axis boundary condition(s)
-  BoundaryType yBC;     // y-axis boundary condition(s)
-  BoundaryType zBC;     // z-axis boundary condition(s)
+  BCType       xBC;     // x-axis boundary condition(s)
+  BCType       yBC;     // y-axis boundary condition(s)
+  BCType       zBC;     // z-axis boundary condition(s)
 } CLI;
 
 /* Fluid quantities defined at each spatial grid point. */

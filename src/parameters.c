@@ -17,12 +17,7 @@ const char *LHSTypes[] = {
 
 /* Names of supported boundary conditions. */
 const char *BCTypes[] = {
-  "periodic", "injection-reflection", "BC_", NULL
-};
-
-/* Supported boundary conditions. */
-const char *BoundaryTypes[] = {
-  "periodic", "injection", "reflection", "dirichlet", "neumann", "BoundaryType", "BT_", NULL
+  "periodic", "inject-reflect", "inject-advect", "BC_", NULL
 };
 
 
@@ -127,41 +122,23 @@ PetscErrorCode ProcessOptions(CLI *cli)
   } else {
     cli->z1 = 1.0;
   }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--x0-bc", BoundaryTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-xBC", BCTypes, &enumArg, &found));
   if (found) {
-    cli->xBT[0] = enumArg;
+    cli->xBC = enumArg;
   } else {
-    cli->xBT[0] = BT_PERIODIC;
+    cli->xBC = BC_PERIODIC;
   }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--x1-bc", BoundaryTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-yBC", BCTypes, &enumArg, &found));
   if (found) {
-    cli->xBT[1] = enumArg;
+    cli->yBC = enumArg;
   } else {
-    cli->xBT[1] = BT_PERIODIC;
+    cli->yBC = BC_PERIODIC;
   }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--y0-bc", BoundaryTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-zBC", BCTypes, &enumArg, &found));
   if (found) {
-    cli->yBT[0] = enumArg;
+    cli->zBC = enumArg;
   } else {
-    cli->yBT[0] = BT_PERIODIC;
-  }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--y1-bc", BoundaryTypes, &enumArg, &found));
-  if (found) {
-    cli->yBT[1] = enumArg;
-  } else {
-    cli->yBT[1] = BT_PERIODIC;
-  }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--z0-bc", BoundaryTypes, &enumArg, &found));
-  if (found) {
-    cli->zBT[0] = enumArg;
-  } else {
-    cli->zBT[0] = BT_PERIODIC;
-  }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--z1-bc", BoundaryTypes, &enumArg, &found));
-  if (found) {
-    cli->zBT[1] = enumArg;
-  } else {
-    cli->zBT[1] = BT_PERIODIC;
+    cli->zBC = BC_PERIODIC;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Np", &intArg, &found));
   if (found) {

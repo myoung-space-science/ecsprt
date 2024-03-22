@@ -198,43 +198,25 @@ PetscErrorCode SetUpContext(CLI cli, Context *ctx)
     condition for that dimension.
   */
   // x dimension
-  if ((cli.xBT[0] == BT_PERIODIC) && (cli.xBT[1] == BT_PERIODIC)) {
-    ctx->ions.xBC = BC_PERIODIC;
+  ctx->ions.xBC = cli.xBC;
+  if (ctx->ions.xBC == BC_PERIODIC) {
     ctx->grid.xBC = DM_BOUNDARY_PERIODIC;
-  } else if ((cli.xBT[0] == BT_INJECTION) && (cli.xBT[1] == BT_REFLECTION)) {
-    ctx->ions.xBC = BC_INJECT_REFLECT;
-    ctx->grid.xBC = DM_BOUNDARY_GHOSTED;
-  } else if ((cli.xBT[0] == BT_INJECTION) && (cli.xBT[1] == BT_ADVECTION)) {
-    ctx->ions.xBC = BC_INJECT_ADVECT;
-    ctx->grid.xBC = DM_BOUNDARY_GHOSTED;
   } else {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Inconsistent x-dimension boundary conditions: {%s, %s}\n", BoundaryTypes[cli.xBT[0]], BoundaryTypes[cli.xBT[1]]);
+    ctx->grid.xBC = DM_BOUNDARY_GHOSTED;
   }
   // y dimension
-  if ((cli.yBT[0] == BT_PERIODIC) && (cli.yBT[1] == BT_PERIODIC)) {
-    ctx->ions.yBC = BC_PERIODIC;
+  ctx->ions.yBC = cli.yBC;
+  if (ctx->ions.yBC == BC_PERIODIC) {
     ctx->grid.yBC = DM_BOUNDARY_PERIODIC;
-  } else if ((cli.yBT[0] == BT_INJECTION) && (cli.yBT[1] == BT_REFLECTION)) {
-    ctx->ions.yBC = BC_INJECT_REFLECT;
-    ctx->grid.yBC = DM_BOUNDARY_GHOSTED;
-  } else if ((cli.yBT[0] == BT_INJECTION) && (cli.yBT[1] == BT_ADVECTION)) {
-    ctx->ions.yBC = BC_INJECT_ADVECT;
-    ctx->grid.yBC = DM_BOUNDARY_GHOSTED;
   } else {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Inconsistent y-dimension boundary conditions: {%s, %s}\n", BoundaryTypes[cli.yBT[0]], BoundaryTypes[cli.yBT[1]]);
+    ctx->grid.yBC = DM_BOUNDARY_GHOSTED;
   }
   // z dimension
-  if ((cli.zBT[0] == BT_PERIODIC) && (cli.zBT[1] == BT_PERIODIC)) {
-    ctx->ions.zBC = BC_PERIODIC;
+  ctx->ions.zBC = cli.zBC;
+  if (ctx->ions.zBC == BC_PERIODIC) {
     ctx->grid.zBC = DM_BOUNDARY_PERIODIC;
-  } else if ((cli.zBT[0] == BT_INJECTION) && (cli.zBT[1] == BT_REFLECTION)) {
-    ctx->ions.zBC = BC_INJECT_REFLECT;
-    ctx->grid.zBC = DM_BOUNDARY_GHOSTED;
-  } else if ((cli.zBT[0] == BT_INJECTION) && (cli.zBT[1] == BT_ADVECTION)) {
-    ctx->ions.zBC = BC_INJECT_ADVECT;
-    ctx->grid.zBC = DM_BOUNDARY_GHOSTED;
   } else {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Inconsistent z-dimension boundary conditions: {%s, %s}\n", BoundaryTypes[cli.zBT[0]], BoundaryTypes[cli.zBT[1]]);
+    ctx->grid.zBC = DM_BOUNDARY_GHOSTED;
   }
 
   // Set species gyrofrequency from q, B0, and m.
