@@ -9,6 +9,9 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+- Redefine boundary condition parameters
+- Rename some CLI flags
+
 ## v0.5.0
 
 - Implement `-ndim {2,3}` option for `pic` simulations
