@@ -68,18 +68,19 @@ PetscErrorCode InitializeVelocities(PetscInt ndim, VDistType VDistType, Context 
 
 /* Apply the 3-D vector Boris-mover algorithm to ion velocities.
 
-See latter part of Birdsall & Langdon section 4-4.
+See latter part of Birdsall & Langdon section 4-4. Note that there is no 2-D
+version of this routine.
 */
 PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
 {
   PetscReal   q=ctx->ions.q;
   PetscReal   m=ctx->ions.m;
-  PetscReal   B[NDIM]={0.0, 0.0, ctx->plasma.B0};
+  PetscReal   B[3]={0.0, 0.0, ctx->plasma.B0};
   PetscInt    dim;
   PetscReal   dx=ctx->grid.dx, dy=ctx->grid.dy, dz=ctx->grid.dz;
-  PetscReal   h[NDIM]={1.0/dx, 1.0/dy, 1.0/dz};
-  PetscReal   t[NDIM], s[NDIM], t_dot_t;
-  PetscReal   tscale, Escale[NDIM];
+  PetscReal   h[3]={1.0/dx, 1.0/dy, 1.0/dz};
+  PetscReal   t[3], s[3], t_dot_t;
+  PetscReal   tscale, Escale[3];
   DM          swarmDM=ctx->swarmDM;
   DM          phiDM=ctx->potential.dm;
   Vec         phiGlobal=ctx->potential.solution, phiLocal;
@@ -87,22 +88,22 @@ PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
   PetscInt    np, ip;
   PetscReal   *pos, *vel;
   PetscReal   x, y, z;
-  PetscReal   E[NDIM]={0.0, 0.0, 0.0};
-  PetscReal   vminus[NDIM], vprime[NDIM], vplus[NDIM];
-  PetscReal   vminus_cross_t[NDIM], vprime_cross_s[NDIM];
+  PetscReal   E[3]={0.0, 0.0, 0.0};
+  PetscReal   vminus[3], vprime[3], vplus[3];
+  PetscReal   vminus_cross_t[3], vprime_cross_s[3];
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   /* Compute \vec{t} = \frac{q\vec{B}}{m}\frac{\Delta t}{2}. */
   tscale = 0.5 * (q/m) * dt;
-  for (dim=0; dim<NDIM; dim++) {
+  for (dim=0; dim<3; dim++) {
     t[dim] = tscale * B[dim];
   }
 
   /* Compute \vec{s} = \frac{2\vec{t}}{1 + \vec{t}\cdot\vec{t}}. */
   PetscCall(DotProduct(t, t, &t_dot_t));
-  for (dim=0; dim<NDIM; dim++) {
+  for (dim=0; dim<3; dim++) {
     s[dim] = 2.0 * t[dim] / (1 + t_dot_t);
   }
 
@@ -111,7 +112,7 @@ PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
   These account for the species constants as well as the 2nd-order
   finite-difference gradient scale factors.
   */
-  for (dim=0; dim<NDIM; dim++) {
+  for (dim=0; dim<3; dim++) {
     Escale[dim] = -0.5 * h[dim] * tscale;
   }
 
@@ -135,30 +136,30 @@ PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
   for (ip=0; ip<np; ip++) {
     /* Get the current particle's coordinates. */
     /* Normalize each coordinate to a fractional number of grid cells. */
-    x = pos[ip*NDIM + 0] / dx;
-    y = pos[ip*NDIM + 1] / dy;
-    z = pos[ip*NDIM + 2] / dz;
+    x = pos[ip*3 + 0] / dx;
+    y = pos[ip*3 + 1] / dy;
+    z = pos[ip*3 + 2] / dz;
     /* Compute the electric field due to this particle: \vec{E} = -\nabla\phi. */
     PetscCall(DifferenceVector3D(phi, x, y, z, ctx->grid, E));
     /* Compute \vec{v}^-. */
-    for (dim=0; dim<NDIM; dim++) {
-      vminus[0] = vel[ip*NDIM + dim] + Escale[dim]*E[dim];
+    for (dim=0; dim<3; dim++) {
+      vminus[0] = vel[ip*3 + dim] + Escale[dim]*E[dim];
     }
     /* Compute \vec{v}^- \times \vec{t}. */
     PetscCall(CrossProduct(vminus, t, vminus_cross_t));
     /* Compute \vec{v}^\prime = \vec{v}^- + \vec{v}^- \times \vec{t}. */
-    for (dim=0; dim<NDIM; dim++) {
+    for (dim=0; dim<3; dim++) {
       vprime[dim] = vminus[dim] + vminus_cross_t[dim];
     }
     /* Compute \vec{v}^\prime \times \vec{s}. */
     PetscCall(CrossProduct(vprime, s, vprime_cross_s));
     /* Compute \vec{v}^+ = \vec{v}^- + \vec{v}^\prime \times \vec{s}. */
-    for (dim=0; dim<NDIM; dim++) {
+    for (dim=0; dim<3; dim++) {
       vplus[dim] = vminus[dim] + vprime_cross_s[dim];
     }
     /* Assign new particle velocities. */
-    for (dim=0; dim<NDIM; dim++){
-      vel[ip*NDIM + dim] = vplus[dim] + Escale[dim]*E[dim];
+    for (dim=0; dim<3; dim++){
+      vel[ip*3 + dim] = vplus[dim] + Escale[dim]*E[dim];
     }
   }
 
