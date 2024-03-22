@@ -17,13 +17,13 @@ static char help[] = "A 3D hybrid particle-in-cell (PIC) simulation.";
 #include "pic.h"
 
 typedef struct {
-  PetscInt    Nt;          // number of time steps
-  PetscReal   dt;          // time-step width
-  PetscInt    it;          // time-step counter
-  PetscInt    Dt;          // output cadence
-  PetscInt    Np;          // total number of charged particles
-  PDistType   PDistType;   // type of initial position distribution
-  VDistType   VDistType;   // type of initial velocity distribution
+  PetscInt  Nt;          // number of time steps
+  PetscReal dt;          // time-step width
+  PetscInt  it;          // time-step counter
+  PetscInt  Dt;          // output cadence
+  PetscInt  Np;          // total number of charged particles
+  PDistType PDistType;   // type of initial position distribution
+  VDistType VDistType;   // type of initial velocity distribution
 } Application;
 
 /* Process command-line arguments specific to the PIC simulation. */
@@ -55,7 +55,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   if (found) {
     NpTotal = intArg;
   } else {
-    NpTotal = -1;
+    NpTotal = 0;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nppc", &intArg, &found));
   if (found) {
