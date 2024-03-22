@@ -286,9 +286,9 @@ PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts)
   PetscReal    B=ctx->plasma.B0;
   PetscInt     dim;
   PetscReal    dx=ctx->grid.dx, dy=ctx->grid.dy, dz=ctx->grid.dz;
-  PetscReal    h[NDIM]={1.0/dx, 1.0/dy, 1.0/dz};
+  PetscReal    h[3]={1.0/dx, 1.0/dy, 1.0/dz};
   PetscReal    t, s;
-  PetscReal    tscale, Escale[NDIM];
+  PetscReal    tscale, Escale[3];
   DM           swarmDM=ctx->swarmDM;
   DM           phiDM=ctx->potential.dm;
   Vec          phiGlobal=ctx->potential.solution, phiLocal;
@@ -296,7 +296,7 @@ PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts)
   PetscInt     np, ip;
   PetscReal   *pos, *vel;
   PetscReal    x, y, z;
-  PetscReal    E[NDIM]={0.0, 0.0, 0.0};
+  PetscReal    E[3]={0.0, 0.0, 0.0};
   PetscReal    vxm, vym, vz, vxt, vxp, vyp;
   PetscInt     ndim=3;
 
@@ -315,7 +315,7 @@ PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts)
   These account for the species constants as well as the 2nd-order
   finite-difference gradient scale factors.
   */
-  for (dim=0; dim<NDIM; dim++) {
+  for (dim=0; dim<3; dim++) {
     Escale[dim] = -0.5 * h[dim] * tscale;
   }
 
