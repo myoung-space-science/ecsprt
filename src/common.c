@@ -3,7 +3,7 @@
 #include <petsc.h>
 #include "ecsprt.h"
 
-PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
+PetscErrorCode Initialize(int argc, char **args, const char *help, Context *ctx)
 {
   PetscInt  logLevel=1;
   PetscBool requested;
@@ -51,7 +51,7 @@ PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx)
 }
 
 
-PetscErrorCode finalize(time_t startTime, time_t endTime, Context *ctx)
+PetscErrorCode Finalize(time_t startTime, time_t endTime, Context *ctx)
 {
   float       elapsedTime;
   char        timeUnit[16]="";

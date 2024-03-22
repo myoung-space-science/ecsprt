@@ -116,7 +116,7 @@ int main(int argc, char **args)
   time(&startTime);
 
   /* Initialize PETSc and MPI. */
-  initialize(argc, args, help, &ctx);
+  Initialize(argc, args, help, &ctx);
 
   /* Initialize SLEPc. */
   PetscCall(SlepcInitialize(&argc, &args, (char *)0, help));
@@ -198,7 +198,7 @@ int main(int argc, char **args)
   time(&endTime);
 
   /* Complete final tasks. */
-  finalize(startTime, endTime, &ctx);
+  Finalize(startTime, endTime, &ctx);
 
   return 0;
 }

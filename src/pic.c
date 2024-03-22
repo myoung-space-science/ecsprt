@@ -148,7 +148,7 @@ int main(int argc, char **args)
   time(&startTime);
 
   /* Initialize PETSc and MPI. */
-  initialize(argc, args, help, &ctx);
+  Initialize(argc, args, help, &ctx);
 
   /* Assign parameter values from user arguments or defaults. */
   ctx.log.status("Processing common options\n");
@@ -282,7 +282,7 @@ int main(int argc, char **args)
   time(&endTime);
 
   /* Complete final tasks. */
-  finalize(startTime, endTime, &ctx);
+  Finalize(startTime, endTime, &ctx);
 
   return 0;
 }

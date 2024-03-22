@@ -4,7 +4,7 @@
 #include <petsc.h>
 #include "ecsprt.h"
 
-extern PetscErrorCode initialize(int argc, char **args, const char *help, Context *ctx);
-extern PetscErrorCode finalize(time_t startTime, time_t endTime, Context *ctx);
+extern PetscErrorCode Initialize(int argc, char **args, const char *help, Context *ctx);
+extern PetscErrorCode Finalize(time_t startTime, time_t endTime, Context *ctx);
 
 #endif // COMMON_H
