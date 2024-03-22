@@ -33,7 +33,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   PetscEnum enumArg;
   PetscInt  intArg;
   PetscBool found;
-  PetscInt  NpTotal, NpPerCell, Np;
+  PetscInt  Np, NpTotal;
   PetscInt  Ncell=ctx.grid.Nx*ctx.grid.Ny*ctx.grid.Nz;
 
   PetscFunctionBeginUser;
@@ -53,15 +53,9 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Np", &intArg, &found));
   if (found) {
-    NpTotal = intArg;
+    Np = intArg;
   } else {
-    NpTotal = 0;
-  }
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nppc", &intArg, &found));
-  if (found) {
-    NpPerCell = intArg;
-  } else {
-    NpPerCell = -1;
+    Np = 0;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nt", &intArg, &found));
   if (found) {
@@ -82,16 +76,20 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
     app->dt = 1.0 / ctx.ions.nu;
   }
 
-  /* Set the total number of charged particles. */
-  if (NpTotal > 0) {
-    Np = NpTotal;
-  } else if (NpPerCell > 0) {
-    Np = NpPerCell * Ncell;
-  } else {
-    Np = Ncell;
-  }
+  /* Set the total number of charged particles.
+    - Interpret -Np > 0 as the total number of particles
+    - Interpret -Np < 0 as the number of particles per cell
+    - Use one particle per cell by default
+  */
   if (Np > 0) {
-    app->Np = Np;
+    NpTotal = Np;
+  } else if (Np < 0) {
+    NpTotal = -Np * Ncell;
+  } else {
+    NpTotal = Ncell;
+  }
+  if (NpTotal > 0) {
+    app->Np = NpTotal;
   } else {
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Failed to set Np > 0\n");
   }
