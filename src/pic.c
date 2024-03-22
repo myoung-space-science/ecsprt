@@ -21,8 +21,8 @@ typedef struct {
   PetscReal   dt;          // time-step width
   PetscInt    it;          // time-step counter
   PetscInt    Dt;          // output cadence
-  PDistType PDistType; // type of initial position distribution
-  VDistType VDistType; // type of initial velocity distribution
+  PDistType   PDistType;   // type of initial position distribution
+  VDistType   VDistType;   // type of initial velocity distribution
 } Application;
 
 /* Process command-line arguments specific to the PIC simulation. */
