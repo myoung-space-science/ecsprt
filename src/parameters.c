@@ -32,13 +32,13 @@ PetscErrorCode ProcessOptions(CLI *cli)
   PetscFunctionBeginUser;
 
   // Read optional parameter values from user input.
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--rhs-type", RHSTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-rhs", RHSTypes, &enumArg, &found));
   if (found) {
     cli->rhsType = enumArg;
   } else {
     cli->rhsType = RHS_FULL;
   }
-  PetscCall(PetscOptionsGetEnum(NULL, NULL, "--lhs-type", LHSTypes, &enumArg, &found));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-lhs", LHSTypes, &enumArg, &found));
   if (found) {
     cli->lhsType = enumArg;
   } else {
