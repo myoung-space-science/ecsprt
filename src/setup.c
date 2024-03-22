@@ -295,29 +295,26 @@ PetscErrorCode DestroyContext(Context *ctx)
 
 PetscErrorCode NormalizeGrid(DM dm, Context *ctx)
 {
-  PetscInt Nx, Ny, Nz;
-
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
-  // Synchronize values of Nx, Ny, and Nz.
-  PetscCall(DMDAGetInfo(dm, NULL, &Nx, &Ny, &Nz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-  if (ctx->grid.Nx == -1) {
-    ctx->grid.Nx = Nx;
+  if (ctx->grid.Nx < 0) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Negative value of Nx: %d\n", ctx->grid.Nx);
   }
-  if (ctx->grid.Ny == -1) {
-    ctx->grid.Ny = Ny;
+  if (ctx->grid.Ny < 0) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Negative value of Ny: %d\n", ctx->grid.Ny);
   }
-  if (ctx->grid.Nz == -1) {
-    ctx->grid.Nz = Nz;
+  if (ctx->grid.Nz < 0) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Negative value of Nz: %d\n", ctx->grid.Nz);
   }
+
   /* Set the physical grid attributes.
 
-  At this point, the code has set the values of Nx, Ny, and Nz. Let q represent
-  each of {x,y,z}. If the user did not pass in a positive value for dq, this
-  section will set Lq = q1-q0 and compute dq in terms of Lq. Otherwise it will
-  compute Lq, q0, and q1 in terms of dq and Nq. Note that the latter case may
-  result in overwriting user values of q0 and q1.
+  At this point, we assume that the code has set valid values of Nx, Ny, and Nz.
+  Let q represent each of {x,y,z}. If the user did not pass in a positive value
+  for dq, this section will set Lq = q1-q0 and compute dq in terms of Lq.
+  Otherwise it will compute Lq, q0, and q1 in terms of dq and Nq. Note that the
+  latter case may result in overwriting user values of q0 and q1.
   */
   if (ctx->grid.dx <= 0.0) {
     ctx->grid.Lx = ctx->grid.x1 - ctx->grid.x0;
@@ -349,20 +346,12 @@ PetscErrorCode NormalizeGrid(DM dm, Context *ctx)
 }
 
 
-/* Create the data manager for Eulerian fluid quantities.
-
-This routine ultimately determines the number of grid cells in each dimension
-(Nx, Ny, and Nz) and the total number of charged particles (Np). In the former
-case, we want to let the user specify Nx, Ny, or Nz via the PETSc options
-`-da_grid_x`, `-da_grid_y`, and `-da_grid_z`. In the latter case, we want the
-default value of Np to correspond to one particle per cell, which we can't
-compute until we are certain about the values of Nx, Ny, and Nz.
-*/
+/* Create the data manager for Eulerian fluid quantities. */
 PetscErrorCode CreateFluidDM(PetscInt ndim, Context *ctx)
 {
-  PetscInt        Nx=(ctx->grid.Nx > 0 ? ctx->grid.Nx : 7);
-  PetscInt        Ny=(ctx->grid.Ny > 0 ? ctx->grid.Ny : 7);
-  PetscInt        Nz=(ctx->grid.Nz > 0 ? ctx->grid.Nz : 7);
+  PetscInt        Nx=ctx->grid.Nx;
+  PetscInt        Ny=ctx->grid.Ny;
+  PetscInt        Nz=ctx->grid.Nz;
   DMBoundaryType  xBC=ctx->grid.xBC;
   DMBoundaryType  yBC=ctx->grid.yBC;
   DMBoundaryType  zBC=ctx->grid.zBC;

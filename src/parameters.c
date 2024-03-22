@@ -28,6 +28,7 @@ PetscErrorCode ProcessOptions(CLI *cli)
   PetscReal realArg;
   PetscEnum enumArg;
   PetscBool found;
+  PetscInt  Nx=-1, Ny=-1, Nz=-1;
 
   PetscFunctionBeginUser;
 
@@ -52,22 +53,31 @@ PetscErrorCode ProcessOptions(CLI *cli)
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nx", &intArg, &found));
   if (found) {
-    cli->Nx = intArg;
-  } else {
-    cli->Nx = -1;
+    Nx = intArg;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Ny", &intArg, &found));
   if (found) {
-    cli->Ny = intArg;
-  } else {
-    cli->Ny = -1;
+    Ny = intArg;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nz", &intArg, &found));
   if (found) {
-    cli->Nz = intArg;
-  } else {
-    cli->Nz = -1;
+    Nz = intArg;
   }
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-da_grid_x", &intArg, &found));
+  if (found) {
+    Nx = intArg;
+  }
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-da_grid_y", &intArg, &found));
+  if (found) {
+    Ny = intArg;
+  }
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-da_grid_z", &intArg, &found));
+  if (found) {
+    Nz = intArg;
+  }
+  cli->Nx = Nx;
+  cli->Ny = Ny;
+  cli->Nz = Nz;
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-dx", &realArg, &found));
   if (found) {
     cli->dx = realArg;
