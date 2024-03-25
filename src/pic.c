@@ -162,12 +162,8 @@ int main(int argc, char **args)
   ctx.log.status("Processing application-specific options\n");
   PetscCall(ProcessPICOptions(ctx, &app));
 
-  /* Set up the fluid grid. */
-  ctx.log.status("Creating the fluid-grid DM\n");
-  PetscCall(CreateFluidDM(cli.ndim, &ctx));
-
   /* Set up the ion swarm. */
-  ctx.log.status("Creating the particle-swarm DM\n");
+  ctx.log.status("Creating the particle-swarm and fluid grid DMs\n");
   PetscCall(CreateSwarmDM(cli.ndim, app.Np, &ctx));
 
   /* Set up the discrete grid for the electrostatic potential. */
