@@ -227,6 +227,7 @@ int main(int argc, char **args)
 
   /* Echo this stage. */
   ctx.log.status("\n\n=== Main time-step loop ===\n\n");
+
   /* Begin main time-step loop. */
   for (it=0; it<app.Nt; it++) {
 
