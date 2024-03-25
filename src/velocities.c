@@ -13,7 +13,6 @@ const char *VDistTypes[] = {
 /* Generate a normal distribution of velocities with zero mean and unit variance. */
 PetscErrorCode NormalVelocities(PetscInt ndim, Context *ctx)
 {
-  DM         swarmDM=ctx->swarmDM;
   PetscInt   np, ip;
   PetscReal *vel;
   PetscReal  vT[3]={ctx->ions.vTx, ctx->ions.vTy, ctx->ions.vTz};
@@ -26,10 +25,10 @@ PetscErrorCode NormalVelocities(PetscInt ndim, Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get the number of local ions.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   // Get an array representation of the ion velocities.
-  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Loop over ions and assign parameter values.
   for (ip=0; ip<np; ip++) {
@@ -40,7 +39,7 @@ PetscErrorCode NormalVelocities(PetscInt ndim, Context *ctx)
   }
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -81,9 +80,7 @@ PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
   PetscReal   h[3]={1.0/dx, 1.0/dy, 1.0/dz};
   PetscReal   t[3], s[3], t_dot_t;
   PetscReal   tscale, Escale[3];
-  DM          swarmDM=ctx->swarmDM;
-  DM          phiDM=ctx->potential.dm;
-  Vec         phiGlobal=ctx->potential.solution, phiLocal;
+  Vec         phiLocal;
   PetscReal   ***phi;
   PetscInt    np, ip;
   PetscReal   *pos, *vel;
@@ -117,20 +114,20 @@ PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
   }
 
   /* Get a local copy of phi with ghost cells. */
-  PetscCall(DMGetLocalVector(phiDM, &phiLocal));
-  PetscCall(DMGlobalToLocal(phiDM, phiGlobal, INSERT_VALUES, phiLocal));
+  PetscCall(DMGetLocalVector(ctx->potential.dm, &phiLocal));
+  PetscCall(DMGlobalToLocal(ctx->potential.dm, ctx->potential.forcing, INSERT_VALUES, phiLocal));
 
   /* Get a temporary array representing the local electrostatic potential. */
-  PetscCall(DMDAVecGetArray(phiDM, phiLocal, &phi));
+  PetscCall(DMDAVecGetArray(ctx->potential.dm, phiLocal, &phi));
 
   /* Get the number of local ions. */
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   /* Get an array representation of the ion positions. */
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   /* Get an array representation of the ion velocities. */
-  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   /* Loop over particles and interpolate E to grid points. */
   for (ip=0; ip<np; ip++) {
@@ -164,14 +161,14 @@ PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx)
   }
 
   // Restore the ion-positions array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Restore the borrowed potential array and local vector.
-  PetscCall(DMDAVecRestoreArray(phiDM, phiLocal, &phi));
-  PetscCall(DMRestoreLocalVector(phiDM, &phiLocal));
+  PetscCall(DMDAVecRestoreArray(ctx->potential.dm, phiLocal, &phi));
+  PetscCall(DMRestoreLocalVector(ctx->potential.dm, &phiLocal));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -194,9 +191,7 @@ PetscErrorCode BorisMoverBz2D(PetscReal dt, void *opts)
   PetscReal   h[2]={1.0/dx, 1.0/dy};
   PetscReal   t, s;
   PetscReal   tscale, Escale[2];
-  DM          swarmDM=ctx->swarmDM;
-  DM          phiDM=ctx->potential.dm;
-  Vec         phiGlobal=ctx->potential.solution, phiLocal;
+  Vec         phiLocal;
   PetscReal **phi;
   PetscInt    np, ip;
   PetscReal  *pos, *vel;
@@ -225,20 +220,20 @@ PetscErrorCode BorisMoverBz2D(PetscReal dt, void *opts)
   }
 
   /* Get a local copy of phi with ghost cells. */
-  PetscCall(DMGetLocalVector(phiDM, &phiLocal));
-  PetscCall(DMGlobalToLocal(phiDM, phiGlobal, INSERT_VALUES, phiLocal));
+  PetscCall(DMGetLocalVector(ctx->potential.dm, &phiLocal));
+  PetscCall(DMGlobalToLocal(ctx->potential.dm, ctx->potential.forcing, INSERT_VALUES, phiLocal));
 
   /* Get a temporary array representing the local electrostatic potential. */
-  PetscCall(DMDAVecGetArray(phiDM, phiLocal, &phi));
+  PetscCall(DMDAVecGetArray(ctx->potential.dm, phiLocal, &phi));
 
   /* Get the number of local ions. */
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   /* Get an array representation of the ion positions. */
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   /* Get an array representation of the ion velocities. */
-  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   /* Loop over particles and interpolate E to grid points. */
   for (ip=0; ip<np; ip++) {
@@ -259,14 +254,14 @@ PetscErrorCode BorisMoverBz2D(PetscReal dt, void *opts)
   }
 
   // Restore the ion-positions array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Restore the borrowed potential array and local vector.
-  PetscCall(DMDAVecRestoreArray(phiDM, phiLocal, &phi));
-  PetscCall(DMRestoreLocalVector(phiDM, &phiLocal));
+  PetscCall(DMDAVecRestoreArray(ctx->potential.dm, phiLocal, &phi));
+  PetscCall(DMRestoreLocalVector(ctx->potential.dm, &phiLocal));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -289,9 +284,7 @@ PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts)
   PetscReal    h[3]={1.0/dx, 1.0/dy, 1.0/dz};
   PetscReal    t, s;
   PetscReal    tscale, Escale[3];
-  DM           swarmDM=ctx->swarmDM;
-  DM           phiDM=ctx->potential.dm;
-  Vec          phiGlobal=ctx->potential.solution, phiLocal;
+  Vec          phiLocal;
   PetscReal ***phi;
   PetscInt     np, ip;
   PetscReal   *pos, *vel;
@@ -320,20 +313,20 @@ PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts)
   }
 
   /* Get a local copy of phi with ghost cells. */
-  PetscCall(DMGetLocalVector(phiDM, &phiLocal));
-  PetscCall(DMGlobalToLocal(phiDM, phiGlobal, INSERT_VALUES, phiLocal));
+  PetscCall(DMGetLocalVector(ctx->potential.dm, &phiLocal));
+  PetscCall(DMGlobalToLocal(ctx->potential.dm, ctx->potential.forcing, INSERT_VALUES, phiLocal));
 
   /* Get a temporary array representing the local electrostatic potential. */
-  PetscCall(DMDAVecGetArray(phiDM, phiLocal, &phi));
+  PetscCall(DMDAVecGetArray(ctx->potential.dm, phiLocal, &phi));
 
   /* Get the number of local ions. */
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   /* Get an array representation of the ion positions. */
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   /* Get an array representation of the ion velocities. */
-  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   /* Loop over particles and interpolate E to grid points. */
   for (ip=0; ip<np; ip++) {
@@ -357,14 +350,14 @@ PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts)
   }
 
   // Restore the ion-positions array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Restore the borrowed potential array and local vector.
-  PetscCall(DMDAVecRestoreArray(phiDM, phiLocal, &phi));
-  PetscCall(DMRestoreLocalVector(phiDM, &phiLocal));
+  PetscCall(DMDAVecRestoreArray(ctx->potential.dm, phiLocal, &phi));
+  PetscCall(DMRestoreLocalVector(ctx->potential.dm, &phiLocal));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);

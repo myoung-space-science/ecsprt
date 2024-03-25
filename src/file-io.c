@@ -10,12 +10,11 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[3], char inpath[PETSC_MAX
   PetscBool     nullPath;
   char          fullpath[PETSC_MAX_PATH_LEN];
   PetscViewer   viewer;
-  DM           *dms, dm;
-  DM            fluidDM=ctx->fluidDM;
+  DM           *dms;
   PetscInt      Nf;
   char        **keys;
   PetscInt      field;
-  Vec           density, tmpflux, moments=ctx->moments;
+  Vec           density, tmpflux;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -34,28 +33,26 @@ PetscErrorCode LoadFluidQuantities(PetscReal fluxScale[3], char inpath[PETSC_MAX
   PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, fullpath, FILE_MODE_READ, &viewer));
 
   // Zero the target vlasov vector.
-  PetscCall(VecZeroEntries(moments));
+  PetscCall(VecZeroEntries(ctx->moments));
 
   // Load density from the HDF5 file.
-  PetscCall(DMCreateFieldDecomposition(fluidDM, &Nf, &keys, NULL, &dms));
+  PetscCall(DMCreateFieldDecomposition(ctx->fluidDM, &Nf, &keys, NULL, &dms));
   ctx->log.world("Attempting to load density from %s\n", fullpath);
   field = 0;
-  dm = dms[field];
-  PetscCall(DMGetGlobalVector(dm, &density));
+  PetscCall(DMGetGlobalVector(dms[field], &density));
   PetscCall(PetscObjectSetName((PetscObject)density, "density-kji"));
   PetscCall(VecLoad(density, viewer));
-  PetscCall(VecStrideScatter(density, field, moments, INSERT_VALUES));
+  PetscCall(VecStrideScatter(density, field, ctx->moments, INSERT_VALUES));
   ctx->log.world("Loaded density\n");
 
   // Convert density into fluxes.
   for (field=1; field<Nf; field++) {
-    dm = dms[field];
-    PetscCall(DMGetGlobalVector(dm, &tmpflux));
+    PetscCall(DMGetGlobalVector(dms[field], &tmpflux));
     PetscCall(VecZeroEntries(tmpflux));
     PetscCall(VecAXPY(tmpflux, fluxScale[field-1], density));
-    PetscCall(VecStrideScatter(tmpflux, field, moments, INSERT_VALUES));
+    PetscCall(VecStrideScatter(tmpflux, field, ctx->moments, INSERT_VALUES));
     ctx->log.world("Created %s from density\n", keys[field]);
-    PetscCall(DMRestoreGlobalVector(dm, &tmpflux));
+    PetscCall(DMRestoreGlobalVector(dms[field], &tmpflux));
   }
   PetscCall(DMRestoreGlobalVector(dms[0], &density));
 
@@ -105,7 +102,6 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   char          posfn[PETSC_MAX_PATH_LEN]="position";
   char          velfn[PETSC_MAX_PATH_LEN]="velocity";
   PetscViewer   viewer;
-  DM            swarmDM=ctx->swarmDM;
   Vec           target;
 
   PetscFunctionBeginUser;
@@ -125,10 +121,10 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, posfn, FILE_MODE_WRITE, &viewer));
 
   // Write particle positions to a binary file.
-  PetscCall(DMSwarmCreateGlobalVectorFromField(swarmDM, DMSwarmPICField_coor, &target));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(ctx->swarmDM, DMSwarmPICField_coor, &target));
   PetscCall(PetscObjectSetName((PetscObject)target, "position"));
   PetscCall(VecView(target, viewer));
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(swarmDM, DMSwarmPICField_coor, &target));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(ctx->swarmDM, DMSwarmPICField_coor, &target));
 
   // Destroy the binary viewer.
   PetscCall(PetscViewerDestroy(&viewer));
@@ -143,10 +139,10 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, velfn, FILE_MODE_WRITE, &viewer));
 
   // Write particle velocities to a binary file.
-  PetscCall(DMSwarmCreateGlobalVectorFromField(swarmDM, "velocity", &target));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(ctx->swarmDM, "velocity", &target));
   PetscCall(PetscObjectSetName((PetscObject)target, "velocity"));
   PetscCall(VecView(target, viewer));
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(swarmDM, "velocity", &target));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(ctx->swarmDM, "velocity", &target));
 
   // Destroy the binary viewer.
   PetscCall(PetscViewerDestroy(&viewer));
@@ -164,12 +160,10 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
   char          name[PETSC_MAX_PATH_LEN]="fluid";
   PetscViewer   viewer;
   DM           *dms, dm;
-  DM            fluidDM=ctx->fluidDM;
   PetscInt      Nf;
   char        **keys;
   PetscInt      field;
   Vec           target;
-  Vec           moments=ctx->moments, rhs=ctx->potential.forcing, phi=ctx->potential.solution;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -182,11 +176,11 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
   PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, name, FILE_MODE_WRITE, &viewer));
 
   // Write fluid quantities to the HDF5 file.
-  PetscCall(DMCreateFieldDecomposition(fluidDM, &Nf, &keys, NULL, &dms));
+  PetscCall(DMCreateFieldDecomposition(ctx->fluidDM, &Nf, &keys, NULL, &dms));
   for (field=0; field<Nf; field++) {
     dm = dms[field];
     PetscCall(DMGetGlobalVector(dm, &target));
-    PetscCall(VecStrideGather(moments, field, target, INSERT_VALUES));
+    PetscCall(VecStrideGather(ctx->moments, field, target, INSERT_VALUES));
     PetscCall(PetscObjectSetName((PetscObject)target, keys[field]));
     PetscCall(VecView(target, viewer));
     PetscCall(DMRestoreGlobalVector(dm, &target));
@@ -204,12 +198,12 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
   PetscCall(VecDestroy(&target));
 
   // Write the forcing vector to the HDF5 file.
-  PetscCall(PetscObjectSetName((PetscObject)rhs, "rhs"));
-  PetscCall(VecView(rhs, viewer));
+  PetscCall(PetscObjectSetName((PetscObject)ctx->potential.forcing, "rhs"));
+  PetscCall(VecView(ctx->potential.forcing, viewer));
 
   // Write the electrostatic potential to the HDF5 file.
-  PetscCall(PetscObjectSetName((PetscObject)phi, "potential"));
-  PetscCall(VecView(phi, viewer));
+  PetscCall(PetscObjectSetName((PetscObject)ctx->potential.solution, "potential"));
+  PetscCall(VecView(ctx->potential.solution, viewer));
 
   // Destroy the HDF5 viewer.
   PetscCall(PetscViewerDestroy(&viewer));

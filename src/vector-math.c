@@ -764,7 +764,6 @@ PetscErrorCode ComputeGradient(Vec F, Vec f[3], Context *ctx)
   PetscReal    dx=ctx->grid.dx;
   PetscReal    dy=ctx->grid.dy;
   PetscReal    dz=ctx->grid.dz;
-  DM           fluidDM=ctx->fluidDM;
   PetscInt     i0, j0, k0;
   PetscInt     ni, nj, nk;
   PetscInt     i, j, k;
@@ -784,13 +783,13 @@ PetscErrorCode ComputeGradient(Vec F, Vec f[3], Context *ctx)
   hz = 1.0 / (2.0*dz);
 
   // Create the operator matrices.
-  PetscCall(DMCreateMatrix(fluidDM, &Ax));
-  PetscCall(DMCreateMatrix(fluidDM, &Ay));
-  PetscCall(DMCreateMatrix(fluidDM, &Az));
+  PetscCall(DMCreateMatrix(ctx->fluidDM, &Ax));
+  PetscCall(DMCreateMatrix(ctx->fluidDM, &Ay));
+  PetscCall(DMCreateMatrix(ctx->fluidDM, &Az));
 
   // Compute the discrete derivative in each dimension.
   // Get this processor's indices.
-  PetscCall(DMDAGetCorners(fluidDM, &i0, &j0, &k0, &ni, &nj, &nk));
+  PetscCall(DMDAGetCorners(ctx->fluidDM, &i0, &j0, &k0, &ni, &nj, &nk));
 
   // Loop over grid points. [DEV] Assume periodic BC.
   for (k=k0; k<k0+nk; k++) {
@@ -851,7 +850,6 @@ PetscErrorCode ComputeLaplacian(Vec F, Vec *f, Context *ctx)
   PetscReal    dx=ctx->grid.dx;
   PetscReal    dy=ctx->grid.dy;
   PetscReal    dz=ctx->grid.dz;
-  DM           fluidDM=ctx->fluidDM;
   PetscInt     i0, j0, k0;
   PetscInt     ni, nj, nk;
   PetscInt     i, j, k;
@@ -884,10 +882,10 @@ PetscErrorCode ComputeLaplacian(Vec F, Vec *f, Context *ctx)
   vijk = -(vpjk + vipk + vijp + vmjk + vimk + vijm);
 
   // Create the operator matrix.
-  PetscCall(DMCreateMatrix(fluidDM, &A));
+  PetscCall(DMCreateMatrix(ctx->fluidDM, &A));
 
   // Get this processor's indices.
-  PetscCall(DMDAGetCorners(fluidDM, &i0, &j0, &k0, &ni, &nj, &nk));
+  PetscCall(DMDAGetCorners(ctx->fluidDM, &i0, &j0, &k0, &ni, &nj, &nk));
 
   // Loop over grid points. [DEV] Assume periodic BC.
   for (k=k0; k<k0+nk; k++) {

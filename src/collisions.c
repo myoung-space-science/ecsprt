@@ -24,7 +24,6 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
   PetscReal  mi=ctx->ions.m;                                                   // the ion-species mass
   PetscReal  mn=ctx->neutrals.m;                                               // the neutral-species mass
   PetscReal  M=mn+mi;                                                          // the total mass (mi+mn)
-  DM         swarmDM=ctx->swarmDM;
   PetscReal *vel;
   PetscReal  vn[3];                                                            // neutral-particle velocity
   PetscReal  vi[3];                                                            // ion velocity
@@ -51,7 +50,7 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
   vrm = 4.0*viT + PetscSqrtReal(tmp);
 
   // Get the number of ions on this rank.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   // Compute the number of collisions to attempt.
   Nc = (PetscInt)(((PetscReal)np * fc * vrm) / ((vnT + ctx->neutrals.v0) * PetscSqrtReal(mn / mi)));
@@ -63,7 +62,7 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
   ctx->log.ranks("[%d] Colliding %d particles out of %d ...\n", ctx->mpi.rank, Nc, np);
 
   // Get an array representation of the ion velocities.
-  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Attempt collisions until we reach the required number.
   while (Ns < Nc) {
@@ -156,7 +155,7 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
   }
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Report the number of actual collisions.
   ctx->log.world("Collision efficiency: %6.4f.\n", (PetscReal)Ns/(PetscReal)(Ns+Nf));

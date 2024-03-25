@@ -16,7 +16,6 @@ PetscErrorCode UniformCoordinates(PetscInt ndim, Context *ctx)
   PetscReal min[ndim], max[ndim];
   PetscInt  npc=1;                // number of particles per cell
   PetscInt  npd[ndim];
-  DM        swarmDM=ctx->swarmDM;
   PetscReal x0[3]={ctx->grid.x0, ctx->grid.y0, ctx->grid.z0};
   PetscReal x1[3]={ctx->grid.x1, ctx->grid.y1, ctx->grid.z1};
   PetscReal N[3]={ctx->grid.Nx, ctx->grid.Ny, ctx->grid.Nz};
@@ -32,7 +31,7 @@ PetscErrorCode UniformCoordinates(PetscInt ndim, Context *ctx)
   }
 
   // Use a built-in PETSc routine for setting up a uniform distribution.
-  PetscCall(DMSwarmSetPointsUniformCoordinates(swarmDM, min, max, npd, INSERT_VALUES));
+  PetscCall(DMSwarmSetPointsUniformCoordinates(ctx->swarmDM, min, max, npd, INSERT_VALUES));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -41,7 +40,6 @@ PetscErrorCode UniformCoordinates(PetscInt ndim, Context *ctx)
 
 PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx)
 {
-  DM             swarmDM=ctx->swarmDM;
   DM             cellDM;
   long           seed=getseed(*ctx);
   PetscReal     *coords;
@@ -60,7 +58,7 @@ PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get the total number of particles in the swarm.
-  PetscCall(DMSwarmGetSize(swarmDM, &Np));
+  PetscCall(DMSwarmGetSize(ctx->swarmDM, &Np));
 
   // Allocate a 1-D array for the global positions.
   PetscCall(PetscMalloc1(ndim*Np, &pos));
@@ -81,13 +79,13 @@ PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx)
   PetscCallMPI(MPI_Bcast(pos, ndim*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
 
   // Get a representation of the particle coordinates.
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
   // Get the local number of particles.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   // Get the ion-swarm cell DM.
-  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
+  PetscCall(DMSwarmGetCellDM(ctx->swarmDM, &cellDM));
 
   // Get the index information for this processor.
   PetscCall(DMDAGetLocalInfo(cellDM, &local));
@@ -126,7 +124,7 @@ PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx)
   }
 
   // Restore the coordinates array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
   // Free the positions-array memory.
   PetscCall(PetscFree(pos));
@@ -138,7 +136,6 @@ PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx)
 
 PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
 {
-  DM             swarmDM=ctx->swarmDM;
   DM             cellDM;
   PetscInt       seed=-1;
   PetscReal     *coords;
@@ -159,7 +156,7 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get the total number of particles in the swarm.
-  PetscCall(DMSwarmGetSize(swarmDM, &Np));
+  PetscCall(DMSwarmGetSize(ctx->swarmDM, &Np));
 
   // Allocate a 1-D array for the global positions.
   PetscCall(PetscMalloc1(ndim*Np, &pos));
@@ -181,10 +178,10 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   PetscCallMPI(MPI_Bcast(pos, ndim*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
 
   // Get a representation of the particle coordinates.
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
   // Get the ion-swarm cell DM.
-  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
+  PetscCall(DMSwarmGetCellDM(ctx->swarmDM, &cellDM));
 
   // Get the index information for this processor.
   PetscCall(DMDAGetLocalInfo(cellDM, &local));
@@ -220,10 +217,10 @@ PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx)
   }
 
   // Restore the coordinates array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
   // Reset the number of local particles.
-  PetscCall(DMSwarmSetLocalSizes(swarmDM, ic, -1));
+  PetscCall(DMSwarmSetLocalSizes(ctx->swarmDM, ic, -1));
 
   // Free the positions-array memory.
   PetscCall(PetscFree(pos));
@@ -252,7 +249,6 @@ PetscErrorCode SinusoidalDistribution(PetscInt ndim, PetscReal r[], PetscReal *v
 
 PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *ctx)
 {
-  DM             swarmDM=ctx->swarmDM;
   DM             cellDM;
   PetscReal     *coords;
   PetscInt       Np, ip, ic;
@@ -279,7 +275,7 @@ PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *c
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get the total number of particles in the swarm.
-  PetscCall(DMSwarmGetSize(swarmDM, &Np));
+  PetscCall(DMSwarmGetSize(ctx->swarmDM, &Np));
 
   // Allocate a 1-D array for the global positions.
   PetscCall(PetscMalloc1(ndim*Np, &pos));
@@ -330,10 +326,10 @@ PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *c
   PetscCallMPI(MPI_Bcast(pos, ndim*Np, MPIU_REAL, 0, PETSC_COMM_WORLD));
 
   // Get a representation of the particle coordinates.
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
   // Get the ion-swarm cell DM.
-  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
+  PetscCall(DMSwarmGetCellDM(ctx->swarmDM, &cellDM));
 
   // Get the index information for this processor.
   PetscCall(DMDAGetLocalInfo(cellDM, &local));
@@ -369,10 +365,10 @@ PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *c
   }
 
   // Restore the coordinates array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
   // Reset the number of local particles.
-  PetscCall(DMSwarmSetLocalSizes(swarmDM, ic, -1));
+  PetscCall(DMSwarmSetLocalSizes(ctx->swarmDM, ic, -1));
 
   // Free the positions-array memory.
   PetscCall(PetscFree(pos));
@@ -385,15 +381,14 @@ PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *c
 /* Compute the initial ion positions. */
 PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *ctx)
 {
-  DM         swarmDM=ctx->swarmDM;
   PetscInt   np, Np;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Echo sizes.
-  PetscCall(DMSwarmGetSize(swarmDM, &Np));
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetSize(ctx->swarmDM, &Np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
   ctx->log.world("\n");
   ctx->log.ranks("[%d] Local # of ions before placement: %d\n", ctx->mpi.rank, np);
   ctx->log.world("   Global # of ions before placement: %d\n", Np);
@@ -431,7 +426,6 @@ PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *
 /* Update the ion positions according to $\frac{d\vec{r}}{dt} = \vec{v}$. */
 PetscErrorCode UpdatePositions(PetscInt ndim, PetscReal dt, Context *ctx)
 {
-  DM          swarmDM=ctx->swarmDM;
   PetscReal  *pos, *vel;
   PetscInt    ip, np, dim;
 
@@ -439,13 +433,13 @@ PetscErrorCode UpdatePositions(PetscInt ndim, PetscReal dt, Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get an array representation of the ion positions.
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Get an array representation of the ion velocities.
-  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Get the number of particles on this rank.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   // Loop over ions.
   for (ip=0; ip<np; ip++) {
@@ -455,10 +449,10 @@ PetscErrorCode UpdatePositions(PetscInt ndim, PetscReal dt, Context *ctx)
   }
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Restore the ion-positions array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Update the swarm.
   PetscCall(ApplyBCAndMigrate(ctx));

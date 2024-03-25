@@ -55,7 +55,6 @@ This routine should be the only place where the code calls `DMSwarmMigrate`.
 */
 PetscErrorCode ApplyBCAndMigrate(Context *ctx)
 {
-  DM         swarmDM=ctx->swarmDM;
   PetscReal *pos, *vel;
   PetscInt   np, Np0, Np1;
 
@@ -63,36 +62,36 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get an array representation of the ion positions.
-  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Get an array representation of the ion velocities.
-  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Get the number of particles on this rank.
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
 
   // Apply boundary conditions.
   PetscCall(ctx->ions.applyBC(np, pos, vel, ctx));
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Restore the ion-positions array.
-  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Echo pre-migration sizes.
-  PetscCall(DMSwarmGetSize(swarmDM, &Np0));
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetSize(ctx->swarmDM, &Np0));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
   ctx->log.world("\n");
   ctx->log.ranks("[%d] Local # of ions before migration: %d\n", ctx->mpi.rank, np);
   ctx->log.world("   Global # of ions before migration: %d\n", Np0);
 
   // Migrate ions among processes.
-  PetscCall(DMSwarmMigrate(swarmDM, PETSC_TRUE));
+  PetscCall(DMSwarmMigrate(ctx->swarmDM, PETSC_TRUE));
 
   // Echo post-migration sizes.
-  PetscCall(DMSwarmGetSize(swarmDM, &Np1));
-  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+  PetscCall(DMSwarmGetSize(ctx->swarmDM, &Np1));
+  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
   ctx->log.world("\n");
   ctx->log.ranks("[%d] Local # of ions after migration: %d\n", ctx->mpi.rank, np);
   ctx->log.world("   Global # of ions after migration: %d\n", Np1);

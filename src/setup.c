@@ -285,7 +285,10 @@ PetscErrorCode DestroyContext(Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(VecDestroy(&ctx->moments));
+  PetscCall(DMSetApplicationContext(ctx->fluidDM, NULL));
   PetscCall(DMDestroy(&ctx->fluidDM));
+  PetscCall(DMSetApplicationContext(ctx->potential.dm, NULL));
+  PetscCall(DMDestroy(&ctx->potential.dm));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -357,7 +360,6 @@ PetscErrorCode CreateFluidDM(PetscInt ndim, Context *ctx)
   DMDAStencilType stencilType=ctx->potential.stencilType;
   PetscInt        dof=4;
   PetscInt        width=1;
-  DM              dm;
 
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
@@ -366,34 +368,32 @@ PetscErrorCode CreateFluidDM(PetscInt ndim, Context *ctx)
   switch (ndim)
   {
   case 2:
-    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, xBC, yBC, stencilType, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, &dm));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, xBC, yBC, stencilType, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, &ctx->fluidDM));
     break;
   case 3:
-    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &dm));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, xBC, yBC, zBC, stencilType, Nx, Ny, Nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, width, NULL, NULL, NULL, &ctx->fluidDM));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Unsupported spatial dimension: %d", ndim);
   }
   // Perform basic setup.
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "fluid_"));
-  PetscCall(DMDASetElementType(dm, DMDA_ELEMENT_Q1));
-  PetscCall(DMSetFromOptions(dm));
-  PetscCall(DMSetUp(dm));
-  PetscCall(PetscObjectSetName((PetscObject)dm, "FluidDM"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ctx->fluidDM, "fluid_"));
+  PetscCall(DMDASetElementType(ctx->fluidDM, DMDA_ELEMENT_Q1));
+  PetscCall(DMSetFromOptions(ctx->fluidDM));
+  PetscCall(DMSetUp(ctx->fluidDM));
+  PetscCall(PetscObjectSetName((PetscObject)ctx->fluidDM, "FluidDM"));
   // Synchronize values of grid parameters.
-  PetscCall(NormalizeGrid(dm, ctx));
+  PetscCall(NormalizeGrid(ctx->fluidDM, ctx));
   // Set uniform coordinates on the DM.
-  PetscCall(DMDASetUniformCoordinates(dm, ctx->grid.x0, ctx->grid.x1, ctx->grid.y0, ctx->grid.y1, ctx->grid.z0, ctx->grid.z1));
+  PetscCall(DMDASetUniformCoordinates(ctx->fluidDM, ctx->grid.x0, ctx->grid.x1, ctx->grid.y0, ctx->grid.y1, ctx->grid.z0, ctx->grid.z1));
   // Declare grid-quantity names.
-  PetscCall(DMDASetFieldName(dm, 0, "density"));
-  PetscCall(DMDASetFieldName(dm, 1, "x flux"));
-  PetscCall(DMDASetFieldName(dm, 2, "y flux"));
-  PetscCall(DMDASetFieldName(dm, 3, "z flux"));
+  PetscCall(DMDASetFieldName(ctx->fluidDM, 0, "density"));
+  PetscCall(DMDASetFieldName(ctx->fluidDM, 1, "x flux"));
+  PetscCall(DMDASetFieldName(ctx->fluidDM, 2, "y flux"));
+  PetscCall(DMDASetFieldName(ctx->fluidDM, 3, "z flux"));
   // Create a persistent vector for outputing fluid quantities.
-  PetscCall(DMCreateGlobalVector(dm, &ctx->moments));
+  PetscCall(DMCreateGlobalVector(ctx->fluidDM, &ctx->moments));
   PetscCall(VecZeroEntries(ctx->moments));
-  // Assign the grid DM to the application context.
-  ctx->fluidDM = dm;
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -468,7 +468,6 @@ sychronization tasks on grid parameters.
 PetscErrorCode CreateSwarmDM(PetscInt ndim, PetscInt Np, Context *ctx)
 {
   PetscInt        dim;
-  DM              swarmDM;
   PetscInt        bufsize=0;
   PetscInt        np;
 
@@ -479,29 +478,29 @@ PetscErrorCode CreateSwarmDM(PetscInt ndim, PetscInt Np, Context *ctx)
   PetscCall(CreateFluidDM(ndim, ctx));
 
   // Create the swarm DM.
-  PetscCall(DMCreate(PETSC_COMM_WORLD, &swarmDM));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &ctx->swarmDM));
   // Perform basic setup.
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)swarmDM, "swarm_"));
-  PetscCall(DMSetFromOptions(swarmDM));
-  PetscCall(DMSetType(swarmDM, DMSWARM));
-  PetscCall(PetscObjectSetName((PetscObject)swarmDM, "Swarm"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ctx->swarmDM, "swarm_"));
+  PetscCall(DMSetFromOptions(ctx->swarmDM));
+  PetscCall(DMSetType(ctx->swarmDM, DMSWARM));
+  PetscCall(PetscObjectSetName((PetscObject)ctx->swarmDM, "Swarm"));
   // Synchronize the swarm DM with the fluid DM.
   PetscCall(DMGetDimension(ctx->fluidDM, &dim));
-  PetscCall(DMSetDimension(swarmDM, dim));
-  PetscCall(DMSwarmSetCellDM(swarmDM, ctx->fluidDM));
+  PetscCall(DMSetDimension(ctx->swarmDM, dim));
+  PetscCall(DMSwarmSetCellDM(ctx->swarmDM, ctx->fluidDM));
   // Declare this to be a PIC swarm. This must occur after setting `dim`.
-  PetscCall(DMSwarmSetType(swarmDM, DMSWARM_PIC));
+  PetscCall(DMSwarmSetType(ctx->swarmDM, DMSWARM_PIC));
   // Register non-default fields that each particle will have.
-  PetscCall(DMSwarmInitializeFieldRegister(swarmDM));
+  PetscCall(DMSwarmInitializeFieldRegister(ctx->swarmDM));
   // --> (x, y, z) velocity components
-  PetscCall(DMSwarmRegisterPetscDatatypeField(swarmDM, "velocity", ndim, PETSC_REAL));
-  PetscCall(DMSwarmFinalizeFieldRegister(swarmDM));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(ctx->swarmDM, "velocity", ndim, PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(ctx->swarmDM));
   // Set the local number of points in each dimension.
   PetscCall(DMDAGetCorners(ctx->fluidDM, NULL, NULL, NULL, &ctx->grid.nx, &ctx->grid.ny, &ctx->grid.nz));
   // Set the per-processor swarm size and buffer length for efficient resizing.
   np = (PetscInt)(Np / ctx->mpi.size);
   bufsize = (PetscInt)(0.25 * np);
-  PetscCall(DMSwarmSetLocalSizes(swarmDM, np, bufsize));
+  PetscCall(DMSwarmSetLocalSizes(ctx->swarmDM, np, bufsize));
   // View information about the swarm DM.
   {
     /* NOTE: This is work-around for the fact that there appears to be no way to
@@ -510,11 +509,9 @@ PetscErrorCode CreateSwarmDM(PetscInt ndim, PetscInt Np, Context *ctx)
     PetscBool requested, found;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-swarm_dm_view", &requested, &found));
     if (found && requested) {
-      PetscCall(DMView(swarmDM, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(DMView(ctx->swarmDM, PETSC_VIEWER_STDOUT_WORLD));
     }
   }
-  // Assign the swarm DM to the application context.
-  ctx->swarmDM = swarmDM;
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
