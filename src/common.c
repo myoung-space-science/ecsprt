@@ -48,6 +48,7 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, Context *ctx)
   }
 
   ctx->log.status("\n**************** START *****************\n\n");
+  ctx->log.status("Running on %d MPI process(es)\n\n", ctx->mpi.size);
 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
