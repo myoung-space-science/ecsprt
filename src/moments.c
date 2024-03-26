@@ -6,6 +6,7 @@ PetscErrorCode Collect2DFluidMoments(void *opts)
 {
   Context     *ctx=(Context *)opts;
   PetscInt     ndim=2;
+  DM           swarmDM=ctx->swarmDM;
   DM           cellDM;
   Vec          moments, global;
   PetscReal ***array;
@@ -23,7 +24,7 @@ PetscErrorCode Collect2DFluidMoments(void *opts)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get the ion-swarm cell DM.
-  PetscCall(DMSwarmGetCellDM(ctx->swarmDM, &cellDM));
+  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
 
   // Get density and flux arrays.
   PetscCall(DMGetLocalVector(cellDM, &moments));
@@ -31,13 +32,13 @@ PetscErrorCode Collect2DFluidMoments(void *opts)
   PetscCall(DMDAVecGetArrayDOF(cellDM, moments, &array));
 
   // Get an array representation of the ion positions.
-  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Get an array representation of the ion velocities.
-  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Get the number of ions on this rank.
-  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
 
   // Extract cell widths for reuse.
   dx = ctx->grid.dx;
@@ -93,10 +94,10 @@ PetscErrorCode Collect2DFluidMoments(void *opts)
   PetscCall(DMRestoreLocalVector(cellDM, &moments));
 
   // Restore the ion-positions array.
-  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -108,6 +109,7 @@ PetscErrorCode Collect3DFluidMoments(void *opts)
 {
   Context      *ctx=(Context *)opts;
   PetscInt      ndim=3;
+  DM            swarmDM=ctx->swarmDM;
   DM            cellDM;
   Vec           moments, global;
   PetscReal ****array;
@@ -125,7 +127,7 @@ PetscErrorCode Collect3DFluidMoments(void *opts)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   // Get the ion-swarm cell DM.
-  PetscCall(DMSwarmGetCellDM(ctx->swarmDM, &cellDM));
+  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
 
   // Get density and flux arrays.
   PetscCall(DMGetLocalVector(cellDM, &moments));
@@ -133,13 +135,13 @@ PetscErrorCode Collect3DFluidMoments(void *opts)
   PetscCall(DMDAVecGetArrayDOF(cellDM, moments, &array));
 
   // Get an array representation of the ion positions.
-  PetscCall(DMSwarmGetField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Get an array representation of the ion velocities.
-  PetscCall(DMSwarmGetField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   // Get the number of ions on this rank.
-  PetscCall(DMSwarmGetLocalSize(ctx->swarmDM, &np));
+  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
 
   // Extract cell widths for reuse.
   dx = ctx->grid.dx;
@@ -214,10 +216,10 @@ PetscErrorCode Collect3DFluidMoments(void *opts)
   PetscCall(DMRestoreLocalVector(cellDM, &moments));
 
   // Restore the ion-positions array.
-  PetscCall(DMSwarmRestoreField(ctx->swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
+  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
 
   // Restore the ion-velocities array.
-  PetscCall(DMSwarmRestoreField(ctx->swarmDM, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(swarmDM, "velocity", NULL, NULL, (void **)&vel));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);

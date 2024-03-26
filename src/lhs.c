@@ -190,6 +190,7 @@ PetscErrorCode ComputeLaplacianLHS3D(KSP ksp, Mat J, Mat A, void *opts)
 PetscErrorCode ComputeFullLHS2D(KSP ksp, Mat J, Mat A, void *opts)
 {
   Context       *ctx=(Context *)opts;
+  DM             fluidDM=ctx->fluidDM;
   PetscReal      kappa=ctx->electrons.kappa;
   PetscReal      dx=ctx->grid.dx;
   PetscReal      dy=ctx->grid.dy;
@@ -224,10 +225,10 @@ PetscErrorCode ComputeFullLHS2D(KSP ksp, Mat J, Mat A, void *opts)
   sod = scale * kappa*hod;
 
   // Get density and flux arrays.
-  PetscCall(DMGetLocalVector(ctx->fluidDM, &moments));
-  PetscCall(DMGlobalToLocalBegin(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMGlobalToLocalEnd(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMDAVecGetArray(ctx->fluidDM, moments, &fluid));
+  PetscCall(DMGetLocalVector(fluidDM, &moments));
+  PetscCall(DMGlobalToLocalBegin(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMGlobalToLocalEnd(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMDAVecGetArray(fluidDM, moments, &fluid));
 
   // Get the DM associated with the KSP.
   PetscCall(KSPGetDM(ksp, &dm));
@@ -312,8 +313,8 @@ PetscErrorCode ComputeFullLHS2D(KSP ksp, Mat J, Mat A, void *opts)
   PetscCall(DMRestoreLocalVector(dm, &F));
 
   // Restore density array and corresponding vector.
-  PetscCall(DMDAVecRestoreArray(ctx->fluidDM, moments, &fluid));
-  PetscCall(DMRestoreLocalVector(ctx->fluidDM, &moments));
+  PetscCall(DMDAVecRestoreArray(fluidDM, moments, &fluid));
+  PetscCall(DMRestoreLocalVector(fluidDM, &moments));
 
   // Assemble the distributed operator matrix.
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -332,6 +333,7 @@ PetscErrorCode ComputeFullLHS2D(KSP ksp, Mat J, Mat A, void *opts)
 PetscErrorCode ComputeFullLHS3D(KSP ksp, Mat J, Mat A, void *opts)
 {
   Context        *ctx=(Context *)opts;
+  DM              fluidDM=ctx->fluidDM;
   PetscReal       kappa=ctx->electrons.kappa;
   PetscReal       dx=ctx->grid.dx;
   PetscReal       dy=ctx->grid.dy;
@@ -369,10 +371,10 @@ PetscErrorCode ComputeFullLHS3D(KSP ksp, Mat J, Mat A, void *opts)
   sod = scale * kappa*hod;
 
   // Get density and flux arrays.
-  PetscCall(DMGetLocalVector(ctx->fluidDM, &moments));
-  PetscCall(DMGlobalToLocalBegin(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMGlobalToLocalEnd(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMDAVecGetArray(ctx->fluidDM, moments, &fluid));
+  PetscCall(DMGetLocalVector(fluidDM, &moments));
+  PetscCall(DMGlobalToLocalBegin(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMGlobalToLocalEnd(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMDAVecGetArray(fluidDM, moments, &fluid));
 
   // Get the DM associated with the KSP.
   PetscCall(KSPGetDM(ksp, &dm));
@@ -482,8 +484,8 @@ PetscErrorCode ComputeFullLHS3D(KSP ksp, Mat J, Mat A, void *opts)
   PetscCall(DMRestoreLocalVector(dm, &F));
 
   // Restore density array and corresponding vector.
-  PetscCall(DMDAVecRestoreArray(ctx->fluidDM, moments, &fluid));
-  PetscCall(DMRestoreLocalVector(ctx->fluidDM, &moments));
+  PetscCall(DMDAVecRestoreArray(fluidDM, moments, &fluid));
+  PetscCall(DMRestoreLocalVector(fluidDM, &moments));
 
   // Assemble the distributed operator matrix.
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));

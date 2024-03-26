@@ -285,9 +285,7 @@ PetscErrorCode DestroyContext(Context *ctx)
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
   PetscCall(VecDestroy(&ctx->moments));
-  PetscCall(DMSetApplicationContext(ctx->fluidDM, NULL));
   PetscCall(DMDestroy(&ctx->fluidDM));
-  PetscCall(DMSetApplicationContext(ctx->potential.dm, NULL));
   PetscCall(DMDestroy(&ctx->potential.dm));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);

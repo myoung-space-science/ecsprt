@@ -155,6 +155,7 @@ PetscErrorCode ComputeFullRHS2D(KSP ksp, Vec b, void *user)
   PetscReal        dy=ctx->grid.dy;
   PetscReal        scale=ctx->potential.scale;
   PetscReal        kappa=ctx->electrons.kappa;
+  DM               fluidDM=ctx->fluidDM;
   Vec              moments;
   FluidNode      **fluid;
   DM               dm;
@@ -188,10 +189,10 @@ PetscErrorCode ComputeFullRHS2D(KSP ksp, Vec b, void *user)
   hyy = 1.0 / (dy*dy);
 
   // Get density and flux fluids.
-  PetscCall(DMGetLocalVector(ctx->fluidDM, &moments));
-  PetscCall(DMGlobalToLocalBegin(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMGlobalToLocalEnd(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMDAVecGetArray(ctx->fluidDM, moments, &fluid));
+  PetscCall(DMGetLocalVector(fluidDM, &moments));
+  PetscCall(DMGlobalToLocalBegin(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMGlobalToLocalEnd(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMDAVecGetArray(fluidDM, moments, &fluid));
 
   // Zero the incoming vector.
   PetscCall(VecZeroEntries(b));
@@ -236,8 +237,8 @@ PetscErrorCode ComputeFullRHS2D(KSP ksp, Vec b, void *user)
   }
 
   // Restore density and flux fluids.
-  PetscCall(DMDAVecRestoreArray(ctx->fluidDM, moments, &fluid));
-  PetscCall(DMRestoreLocalVector(ctx->fluidDM, &moments));
+  PetscCall(DMDAVecRestoreArray(fluidDM, moments, &fluid));
+  PetscCall(DMRestoreLocalVector(fluidDM, &moments));
 
   // Restore the borrowed RHS array.
   PetscCall(DMDAVecRestoreArray(dm, b, &rhs));
@@ -263,6 +264,7 @@ PetscErrorCode ComputeFullRHS3D(KSP ksp, Vec b, void *user)
   PetscReal         dz=ctx->grid.dz;
   PetscReal         scale=ctx->potential.scale;
   PetscReal         kappa=ctx->electrons.kappa;
+  DM                fluidDM=ctx->fluidDM;
   Vec               moments;
   FluidNode      ***fluid;
   DM                dm;
@@ -298,10 +300,10 @@ PetscErrorCode ComputeFullRHS3D(KSP ksp, Vec b, void *user)
   hzz = 1.0 / (dz*dz);
 
   // Get density and flux fluids.
-  PetscCall(DMGetLocalVector(ctx->fluidDM, &moments));
-  PetscCall(DMGlobalToLocalBegin(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMGlobalToLocalEnd(ctx->fluidDM, ctx->moments, INSERT_VALUES, moments));
-  PetscCall(DMDAVecGetArray(ctx->fluidDM, moments, &fluid));
+  PetscCall(DMGetLocalVector(fluidDM, &moments));
+  PetscCall(DMGlobalToLocalBegin(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMGlobalToLocalEnd(fluidDM, ctx->moments, INSERT_VALUES, moments));
+  PetscCall(DMDAVecGetArray(fluidDM, moments, &fluid));
 
   // Zero the incoming vector.
   PetscCall(VecZeroEntries(b));
@@ -352,8 +354,8 @@ PetscErrorCode ComputeFullRHS3D(KSP ksp, Vec b, void *user)
   }
 
   // Restore density and flux fluids.
-  PetscCall(DMDAVecRestoreArray(ctx->fluidDM, moments, &fluid));
-  PetscCall(DMRestoreLocalVector(ctx->fluidDM, &moments));
+  PetscCall(DMDAVecRestoreArray(fluidDM, moments, &fluid));
+  PetscCall(DMRestoreLocalVector(fluidDM, &moments));
 
   // Restore the borrowed RHS array.
   PetscCall(DMDAVecRestoreArray(dm, b, &rhs));
