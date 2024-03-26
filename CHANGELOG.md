@@ -17,6 +17,7 @@ When incrementing the version number to X.Y.Z, please do the following
 - Rename some CLI flags
 - Add support for specifying number of particles per processor
 - Deprecate use, and remove definition, of `NDIM`
+- Fix memory bug and refactor to reduce memory leaks
 
 ## v0.5.0 (2024-03-21)
 
