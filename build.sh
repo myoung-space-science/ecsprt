@@ -211,15 +211,24 @@ cleanup() {
         echo 
         echo -e "${u_success} Success! ${u_success}"
         echo 
+        if [ -z "${name}" ]; then
+            if [ "${prog}" == "all" ]; then
+                execname="{pic,solver}"
+            else
+                execname="${prog}"
+            fi
+        else
+            execname="${name}"
+        fi
         if [ $debug == 1 ]; then
             echo "For debugging on a single processor, try"
-            echo "$ gdb --args ${bindir}/${name} [ARGS]"
+            echo "$ gdb --args ${bindir}/${execname} [ARGS]"
         else
             echo "To run on a single processor, try"
-            echo "$ ${bindir}/${name} [ARGS]"
+            echo "$ ${bindir}/${execname} [ARGS]"
             echo 
             echo "To run on N processors, try"
-            echo "$ mpiexec -n N ${bindir}/${name} [ARGS]"
+            echo "$ mpiexec -n N ${bindir}/${execname} [ARGS]"
         fi
     fi
 }
