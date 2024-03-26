@@ -10,7 +10,9 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, Context *ctx)
   PetscBool found;
 
   /* Initialize PETSc and MPI. */
-  if (access("petsc.ini", F_OK) != -1) {
+  if ((argc > 1) && (access(args[1], F_OK) != -1)) {
+    PetscCall(PetscInitialize(&argc, &args, args[1], help));
+  } else if (access("petsc.ini", F_OK) != -1) {
     PetscCall(PetscInitialize(&argc, &args, "petsc.ini", help));
   } else {
     PetscCall(PetscInitialize(&argc, &args, NULL, help));
