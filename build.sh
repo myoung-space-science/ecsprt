@@ -34,6 +34,7 @@ from_clean=0
 petsc_dir=
 slepc_dir=
 petsc_arch=
+name=
 
 # Define text formatting commands.
 # - textbf: Use bold-face.
@@ -62,12 +63,16 @@ ${textbf}DESCRIPTION${textnm}
                 Display help and exit.
         ${textbf}-p${textnm}, ${textbf}--program${textnm}=${startul}PROG${endul}
                 The target program (required).
+        ${textbf}--name NAME${textnm}
+                Rename the executable to NAME after building.
         ${textbf}--from-clean${textnm}
                 Run make clean in the target src directory before building the executable.
         ${textbf}--debug${textnm}
                 Compile with debugging flags.
+                This will append "-dbg" to the executable if NAME is unset.
         ${textbf}--optimize${textnm}
                 Compile with optimization flags.
+                This will append "-opt" to the executable if NAME is unset.
         ${textbf}--with-petsc-dir DIR${textnm}
                 Use DIR as PETSC_DIR when linking to PETSc.
         ${textbf}--with-slepc-dir DIR${textnm}
@@ -97,6 +102,7 @@ TEMP=$(getopt \
     -o 'hvp:' \
     -l 'help,verbose' \
     -l 'program:' \
+    -l 'name:' \
     -l 'from-clean' \
     -l 'debug,optimize' \
     -l 'with-petsc-dir:,with-slepc-dir:,with-petsc-arch:' \
@@ -118,6 +124,11 @@ while [ $# -gt 0 ]; do
         ;;
         '-p'|'--program')
             prog="${2}"
+            shift 2
+            continue
+        ;;
+        '--name')
+            name="${2}"
             shift 2
             continue
         ;;
@@ -280,16 +291,19 @@ done
 pushd ${srcdir} &> /dev/null
 cppflags=
 cflags=
-progext=
 if [ ${debug} == 1 ]; then
     cppflags="${cppflags} -DDEBUG"
     cflags="${cflags} -g -O0"
-    progext="-dbg"
+    if [ -z "${name}" ]; then
+        name="${prog}-dbg"
+    fi
 fi
 if [ ${optimize} == 1 ]; then
     cppflags="${cppflags} -DNDEBUG"
     cflags="${cflags} -O3"
-    progext="-opt"
+    if [ -z "${name}" ]; then
+        name="${prog}-opt"
+    fi
 fi
 echo &>> ${buildlog}
 print_width "=" &>> ${buildlog}
@@ -298,9 +312,9 @@ print_width "=" &>> ${buildlog}
 make ${prog} CPPFLAGS="${cppflags}" CFLAGS="${cflags}" &>> ${buildlog}
 popd &> /dev/null
 
-if [ -n "${progext}" ]; then
+if [ -n "${name}" ]; then
     pushd ${bindir} &> /dev/null \
-    && /bin/cp ${prog} ${prog}${progext} \
+    && /bin/mv ${prog} ${name} \
     && popd &> /dev/null
 fi
 
