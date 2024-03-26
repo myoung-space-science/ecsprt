@@ -116,7 +116,7 @@ int main(int argc, char **args)
   time(&startTime);
 
   /* Initialize PETSc and MPI. */
-  Initialize(argc, args, help, &ctx);
+  Initialize(argc, args, help, "solver", &ctx);
 
   /* Initialize SLEPc. */
   PetscCall(SlepcInitialize(&argc, &args, (char *)0, help));

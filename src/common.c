@@ -3,7 +3,7 @@
 #include <petsc.h>
 #include "ecsprt.h"
 
-PetscErrorCode Initialize(int argc, char **args, const char *help, Context *ctx)
+PetscErrorCode Initialize(int argc, char **args, const char *help, const char *name, Context *ctx)
 {
   PetscInt  logLevel=1;
   PetscBool requested;
@@ -24,7 +24,7 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, Context *ctx)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "--version", &requested, &found));
   if (found) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s: %s\n", ACRONYM, PROJECT));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Version %s]\n\n", VERSION));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%s] Version %s\n\n", name, VERSION));
     PetscCall(PetscEnd());
   }
 
@@ -47,8 +47,8 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, Context *ctx)
     ctx->log.checkpoint = printWorld;
   }
 
+  ctx->log.status("[%s] Running on %d MPI process(es)\n\n", name, ctx->mpi.size);
   ctx->log.status("\n**************** START *****************\n\n");
-  ctx->log.status("Running on %d MPI process(es)\n\n", ctx->mpi.size);
 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
