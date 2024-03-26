@@ -2,6 +2,8 @@ localbin = ../bin
 
 default: pic
 
+all: pic solver
+
 pic: pic.o \
 		boundaries.o \
 		collisions.o \
