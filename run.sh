@@ -275,7 +275,7 @@ if [ -n "${optlist}" ]; then
     for path in ${optlist[@]}; do
         if [ -f "${path}" ]; then
             if [ $verbose == 1 ]; then
-                echo "Adding options from ${path}" &>> ${runlog}
+                echo "[${cli}] Adding options from ${path}" &>> ${runlog}
             fi
             cat "${path}" >> "${tmpopts}"
             echo >> "${tmpopts}"
@@ -283,12 +283,12 @@ if [ -n "${optlist}" ]; then
             message="Cannot add options from ${path}: file does not exist or is not a regular file"
             if [ $reqopts == 1 ]; then
                 if [ $verbose == 1 ]; then
-                    echo "ERROR: ${message}" &>> ${runlog}
+                    echo "[${cli}] ERROR: ${message}" &>> ${runlog}
                 fi
                 exit 1
             fi
             if [ $verbose == 1 ]; then
-                echo "WARNING: ${message}" &>> ${runlog}
+                echo "[${cli}] WARNING: ${message}" &>> ${runlog}
             fi
         fi
     done
@@ -297,19 +297,19 @@ if [ -n "${options}" ]; then
     for current in ${options[@]}; do
         if [ -f "${current}" ]; then
             if [ $verbose == 1 ]; then
-                echo "Adding options from ${current}" &>> ${runlog}
+                echo "[${cli}] Adding options from ${current}" &>> ${runlog}
             fi
             (/bin/cat "${current}" >> "${tmpopts}") &>> ${runlog}
         else
             message="Cannot add options from ${current}: file does not exist or is not a regular file"
             if [ $reqopts == 1 ]; then
                 if [ $verbose == 1 ]; then
-                    echo "ERROR: ${message}" &>> ${runlog}
+                    echo "[${cli}] ERROR: ${message}" &>> ${runlog}
                 fi
                 exit 1
             fi
             if [ $verbose == 1 ]; then
-                echo "WARNING: ${message}" &>> ${runlog}
+                echo "[${cli}] WARNING: ${message}" &>> ${runlog}
             fi
         fi
     done
