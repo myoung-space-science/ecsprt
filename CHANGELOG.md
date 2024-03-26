@@ -20,6 +20,7 @@ When incrementing the version number to X.Y.Z, please do the following
 - Fix memory bug and refactor to reduce memory leaks
 - Allow user to pass options file as argument to executable
 - Echo number of MPI processes at runtime
+- Implement `--name` option for `build.sh`
 
 ## v0.5.0 (2024-03-21)
 
