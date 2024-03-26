@@ -213,13 +213,13 @@ cleanup() {
         echo 
         if [ $debug == 1 ]; then
             echo "For debugging on a single processor, try"
-            echo "$ gdb --args ${bindir}/${prog} [ARGS]"
+            echo "$ gdb --args ${bindir}/${name} [ARGS]"
         else
             echo "To run on a single processor, try"
-            echo "$ ${bindir}/${prog} [ARGS]"
+            echo "$ ${bindir}/${name} [ARGS]"
             echo 
             echo "To run on N processors, try"
-            echo "$ mpiexec -n N ${bindir}/${prog} [ARGS]"
+            echo "$ mpiexec -n N ${bindir}/${name} [ARGS]"
         fi
     fi
 }
