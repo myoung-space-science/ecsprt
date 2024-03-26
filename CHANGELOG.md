@@ -19,6 +19,7 @@ When incrementing the version number to X.Y.Z, please do the following
 - Deprecate use, and remove definition, of `NDIM`
 - Fix memory bug and refactor to reduce memory leaks
 - Allow user to pass options file as argument to executable
+- Echo number of MPI processes at runtime
 
 ## v0.5.0 (2024-03-21)
 
