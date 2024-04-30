@@ -98,6 +98,8 @@ report_bad_arg()
     printf "\nUnrecognized command: ${1}\n\n"
 }
 
+usercmnd="$0 $@"
+
 # Read command-line arguments.
 TEMP=$(getopt \
     -n 'run.sh' \
@@ -252,6 +254,9 @@ if [ -z "${prog}" ]; then
     fi
     exit 1
 fi
+
+# Echo the executed command.
+echo "[${cli}] command: ${usercmnd}" &> ${runlog}
 
 # Mark this stage.
 mark_stage "symlink"
