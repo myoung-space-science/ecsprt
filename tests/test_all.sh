@@ -7,6 +7,22 @@ rundir=${cwd}/runs
 # - test solver small case with --lhs-eigenvalues
 # - test solver very small case with --view-lhs
 
+tput colors &> /dev/null
+result=$?
+if [ -t 1 ] && [ $result == 0 ]; then
+    c_success="\033[0;32m"
+    c_warning="\033[0;33m"
+    c_failure="\033[0;31m"
+    c_normal="\033[0m"
+else
+    c_success=
+    c_warning=
+    c_failure=
+    c_normal=
+fi
+passed="${c_success}passed${c_normal}"
+failed="${c_failure}failed${c_normal}"
+
 for N in 2 3; do
     for n in 1 2; do
         for dist in sobol sinusoidal; do
@@ -24,11 +40,11 @@ for N in 2 3; do
             success=$?
             # TODO: Further analyze output before declaring success.
             if [ $success == 0 ]; then
-                echo "Test $name passed on $n processor(s)"
+                echo -e "Test $name $passed on $n processor(s)"
                 rm -rf $rundir/$name
                 rm -f $rundir/latest
             else
-                echo "Test $name failed on $n processor(s)"
+                echo -e "Test $name $failed on $n processor(s)"
                 exit 1
             fi
 
@@ -45,11 +61,11 @@ for N in 2 3; do
             success=$?
             # TODO: Further analyze output before declaring success.
             if [ $success == 0 ]; then
-                echo "Test $name passed on $n processor(s)"
+                echo -e "Test $name $passed on $n processor(s)"
                 rm -rf $rundir/$name
                 rm -f $rundir/latest
             else
-                echo "Test $name failed on $n processor(s)"
+                echo -e "Test $name $failed on $n processor(s)"
                 exit 1
             fi
 
