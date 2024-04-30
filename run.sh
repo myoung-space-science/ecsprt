@@ -256,7 +256,9 @@ if [ -z "${prog}" ]; then
 fi
 
 # Echo the executed command.
-echo "[${cli}] command: ${usercmnd}" &> ${runlog}
+if [ $verbose == 1 ]; then
+    echo "[${cli}] command: ${usercmnd}" &> ${runlog}
+fi
 
 # Mark this stage.
 mark_stage "symlink"
