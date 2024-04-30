@@ -63,6 +63,10 @@ ${textbf}DESCRIPTION${textnm}
                 Display help and exit.
         ${textbf}-p${textnm}, ${textbf}--program${textnm}=${startul}PROG${endul}
                 The target program (required).
+                Currently support options are
+                pic: Build the time-dependent PIC simulation
+                solver: Build the quasineutral potential solver
+                all: Build all available programs
         ${textbf}--name NAME${textnm}
                 Rename the executable to NAME after building.
         ${textbf}--from-clean${textnm}
