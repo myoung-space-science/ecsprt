@@ -209,7 +209,7 @@ cleanup() {
             echo 
             echo -e "${u_success} Success! ${u_success}"
             echo 
-            echo "Output is in ${dstdir}"
+            echo "Output is in $(realpath -L ${dstdir})"
         fi
     fi
 }
