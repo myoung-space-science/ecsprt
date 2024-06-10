@@ -43,5 +43,9 @@ solver: solver.o \
 include ${PETSC_DIR}/lib/petsc/conf/variables
 # The following line will implicitly include PETSc rules. If we decide to remove
 # it, we will need to explicitly include `${PETSC_DIR}/lib/petsc/conf/rules`.
+ifdef SLEPC_DIR
 include ${SLEPC_DIR}/lib/slepc/conf/slepc_common
+else
+include ${PETSC_DIR}/lib/petsc/conf/rules
+endif
 
