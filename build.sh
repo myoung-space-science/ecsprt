@@ -35,6 +35,7 @@ petsc_dir=
 slepc_dir=
 petsc_arch=
 name=
+have_slepc=1
 
 # Define text formatting commands.
 # - textbf: Use bold-face.
@@ -83,6 +84,9 @@ ${textbf}DESCRIPTION${textnm}
                 Use DIR as SLEPC_DIR when linking to SLEPc.
         ${textbf}--with-petsc-arch ARCH${textnm}
                 Use ARCH as PETSC_ARCH when linking to PETSc and SLEPc.
+        ${textbf}--no-slepc${textnm}
+                Do not attempt to link against SLEPc.
+                This may be useful when SLEPc is not available.
         ${textbf}-v${textnm}, ${textbf}--verbose${textnm}
                 Print informative messages during the build process.
 
@@ -110,6 +114,7 @@ TEMP=$(getopt \
     -l 'from-clean' \
     -l 'debug,optimize' \
     -l 'with-petsc-dir:,with-slepc-dir:,with-petsc-arch:' \
+    -l 'no-slepc' \
     -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -164,6 +169,11 @@ while [ $# -gt 0 ]; do
         '--with-petsc-arch')
             petsc_arch="${2}"
             shift 2
+            continue
+        ;;
+        '--no-slepc')
+            have_slepc=0
+            shift 1
             continue
         ;;
         '-v'|'--verbose')
@@ -288,9 +298,12 @@ mark_stage "build"
 # Raise an error for empty PETSc or SLEPc path variables.
 petsc_slepc_vars=(
     PETSC_DIR
-    SLEPC_DIR
     PETSC_ARCH
 )
+if [ ${have_slepc} == 1 ]; then
+    petsc_slepc_vars+=(SLEPC_DIR)
+fi
+
 for var in ${petsc_slepc_vars[@]}; do
     if [ -v ${var} ]; then
         echo "Using ${var}=${!var}" &>> ${buildlog}
@@ -317,6 +330,9 @@ if [ ${optimize} == 1 ]; then
     if [ -z "${name}" ]; then
         name="${prog}-opt"
     fi
+fi
+if [ ${have_slepc} == 1 ]; then
+    cppflags="${cppflags} -DHAVE_SLEPC"
 fi
 echo &>> ${buildlog}
 print_width "=" &>> ${buildlog}
