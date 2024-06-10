@@ -6,7 +6,6 @@ static char help[] = "A tool for solving the 3D quasineutral electrostatic-poten
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmswarm.h>
-#include <slepceps.h>
 #include "ecsprt.h"
 #include "common.h"
 #include "parameters.h"
@@ -15,6 +14,9 @@ static char help[] = "A tool for solving the 3D quasineutral electrostatic-poten
 #include "file-io.h"
 #include "lhs.h"
 
+#ifdef HAVE_SLEPC
+#include <slepceps.h>
+#endif
 
 typedef struct {
   char      inpath[PETSC_MAX_PATH_LEN]; // path to input file
@@ -119,7 +121,9 @@ int main(int argc, char **args)
   Initialize(argc, args, help, "solver", &ctx);
 
   /* Initialize SLEPc. */
+#ifdef HAVE_SLEPC
   PetscCall(SlepcInitialize(&argc, &args, (char *)0, help));
+#endif
 
   /* Assign parameter values from user arguments or defaults. */
   ctx.log.status("Processing common options\n");
@@ -192,7 +196,9 @@ int main(int argc, char **args)
   PetscCall(DestroyContext(&ctx));
 
   /* Finalize SLEPc. */
+#ifdef HAVE_SLEPC
   PetscCall(SlepcFinalize());
+#endif
 
   /* Log end time. */
   time(&endTime);

@@ -1,8 +1,12 @@
 #include <petsc.h>
-#include <slepceps.h>
 #include "constants.h"
 #include "ecsprt.h"
 #include "lhs.h"
+
+#ifdef HAVE_SLEPC
+#include <slepceps.h>
+#endif
+
 
 PetscErrorCode ComputeIdentityLHS(KSP ksp, Mat J, Mat A, void *opts)
 {
@@ -505,6 +509,7 @@ PetscErrorCode ComputeFullLHS3D(KSP ksp, Mat J, Mat A, void *opts)
 
 This is essentially a distilled version of ${SLEPC_DIR}/src/eps/tutorials/ex1.c
 */
+#ifdef HAVE_SLEPC
 PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts)
 {
   Context     *ctx=(Context *)opts;
@@ -578,3 +583,10 @@ PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts)
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#else
+PetscErrorCode ComputeLHSEigenvalues(KSP ksp, void *opts)
+{
+  PetscFunctionBeginUser;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif
