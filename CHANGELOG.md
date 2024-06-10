@@ -13,6 +13,8 @@ When incrementing the version number to X.Y.Z, please do the following
 
 ## NEXT
 
+## v0.6.0 (2024-06-10)
+
 - Redefine boundary condition parameters
 - Rename some CLI flags
 - Add support for specifying number of particles per processor
@@ -24,6 +26,7 @@ When incrementing the version number to X.Y.Z, please do the following
 - Add `make all` target
 - Update `run.sh` diagnostic output
 - Add color support to test script
+- Make SLEPc features optional
 
 ## v0.5.0 (2024-03-21)
 

@@ -12,7 +12,7 @@ These will appear when a user passes the --version flag.
 
 See CHANGELOG.md for instructions on incrementing the version number.
 */
-#define VERSION "0.5.0"
+#define VERSION "0.6.0"
 #define PROJECT "Electrostatic Collisional Space Plasma Research Toolkit"
 #define ACRONYM "ECSPRT"
 
