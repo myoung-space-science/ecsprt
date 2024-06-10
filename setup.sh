@@ -205,13 +205,13 @@ cleanup() {
         echo
         echo "You may want to set the following environment variables in your start-up file."
         echo "PETSC_DIR: \"${PETSC_DIR}\""
-        if [ -n "${SLEPC_DIR+}" ]; then
+        if [ -n "${SLEPC_DIR+x}" ]; then
             echo "SLEPC_DIR: \"${SLEPC_DIR}\""
         fi
         echo 
         echo "For example, if you're running bash, add the following lines to ~/.bashrc"
         echo "export PETSC_DIR=\"${PETSC_DIR}\""
-        if [ -n "${SLEPC_DIR+}" ]; then
+        if [ -n "${SLEPC_DIR+x}" ]; then
             echo "export SLEPC_DIR=\"${SLEPC_DIR}\""
         fi
         echo 
