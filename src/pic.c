@@ -17,13 +17,14 @@ static char help[] = "A 3D hybrid particle-in-cell (PIC) simulation.";
 #include "pic.h"
 
 typedef struct {
-  PetscInt  Nt;          // number of time steps
-  PetscReal dt;          // time-step width
-  PetscInt  it;          // time-step counter
-  PetscInt  Dt;          // output cadence
-  PetscInt  Np;          // total number of charged particles
-  PDistType PDistType;   // type of initial position distribution
-  VDistType VDistType;   // type of initial velocity distribution
+  PetscInt  Nt;              // number of time steps
+  PetscReal dt;              // time-step width
+  PetscInt  it;              // time-step counter
+  PetscInt  Dt;              // output cadence
+  PetscInt  Np;              // total number of charged particles
+  PDistType PDistType;       // type of initial position distribution
+  VDistType VDistType;       // type of initial velocity distribution
+  PetscBool outputParticles; // if true, output the particle distributions
 } Application;
 
 /* Process command-line arguments specific to the PIC simulation. */
@@ -32,6 +33,7 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
   PetscReal realArg;
   PetscEnum enumArg;
   PetscInt  intArg;
+  PetscBool boolArg;
   PetscBool found;
   PetscInt  Np, NpTotal;
   PetscInt  Ncell=ctx.grid.Nx*ctx.grid.Ny*ctx.grid.Nz;
@@ -74,6 +76,12 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
     app->dt = realArg;
   } else {
     app->dt = 1.0 / ctx.ions.nu;
+  }
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "--output-particles", &boolArg, &found));
+  if (found) {
+    app->outputParticles = boolArg;
+  } else {
+    app->outputParticles = PETSC_FALSE;
   }
 
   /* Set the total number of charged particles.
@@ -213,8 +221,10 @@ int main(int argc, char **args)
   /* Output initial conditions. */
   ctx.log.status("Writing initial fluid quantities to HDF5\n");
   PetscCall(OutputFluidHDF5("-initial", &ctx));
-  ctx.log.status("Writing initial particle quantities to binary\n");
-  PetscCall(OutputSwarmBinary("-initial", &ctx));
+  if (app.outputParticles) {
+    ctx.log.status("Writing initial particle quantities to binary\n");
+    PetscCall(OutputSwarmBinary("-initial", &ctx));
+  }
 
   /* Create a template for the time-step string. */
   PetscCall(PetscStrcat(stepfmt, "< Time step "));
@@ -252,8 +262,10 @@ int main(int argc, char **args)
       sprintf(pathstr, pathfmt, it);
       ctx.log.status("Writing fluid quantities to HDF5\n");
       PetscCall(OutputFluidHDF5(pathstr, &ctx));
-      ctx.log.status("Writing particle quantities to binary\n");
-      PetscCall(OutputSwarmBinary(pathstr, &ctx));
+      if (app.outputParticles) {
+        ctx.log.status("Writing particle quantities to binary\n");
+        PetscCall(OutputSwarmBinary(pathstr, &ctx));
+      }
     }
 
     /* Print a newline to separate this time step from the next. */
@@ -266,8 +278,10 @@ int main(int argc, char **args)
   /* Output final conditions. */
   ctx.log.status("Writing final fluid quantities to HDF5\n");
   PetscCall(OutputFluidHDF5("-final", &ctx));
-  ctx.log.status("Writing final particle quantities to binary\n");
-  PetscCall(OutputSwarmBinary("-final", &ctx));
+  if (app.outputParticles) {
+    ctx.log.status("Writing final particle quantities to binary\n");
+    PetscCall(OutputSwarmBinary("-final", &ctx));
+  }
 
   /* Free memory. */
   ctx.log.status("Freeing objects\n");
