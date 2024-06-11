@@ -307,6 +307,7 @@ PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *c
 
     // Compute the global positions via rejection.
     normVal = 1.0 / maxVal;
+    ip = 0;
     it = 0;
     while (ip < Np) {
       PetscCall(PetscRandomGetValuesReal(random, ndim, s));
