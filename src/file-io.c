@@ -219,6 +219,17 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
 }
 
 
+/* A stand-in for disabled output functions. */
+PetscErrorCode OutputNoOp(const char *insert, Context *ctx)
+{
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
 PetscErrorCode ViewLHS(KSP ksp, Context *ctx)
 {
   PetscViewer viewer;
