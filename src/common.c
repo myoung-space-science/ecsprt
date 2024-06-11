@@ -75,7 +75,7 @@ PetscErrorCode ComputeTimeScale(float *elapsedTime, char *timeUnit)
 }
 
 
-int Finalize(time_t startTime, time_t endTime, Context *ctx)
+int Finalize(Context *ctx)
 {
   float       elapsedTime;
   char        timeUnit[16]="";
@@ -83,11 +83,11 @@ int Finalize(time_t startTime, time_t endTime, Context *ctx)
   PetscFunctionBeginUser;
 
   /* Log end time. */
-  elapsedTime = (float)(endTime-startTime);
+  elapsedTime = (float)(ctx->endTime - ctx->startTime);
   PetscCall(ComputeTimeScale(&elapsedTime, timeUnit));
   ctx->log.status("\n----------------------------------------\n");
-  ctx->log.status("Start time: %s", asctime(localtime(&startTime)));
-  ctx->log.status("End time:   %s", asctime(localtime(&endTime)));
+  ctx->log.status("Start time: %s", asctime(localtime(&ctx->startTime)));
+  ctx->log.status("End time:   %s", asctime(localtime(&ctx->endTime)));
   ctx->log.status("Elapsed time: %4.1f %s\n", elapsedTime, timeUnit);
   ctx->log.status("----------------------------------------\n");
 

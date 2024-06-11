@@ -5,6 +5,6 @@
 #include "ecsprt.h"
 
 extern PetscErrorCode Initialize(int argc, char **args, const char *help, const char *name, Context *ctx);
-extern int Finalize(time_t startTime, time_t endTime, Context *ctx);
+extern int Finalize(Context *ctx);
 
 #endif // COMMON_H

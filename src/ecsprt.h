@@ -116,6 +116,8 @@ typedef struct {
 
 /* Parameters common to all applications. */
 typedef struct {
+  time_t    startTime;                      // global application start time
+  time_t    endTime;                        // global application end time
   Loggers   log;                            // Logging functions
   MPI       mpi;                            // MPI parameters
   Grid      grid;                           // the spatial grid

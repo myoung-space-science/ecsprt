@@ -147,7 +147,6 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
 
 int main(int argc, char **args)
 {
-  time_t      startTime, endTime;
   CLI         cli;
   Application app;
   Context     ctx;
@@ -161,7 +160,7 @@ int main(int argc, char **args)
   PetscFunctionBeginUser;
 
   /* Log start time. */
-  time(&startTime);
+  time(&ctx.startTime);
 
   /* Initialize PETSc and MPI. */
   Initialize(argc, args, help, "pic", &ctx);
@@ -286,10 +285,10 @@ int main(int argc, char **args)
   PetscCall(DMDestroy(&ctx.swarmDM));
 
   /* Log end time. */
-  time(&endTime);
+  time(&ctx.endTime);
 
   /* Complete final tasks. */
-  Finalize(startTime, endTime, &ctx);
+  Finalize(&ctx);
 
   return 0;
 }
