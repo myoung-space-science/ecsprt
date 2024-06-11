@@ -35,13 +35,13 @@ PetscErrorCode ProcessOptions(CLI *cli)
   // Read optional parameter values from user input.
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-rhs", RHSTypes, &enumArg, &found));
   if (found) {
-    cli->rhsType = enumArg;
+    cli->rhsType = (RHSType)enumArg;
   } else {
     cli->rhsType = RHS_FULL;
   }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-lhs", LHSTypes, &enumArg, &found));
   if (found) {
-    cli->lhsType = enumArg;
+    cli->lhsType = (LHSType)enumArg;
   } else {
     cli->lhsType = LHS_FULL;
   }
@@ -134,19 +134,19 @@ PetscErrorCode ProcessOptions(CLI *cli)
   }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-xBC", BCTypes, &enumArg, &found));
   if (found) {
-    cli->xBC = enumArg;
+    cli->xBC = (BCType)enumArg;
   } else {
     cli->xBC = BC_PERIODIC;
   }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-yBC", BCTypes, &enumArg, &found));
   if (found) {
-    cli->yBC = enumArg;
+    cli->yBC = (BCType)enumArg;
   } else {
     cli->yBC = BC_PERIODIC;
   }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-zBC", BCTypes, &enumArg, &found));
   if (found) {
-    cli->zBC = enumArg;
+    cli->zBC = (BCType)enumArg;
   } else {
     cli->zBC = BC_PERIODIC;
   }
