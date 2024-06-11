@@ -104,3 +104,28 @@ int Finalize(Context *ctx)
   return 0;
 }
 
+
+void Abort(int errorcode, Context *ctx)
+{
+  float       elapsedTime;
+  char        timeUnit[16]="";
+
+  PetscFunctionBeginUser;
+
+  /* Log end time. */
+  time(&ctx->endTime);
+
+  /* Log end time. */
+  elapsedTime = (float)(ctx->endTime - ctx->startTime);
+  ComputeTimeScale(&elapsedTime, timeUnit);
+  ctx->log.status("\n----------------------------------------\n");
+  ctx->log.status("Start time: %s", asctime(localtime(&ctx->startTime)));
+  ctx->log.status("Abort time: %s", asctime(localtime(&ctx->endTime)));
+  ctx->log.status("Elapsed time: %4.1f %s\n", elapsedTime, timeUnit);
+  ctx->log.status("----------------------------------------\n");
+
+  /* Kill PETSc and MPI. */
+  ctx->log.status("\n***************** ABORTED WITH ERROR CODE %d ******************\n", errorcode);
+  MPI_Abort(PETSC_COMM_WORLD, errorcode);
+}
+
