@@ -322,6 +322,9 @@ PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *c
       it++;
     }
 
+    // Report the efficiency of the rejection algorithm.
+    ctx->log.world("Rejection efficiency: %d (placed) / %d (attempted) = %f\n", ip, it, (PetscReal)ip/it);
+
     // Destroy the random-number generator.
     PetscCall(PetscRandomDestroy(&random));
 
