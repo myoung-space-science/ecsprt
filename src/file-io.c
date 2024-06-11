@@ -120,6 +120,7 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   // Build the full file name.
   PetscCall(PetscStrcat(posfn, insert));
   PetscCall(PetscStrcat(posfn, ".bin"));
+  ctx->log.status("Writing %s\n", posfn);
 
   // Create the binary viewer.
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, posfn, FILE_MODE_WRITE, &viewer));
@@ -138,6 +139,7 @@ PetscErrorCode OutputSwarmBinary(const char *insert, Context *ctx)
   // Build the full file name.
   PetscCall(PetscStrcat(velfn, insert));
   PetscCall(PetscStrcat(velfn, ".bin"));
+  ctx->log.status("Writing %s\n", velfn);
 
   // Create the binary viewer.
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, velfn, FILE_MODE_WRITE, &viewer));
@@ -177,6 +179,7 @@ PetscErrorCode OutputFluidHDF5(const char *insert, Context *ctx)
   // Build the full file name.
   PetscCall(PetscStrcat(name, insert));
   PetscCall(PetscStrcat(name, ".hdf"));
+  ctx->log.status("Writing %s\n", name);
 
   // Create the HDF5 viewer.
   PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, name, FILE_MODE_WRITE, &viewer));
