@@ -14,6 +14,7 @@ When incrementing the version number to X.Y.Z, please do the following
 ## NEXT
 
 - Add option to toggle particle output (`--output-particles`)
+- Edit output status messages
 
 ## v0.6.0 (2024-06-10)
 
