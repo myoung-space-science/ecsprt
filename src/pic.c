@@ -25,6 +25,7 @@ typedef struct {
   PDistType PDistType;       // type of initial position distribution
   VDistType VDistType;       // type of initial velocity distribution
   PetscBool outputParticles; // if true, output the particle distributions
+  OutputFunc particleFunc;   // function to output particle distributions
 } Application;
 
 /* Process command-line arguments specific to the PIC simulation. */
@@ -82,6 +83,13 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
     app->outputParticles = boolArg;
   } else {
     app->outputParticles = PETSC_FALSE;
+  }
+
+  /* Assign the particle output function. */
+  if (app->outputParticles) {
+    app->particleFunc = OutputSwarmBinary;
+  } else {
+    app->particleFunc = OutputNoOp;
   }
 
   /* Set the total number of charged particles.
@@ -219,12 +227,8 @@ int main(int argc, char **args)
   PetscCall(PetscStrcat(pathfmt, itfmt));
 
   /* Output initial conditions. */
-  ctx.log.status("Writing initial fluid quantities to HDF5\n");
   PetscCall(OutputFluidHDF5("-initial", &ctx));
-  if (app.outputParticles) {
-    ctx.log.status("Writing initial particle quantities to binary\n");
-    PetscCall(OutputSwarmBinary("-initial", &ctx));
-  }
+  PetscCall(app.particleFunc("-initial", &ctx));
 
   /* Create a template for the time-step string. */
   PetscCall(PetscStrcat(stepfmt, "< Time step "));
@@ -260,12 +264,8 @@ int main(int argc, char **args)
     /* Output current time step. */
     if ((app.Dt > 0) && (it % app.Dt == 0)) {
       sprintf(pathstr, pathfmt, it);
-      ctx.log.status("Writing fluid quantities to HDF5\n");
       PetscCall(OutputFluidHDF5(pathstr, &ctx));
-      if (app.outputParticles) {
-        ctx.log.status("Writing particle quantities to binary\n");
-        PetscCall(OutputSwarmBinary(pathstr, &ctx));
-      }
+      PetscCall(app.particleFunc(pathstr, &ctx));
     }
 
     /* Print a newline to separate this time step from the next. */
@@ -276,12 +276,8 @@ int main(int argc, char **args)
   ctx.log.status("\n=== Final stage ===\n\n");
 
   /* Output final conditions. */
-  ctx.log.status("Writing final fluid quantities to HDF5\n");
   PetscCall(OutputFluidHDF5("-final", &ctx));
-  if (app.outputParticles) {
-    ctx.log.status("Writing final particle quantities to binary\n");
-    PetscCall(OutputSwarmBinary("-final", &ctx));
-  }
+  PetscCall(app.particleFunc("-final", &ctx));
 
   /* Free memory. */
   ctx.log.status("Freeing objects\n");
