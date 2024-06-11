@@ -9,6 +9,9 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, const char *n
   PetscBool requested;
   PetscBool found;
 
+  /* Log start time. */
+  time(&ctx->startTime);
+
   /* Initialize PETSc and MPI. */
   if ((argc > 1) && (access(args[1], F_OK) != -1)) {
     PetscCall(PetscInitialize(&argc, &args, args[1], help));
@@ -81,6 +84,9 @@ int Finalize(Context *ctx)
   char        timeUnit[16]="";
 
   PetscFunctionBeginUser;
+
+  /* Log end time. */
+  time(&ctx->endTime);
 
   /* Log end time. */
   elapsedTime = (float)(ctx->endTime - ctx->startTime);

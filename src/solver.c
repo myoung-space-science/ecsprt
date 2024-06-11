@@ -113,9 +113,6 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
 
-  /* Log start time. */
-  time(&ctx.startTime);
-
   /* Initialize PETSc and MPI. */
   Initialize(argc, args, help, "solver", &ctx);
 
@@ -198,9 +195,6 @@ int main(int argc, char **args)
 #ifdef HAVE_SLEPC
   PetscCall(SlepcFinalize());
 #endif
-
-  /* Log end time. */
-  time(&ctx.endTime);
 
   /* Complete final tasks. */
   Finalize(&ctx);

@@ -159,9 +159,6 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
 
-  /* Log start time. */
-  time(&ctx.startTime);
-
   /* Initialize PETSc and MPI. */
   Initialize(argc, args, help, "pic", &ctx);
 
@@ -283,9 +280,6 @@ int main(int argc, char **args)
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DestroyContext(&ctx));
   PetscCall(DMDestroy(&ctx.swarmDM));
-
-  /* Log end time. */
-  time(&ctx.endTime);
 
   /* Complete final tasks. */
   Finalize(&ctx);
