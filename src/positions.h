@@ -13,7 +13,7 @@ extern PetscErrorCode UniformCoordinates(PetscInt ndim, Context *ctx);
 extern PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx);
 extern PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx);
 extern PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *ctx);
-extern PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *ctx);
+extern PetscErrorCode InitializePositions(PetscInt ndim, PDistType pDistType, Context *ctx);
 extern PetscErrorCode UpdatePositions(PetscInt ndim, PetscReal dt, Context *ctx);
 
 // DistributionFunction implementations.

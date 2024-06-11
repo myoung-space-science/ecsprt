@@ -6,7 +6,7 @@
 #include "pic.h"
 
 extern PetscErrorCode NormalVelocities(PetscInt ndim, Context *ctx);
-extern PetscErrorCode InitializeVelocities(PetscInt ndim, VDistType VDistType, Context *ctx);
+extern PetscErrorCode InitializeVelocities(PetscInt ndim, VDistType vDistType, Context *ctx);
 extern PetscErrorCode BorisMoverBB(PetscReal dt, Context *ctx);
 extern PetscErrorCode BorisMoverBz2D(PetscReal dt, void *opts);
 extern PetscErrorCode BorisMoverBz3D(PetscReal dt, void *opts);

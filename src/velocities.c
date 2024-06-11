@@ -48,12 +48,12 @@ PetscErrorCode NormalVelocities(PetscInt ndim, Context *ctx)
 
 
 /* Compute the initial ion velocities. */
-PetscErrorCode InitializeVelocities(PetscInt ndim, VDistType VDistType, Context *ctx)
+PetscErrorCode InitializeVelocities(PetscInt ndim, VDistType vDistType, Context *ctx)
 {
   PetscFunctionBeginUser;
   ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
 
-  switch (VDistType) {
+  switch (vDistType) {
     case VDIST_NORMAL:
       PetscCall(NormalVelocities(ndim, ctx));
       break;

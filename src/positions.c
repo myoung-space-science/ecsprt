@@ -387,7 +387,7 @@ PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *c
 
 
 /* Compute the initial ion positions. */
-PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *ctx)
+PetscErrorCode InitializePositions(PetscInt ndim, PDistType pDistType, Context *ctx)
 {
   DM         swarmDM=ctx->swarmDM;
   PetscInt   np, Np;
@@ -403,7 +403,7 @@ PetscErrorCode InitializePositions(PetscInt ndim, PDistType PDistType, Context *
   ctx->log.world("   Global # of ions before placement: %d\n", Np);
 
   // Initialize coordinates in the ions DM.
-  switch(PDistType) {
+  switch(pDistType) {
     case PDIST_NORMAL:
       PetscCall(NormalDistribution(ndim, ctx));
       break;
