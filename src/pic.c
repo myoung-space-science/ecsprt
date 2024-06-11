@@ -22,8 +22,8 @@ typedef struct {
   PetscInt  it;              // time-step counter
   PetscInt  Dt;              // output cadence
   PetscInt  Np;              // total number of charged particles
-  PDistType PDistType;       // type of initial position distribution
-  VDistType VDistType;       // type of initial velocity distribution
+  PDistType pDistType;       // type of initial position distribution
+  VDistType vDistType;       // type of initial velocity distribution
   PetscBool outputParticles; // if true, output the particle distributions
   OutputFunc particleFunc;   // function to output particle distributions
 } Application;
@@ -44,15 +44,15 @@ PetscErrorCode ProcessPICOptions(Context ctx, Application *app)
 
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--position-dist", PDistTypes, &enumArg, &found));
   if (found) {
-    app->PDistType = enumArg;
+    app->pDistType = (PDistType)enumArg;
   } else {
-    app->PDistType = PDIST_SOBOL;
+    app->pDistType = PDIST_SOBOL;
   }
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "--velocity-dist", VDistTypes, &enumArg, &found));
   if (found) {
-    app->VDistType = enumArg;
+    app->vDistType = (VDistType)enumArg;
   } else {
-    app->VDistType = VDIST_NORMAL;
+    app->vDistType = VDIST_NORMAL;
   }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Np", &intArg, &found));
   if (found) {
@@ -133,8 +133,8 @@ PetscErrorCode EchoSetup(Context ctx, Application app)
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Nt = %d\n", app.Nt));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "dt = %f [s]\n", app.dt));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "Np = %d\n", app.Np));
-  PetscCall(PetscViewerASCIIPrintf(viewer,     "initial positions = %s\n", PDistTypes[app.PDistType]));
-  PetscCall(PetscViewerASCIIPrintf(viewer,     "initial velocities = %s\n", VDistTypes[app.VDistType]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "initial positions = %s\n", PDistTypes[app.pDistType]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,     "initial velocities = %s\n", VDistTypes[app.vDistType]));
   PetscCall(PetscViewerASCIIPrintf(viewer,     "#End of Application-Specific Parameter Values\n"));
 
   // Free memory.
@@ -204,11 +204,11 @@ int main(int argc, char **args)
 
   /* Set initial particle positions. */
   ctx.log.status("Initializing positions\n");
-  PetscCall(InitializePositions(cli.ndim, app.PDistType, &ctx));
+  PetscCall(InitializePositions(cli.ndim, app.pDistType, &ctx));
 
   /* Set initial particle velocities. */
   ctx.log.status("Initializing velocities\n");
-  PetscCall(InitializeVelocities(cli.ndim, app.VDistType, &ctx));
+  PetscCall(InitializeVelocities(cli.ndim, app.vDistType, &ctx));
 
   /* Compute initial density and flux.*/
   ctx.log.status("Collecting initial moments\n");
