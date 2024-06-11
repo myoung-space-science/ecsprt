@@ -54,6 +54,27 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, const char *n
 }
 
 
+PetscErrorCode ComputeTimeScale(float *elapsedTime, char *timeUnit)
+{
+  PetscFunctionBeginUser;
+
+  if (*elapsedTime >= 86400.0) {
+    *elapsedTime /= 86400.0;
+    PetscCall(PetscStrcat(timeUnit, "day(s)"));
+  } else if (*elapsedTime >= 3600.0) {
+    *elapsedTime /= 3600.0;
+    PetscCall(PetscStrcat(timeUnit, "hour(s)"));
+  } else if (*elapsedTime >= 60.0) {
+    *elapsedTime /= 60.0;
+    PetscCall(PetscStrcat(timeUnit, "minute(s)"));
+  } else {
+    PetscCall(PetscStrcat(timeUnit, "second(s)"));
+  }
+
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
 int Finalize(time_t startTime, time_t endTime, Context *ctx)
 {
   float       elapsedTime;
@@ -63,18 +84,7 @@ int Finalize(time_t startTime, time_t endTime, Context *ctx)
 
   /* Log end time. */
   elapsedTime = (float)(endTime-startTime);
-  if (elapsedTime >= 86400.0) {
-    elapsedTime /= 86400.0;
-    PetscCall(PetscStrcat(timeUnit, "day(s)"));
-  } else if (elapsedTime >= 3600.0) {
-    elapsedTime /= 3600.0;
-    PetscCall(PetscStrcat(timeUnit, "hour(s)"));
-  } else if (elapsedTime >= 60.0) {
-    elapsedTime /= 60.0;
-    PetscCall(PetscStrcat(timeUnit, "minute(s)"));
-  } else {
-    PetscCall(PetscStrcat(timeUnit, "second(s)"));
-  }
+  PetscCall(ComputeTimeScale(&elapsedTime, timeUnit));
   ctx->log.status("\n----------------------------------------\n");
   ctx->log.status("Start time: %s", asctime(localtime(&startTime)));
   ctx->log.status("End time:   %s", asctime(localtime(&endTime)));
@@ -88,8 +98,3 @@ int Finalize(time_t startTime, time_t endTime, Context *ctx)
   return 0;
 }
 
-
-PetscErrorCode ComputeTimes()
-{
-
-}
