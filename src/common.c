@@ -59,6 +59,8 @@ int Finalize(time_t startTime, time_t endTime, Context *ctx)
   float       elapsedTime;
   char        timeUnit[16]="";
 
+  PetscFunctionBeginUser;
+
   /* Log end time. */
   elapsedTime = (float)(endTime-startTime);
   if (elapsedTime >= 86400.0) {
@@ -84,4 +86,10 @@ int Finalize(time_t startTime, time_t endTime, Context *ctx)
   PetscCall(PetscFinalize());
 
   return 0;
+}
+
+
+PetscErrorCode ComputeTimes()
+{
+
 }
