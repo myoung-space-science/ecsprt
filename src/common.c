@@ -54,7 +54,7 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, const char *n
 }
 
 
-PetscErrorCode Finalize(time_t startTime, time_t endTime, Context *ctx)
+int Finalize(time_t startTime, time_t endTime, Context *ctx)
 {
   float       elapsedTime;
   char        timeUnit[16]="";
@@ -83,5 +83,5 @@ PetscErrorCode Finalize(time_t startTime, time_t endTime, Context *ctx)
   ctx->log.status("\n***************** END ******************\n");
   PetscCall(PetscFinalize());
 
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return 0;
 }
