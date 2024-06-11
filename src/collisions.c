@@ -1,3 +1,4 @@
+#include "common.h"
 #include "ecsprt.h"
 #include "random.h"
 
@@ -143,7 +144,7 @@ PetscErrorCode ScatterElastic(PetscInt ndim, PetscReal dt, void *opts)
         // Terminate the simulation if at least 10 collisions have failed.
         if (Nf >= 10) {
           ctx->log.status("Failed to collide %d ion-neutral pairs. Aborting.\n\n", Nf);
-          MPI_Abort(PETSC_COMM_WORLD, 1);
+          Abort(1, ctx);
         }
       } else {
         for (dim=0; dim<ndim; dim++) {

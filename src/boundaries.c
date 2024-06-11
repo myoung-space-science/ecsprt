@@ -1,3 +1,4 @@
+#include "common.h"
 #include "ecsprt.h"
 
 
@@ -103,7 +104,7 @@ PetscErrorCode ApplyBCAndMigrate(Context *ctx)
       ctx->log.status("ERROR: Total number of ions has changed (%+d).\n", Np1-Np0);
       ctx->log.status("       This should not happen with fully periodic boundary conditions.\n");
       ctx->log.status("\n");
-      MPI_Abort(PETSC_COMM_WORLD, 1);
+      Abort(1, ctx);
     }
   }
 
