@@ -17,6 +17,7 @@ When incrementing the version number to X.Y.Z, please do the following
 - Edit output status messages
 - Fix uninitialized `ip` in `Rejection`
 - Restore optional log message in `Rejection`
+- Implement custom `Abort` routine
 
 ## v0.6.0 (2024-06-10)
 
