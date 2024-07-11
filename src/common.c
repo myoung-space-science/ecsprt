@@ -8,6 +8,7 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, const char *n
   PetscInt  logLevel=1;
   PetscBool requested;
   PetscBool found;
+  char      procstr[16]="process";
 
   /* Log start time. */
   time(&ctx->startTime);
@@ -50,7 +51,11 @@ PetscErrorCode Initialize(int argc, char **args, const char *help, const char *n
     ctx->log.checkpoint = printWorld;
   }
 
-  ctx->log.status("[%s] Running on %d MPI process(es)\n\n", name, ctx->mpi.size);
+  ctx->log.status("[%s] Version %s\n", name, VERSION);
+  if (ctx->mpi.size > 1) {
+    PetscCall(PetscStrcat(procstr, "es"));
+  }
+  ctx->log.status("[%s] Running on %d MPI %s\n", name, ctx->mpi.size, procstr);
   ctx->log.status("\n**************** START *****************\n\n");
 
   PetscFunctionReturn(PETSC_SUCCESS);
