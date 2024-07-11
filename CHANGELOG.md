@@ -18,6 +18,7 @@ When incrementing the version number to X.Y.Z, please do the following
 - Fix uninitialized `ip` in `Rejection`
 - Restore optional log message in `Rejection`
 - Implement custom `Abort` routine
+- Add version number to log at start of simulation run
 
 ## v0.6.0 (2024-06-10)
 
