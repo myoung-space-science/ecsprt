@@ -6,6 +6,8 @@
 /* Defined types of initial position distributions. */
 typedef enum {
   PDIST_SOBOL,
+  PDIST_LOCAL_SOBOL,
+  PDIST_GLOBAL_SOBOL,
   PDIST_REVERSE,
   PDIST_NORMAL,
   PDIST_UNIFORM,

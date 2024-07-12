@@ -10,7 +10,8 @@ typedef PetscErrorCode (*DistributionFunction)(PetscInt ndim, PetscReal r[], Pet
 
 // Top-level distribution functions.
 extern PetscErrorCode UniformCoordinates(PetscInt ndim, Context *ctx);
-extern PetscErrorCode SobolDistribution(PetscInt ndim, Context *ctx);
+extern PetscErrorCode SobolDistributionGlobal(PetscInt ndim, Context *ctx);
+extern PetscErrorCode SobolDistributionLocal(PetscInt ndim, Context *ctx);
 extern PetscErrorCode NormalDistribution(PetscInt ndim, Context *ctx);
 extern PetscErrorCode Rejection(PetscInt ndim, DistributionFunction density, Context *ctx);
 extern PetscErrorCode InitializePositions(PetscInt ndim, PDistType pDistType, Context *ctx);
