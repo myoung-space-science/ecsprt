@@ -6,7 +6,7 @@
 
 /* Names of supported density functions. */
 const char *PDistTypes[] ={
-  "sobol", "sobol-local", "sobol-global", "reverse", "normal", "uniform", "sinusoidal", "gaussian", "PDistType", "PDIST_", NULL
+  "sobol", "sobol-local", "sobol-global", "reverse", "normal", "normal-local", "normal-global", "uniform", "sinusoidal", "gaussian", "PDistType", "PDIST_", NULL
 };
 
 
@@ -129,6 +129,58 @@ PetscErrorCode NormalDistributionGlobal(PetscInt ndim, Context *ctx)
 
   // Free the positions-array memory.
   PetscCall(PetscFree(pos));
+
+  ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+
+PetscErrorCode NormalDistributionLocal(PetscInt ndim, Context *ctx)
+{
+  DM             swarmDM=ctx->swarmDM;
+  DM             cellDM;
+  long           seed=getseed(*ctx);
+  PetscReal     *coords;
+  PetscInt       np, ip;
+  PetscReal      s;
+  PetscReal      dx=ctx->grid.dx;
+  PetscReal      dy=ctx->grid.dy;
+  PetscReal      dz=ctx->grid.dz;
+  PetscInt       dim;
+  DMDALocalInfo  local;
+  PetscReal      lmin[3], lmax[3];
+
+  PetscFunctionBeginUser;
+  ctx->log.checkpoint("\n--> Entering %s <--\n", __func__);
+
+  // Get the number of local particles.
+  PetscCall(DMSwarmGetLocalSize(swarmDM, &np));
+
+  // Get a representation of the particle coordinates.
+  PetscCall(DMSwarmGetField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+
+  // Get the ion-swarm cell DM.
+  PetscCall(DMSwarmGetCellDM(swarmDM, &cellDM));
+
+  // Get the index information for this processor.
+  PetscCall(DMDAGetLocalInfo(cellDM, &local));
+  lmin[0] = dx*local.xs;
+  lmin[1] = dy*local.ys;
+  lmin[2] = dz*local.zs;
+  lmax[0] = dx*(local.xs + local.xm);
+  lmax[1] = dy*(local.ys + local.ym);
+  lmax[2] = dz*(local.zs + local.zm);
+
+  // Generate a Sobol' sequence of local positions and assign to particles.
+  for (ip=0; ip<np; ip++) {
+    for (dim=0; dim<ndim; dim++) {
+      PetscCall(Ran3(&seed, &s));
+      coords[ip*ndim + dim] = lmin[dim] + s*(lmax[dim] - lmin[dim]);
+    }
+  }
+
+  // Restore the coordinates array.
+  PetscCall(DMSwarmRestoreField(swarmDM, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
 
   ctx->log.checkpoint("\n--> Exiting %s <--\n\n", __func__);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -457,6 +509,12 @@ PetscErrorCode InitializePositions(PetscInt ndim, PDistType pDistType, Context *
   // Initialize coordinates in the ions DM.
   switch(pDistType) {
     case PDIST_NORMAL:
+      PetscCall(NormalDistributionLocal(ndim, ctx));
+      break;
+    case PDIST_LOCAL_NORMAL:
+      PetscCall(NormalDistributionLocal(ndim, ctx));
+      break;
+    case PDIST_GLOBAL_NORMAL:
       PetscCall(NormalDistributionGlobal(ndim, ctx));
       break;
     case PDIST_REVERSE:
